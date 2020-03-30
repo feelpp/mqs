@@ -18,7 +18,7 @@ jobs:
     - name: Check build
       run: |
         mkdir check && cd check
-        mpirun --bind-to core --mca btl vader,self -np 4 ../bin/feelpp_p_mqs 
+        mpirun --bind-to core --mca btl vader,self -np 4 ../bin/feelpp_mqs_mqs 
       working-directory: build/install
     - name: Package
       run: |

@@ -43,6 +43,7 @@ endif()
 
 
 add_subdirectory( src )
+add_subdirectory( docs )
 
 # extra ignored files
 list(APPEND CPACK_SOURCE_IGNORE_FILES
