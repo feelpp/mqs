@@ -1,7 +1,7 @@
 :feelpp: Feel++
 = {feelpp} mqs 
 
-image:https://github.com/feelpp/feelpp-project/workflows/CI/badge.svg[CI]
+image:https://github.com/feelpp/mqs/workflows/CI/badge.svg[CI]
 
 This is a {feelpp} Template Project. It serves as a template for {feelpp} projects.
 
