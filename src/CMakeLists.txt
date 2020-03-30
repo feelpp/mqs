@@ -21,4 +21,4 @@
 # Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #
 #
-feelpp_add_application(myapp SRCS main.cpp TESTS INSTALL)
+feelpp_add_application(mqs SRCS main.cpp TESTS INSTALL)
