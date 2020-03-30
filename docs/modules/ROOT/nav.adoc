@@ -1,3 +1,3 @@
-.MyProject
+.MQS
 * Outline of the project
 ** xref:README.adoc[Introduction]
