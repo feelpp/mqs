@@ -1,0 +1,94 @@
+= Validation
+:stem: latexmath
+
+Two simple test cases are used to validate the formulation:
+
+* a single magnet,
+* a set of 2 magnets.
+
+We will consider simple geometries for the magnets. They are
+modeled as rectangular cross section torus. This allows us to 
+derive analytical expressions for the resistance stem:[R] and inductances stem:[L]
+of the magnets. For each case, we will model the powering and 
+a powerfailure. The computed total current flowing into the magnets
+will be compared to the results obtained by a simple equivalent stem:[RL] circuit.
+The circuit may be either modeled by a simple ODE solver or using analytical methods 
+(aka exponential Matrices). For other quantities, we will compared our simulation
+results with other Finite Element Solver. We have choosen http://getdp.info/[getdp] 
+with a MQS formulation for axisymetric geometries.
+
+NB: getdp model and test geometry are accessible here. To reproduce the results follow the procedure
+in this appendix.
+
+== A solenoidal magnet
+
+=== Setup
+
+insert a figure
+
+define geometry, materials, Bcs and initial conditions.
+
+=== Resistance stem:[R] and Self Inductance stem:[L]
+
+The resistance is defined as the ration of the applied electrical potential difference over the total current. In case of a rectangular cross section stem:[ (r_1,r_2) \times (z_1,z_2) ] torus, we can show that:
+
+[stem]
+++++
+R = \frac{2 \pi r_1 \rho}{r_1 ln(r_2/r_1)\,(z_2-z_1)}
+++++
+
+with stem:[\rho=1/\sigma] the resistivity of the material composing the torus. For details on this expression, see feelpp electric toolbox test case.
+
+As for the self-inductance, we recall the defintion of the stored magnetic energy:
+
+[stem]
+++++
+E = \frac{1}{2} L I^2 = \frac{1}{2} \int_\mathbf{R^3} \mathbf{B} \times \mathbf{H}\, d\Omega
+++++
+
+to continue...
+
+=== Equivalent circuit model
+
+From a macroscopic point of view, the studied system is simply equivalent to a stem:[RL] circuit modeled by:
+
+[stem]
+++++
+U(t) = R I(t) + L \, \frac{dI}{dt}
+++++
+
+=== Results
+
+== 2 solenoidal magnets
+
+For sake of simplicty, we consider 2 solenoid magnets similar to the one described in previous section stacked as shown bellow.
+
+insert a figure
+
+=== Mutual Inductance stem:[M]
+
+Obviously, the 2 magnets have the same resistance and self-inductance as they have the same geometry and are made of the same material. We only need then
+to compute the socalled mutual inductance stem:[M].
+
+As before, we start wih the stored magnetic energy stem:[E] of the system:
+
+[stem]
+++++
+E = \frac{1}{2} \sum_k L_k I_k^2 + \sum_k \sum_{l \neq k} M_{k,l} I_k I_l 
+++++
+
+to continue...
+
+=== Equivalent circuit model
+
+The equivalent circuit is this time similar to a transformer circuit. Thuss, it may be modeled as:
+
+[stem]
+++++
+\begin{align}
+U_1(t) &=& R_1 I_1(t) + L_1 \, \frac{dI_1}{dt}+ M\,\frac{dI_2}{dt}, \\
+U_2(t) &=& R_2 I_2(t) + M\, \frac{dI_1}{dt}+ L_2\,\frac{dI_2}{dt}
+\end{align}
+++++
+
+=== Results
