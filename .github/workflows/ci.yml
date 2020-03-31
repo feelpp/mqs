@@ -12,13 +12,13 @@ jobs:
     - name: Build MQS
       run: |
         mkdir build && cd build
-        CXX=clang++-8 cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=./install ..
+        CXX=clang++-9 cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=./install ..
         make -j3
         make install
     - name: Check build
       run: |
         mkdir check && cd check
-        mpirun --bind-to core --mca btl vader,self -np 4 ../bin/feelpp_p_mqs 
+        mpirun --bind-to core --mca btl vader,self -np 4 ../bin/feelpp_mqs_mqs 
       working-directory: build/install
     - name: Package
       run: |

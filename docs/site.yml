@@ -4,14 +4,23 @@ site:
   start_page: mqs:ROOT:index.adoc
 content:
   sources:
-  - url: .
+  - url: ..
     branches: master
     start_path: docs
+  - url: https://github.com/feelpp/toolbox
+    branches: master
+    start_path: examples
+  - url: https://github.com/feelpp/book.feelpp.org
+    branches: master
+    start_path: docs/toolboxes
 ui:
   bundle:
     url: https://gitlab.com/antora/antora-ui-default/-/jobs/artifacts/master/raw/build/ui-bundle.zip?job=bundle-stable
     snapshot: true
   supplemental_files: supplemental-ui
+output:
+  clean: true
+  dir: public
 asciidoc:
   attributes:
     project_version: 0.108

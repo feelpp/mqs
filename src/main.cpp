@@ -28,20 +28,12 @@ int main( int argc, char **argv )
 {
   //# marker1 #
   using namespace Feel;
-  po::options_description laplacianoptions( "Laplacian options" );
-  laplacianoptions.add_options()( "polymap.study", po::value<std::vector<std::string>>(), "study name" )
-      ("polymap.hbfz.solution", po::value<std::string>(), "solution filename" )
-      ("polymap.polygon", po::value<std::string>()->default_value("${holo3_srcdir}/src/feelpp/surface_reconstruction/surface_rec/poly.txt" ),   "polygon filename" )
-      ( "polymap.pixelsize", po::value<double>()->default_value( 4.5e-3 ), "pixel size (in mm)" )
-      ( "polymap.withCoord", po::value<bool>()->default_value( false ),  "use hbf coordinates files" )
-      ( "polymap.extraction", po::value<bool>()->default_value( false ), "extraction mode" )
-      ( "polymap.pmean", po::value<bool>()->default_value( true ), "remove mean of slopes" )
-      ( "polymap.export.paraview", po::value<bool>()->default_value( false ), "export reconstruction in paraview format" )
-      ( "polymap.export.hbf", po::value<bool>()->default_value( true ), "export reconstruction in hbf format" )
-      ( "polymap.levelset", po::value<bool>()->default_value( false ), "levelset mode" );
+  po::options_description mqsoptions( "MQS options" );
+  mqsoptions.add_options()
+      ( "case.dim", po::value<int>()->default_value( 2 ), "dimension of the case study" );
 
-  Environment env( _argc = argc, _argv = argv, _desc = laplacianoptions,
-                   _about = about( _name = "surface_rec",
+  Environment env( _argc = argc, _argv = argv, _desc = mqsoptions,
+                   _about = about( _name = "mqs",
                                    _author = "Feel++ Consortium",
                                    _email = "feelpp-devel@feelpp.org" ) );
 
