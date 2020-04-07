@@ -1,16 +1,14 @@
-= Modeling the transient behaviour of high field magnets
+= Modeling the transient behavior of high field magnets
 
 == Introduction
 
 High field magnets are a tool in many research fields such as superconductivity or BioChemistry. Only a few laboratories, including the LNCMI in France, supply such magnets, which are made available to the scientific community via calls for projects. Their development and maintenance represent a significant cost. This is why it is fundamental to understand and model these magnets and magnets perfectly beforehand. 
-in particular, starting and stopping the magnets. Electromagnetic, thermal and mechanical phenomena come into play. Different interactions impose limitations. Indeed, to obtain an intense magnetic field, the use of superconductors is no longer sufficient. These have a limited field because, beyond 25 Tesla, materials lose their superconductivity. To obtain an intense field, it is thus necessary to pass a sufficiently important current, of the order of 30000 Ampere, in coils, of copper for example. However, by Joule effect, the materials may melt. It is therefore necessary to cool them, while making sure that the electromagnetic properties are preserved. This calls for multiphysical modelling. In our case, the cooling is modelled by exchange coefficients, which are the boundary conditions for the thermal problem.
+In particular, starting and stopping the magnets. Electromagnetic, thermal and mechanical phenomena come into play. Different interactions impose limitations. Indeed, to obtain an intense magnetic field, the use of superconductors is no longer sufficient. These have a limited field because, beyond 25 Tesla, materials lose their superconductivity. To obtain an intense field, it is thus necessary to pass a sufficiently important current, of the order of 30000 Ampere, in coils, of copper for example. However, by Joule effect, the materials may melt. It is therefore necessary to cool them, while making sure that the electromagnetic properties are preserved. This calls for multi-physics modelling. In our case, the cooling is modelled by exchange coefficients, which are the boundary conditions for the thermal problem.
 We will therefore study a formulation of Maxwell's equations, in the quasi-static case, i.e. the formulation in magnetic and electric potential.   
 
-Translated with www.DeepL.com/Translator (free version)High-field magnets are becoming very popular with the scientific community. 
 
 
 == Background 
 
 The National Laboratory for Intense Magnetic Fields (LNCMI), is a research infrastructure of the CNRS, located on two sites. Grenoble, where continuous fields are processed, and Toulouse, where pulsed fields are processed. It welcomes scientists from all over the world to carry out intense field experiments. France is thus positioned, alongside Germany, China and the United States, as the owner of the most powerful continuous field magnets in the world, capable of providing fields of up to 37 Tesla. The annual use of magnets in Grenoble (more than 3000h) pushes to understand as much as possible the different physical phenomena involved, in order to optimize the use of magnets as much as possible. This is why understanding the starting of magnets, as well as their stopping, is essential. A correct modelling of the phenomena coming into play in this period is therefore necessary. The principle is therefore, based on the magnetic and electrical potential model of Maxwell's equations, to accurately model the starting and stopping of magnets, including the skin effects that are created during these moments.
 
-include::./validation.adoc[<attrlist>]
