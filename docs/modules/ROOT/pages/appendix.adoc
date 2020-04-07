@@ -1,0 +1,45 @@
+= Appendix
+
+== Getdp Axisymetric models
+
+Modeling with getdp relies on:
+
+* a formal description of the variational formulation to be solved,
+* a file for describing numerical integration methods to be used,
+* a file for ...,
+
+To actually run a simulation, you would also need:
+
+* a geometry mesh file,
+* a file describing the properties of the materials, the boundary conditions and ... 
+
+=== Running the simulation
+
+Install `gmsh` and `getdp`. Then run the following command:
+
+[source,bash]
+----
+gmsh -2 -bin helix.geo
+getdp -m helix.msh helix.pro -solve xxx -pos Map_a 
+----
+
+[NOTE]
+Depending on your installation, you may need to add an extra option to `gmsh`
+when generating the mesh that will be used by `getdp`. If you have an error message when running `getdp` please specify the format of the mesh with `-format msh3`.
+
+=== Postprocessing
+
+
+[source,bash]
+----
+gnuplot> load "I_vs_t.cmd"
+----
+
+[source,bash]
+----
+gmsh file.pos
+----
+
+== Computing Self and Mutual Inductances
+
+== Solving Electric circuit model
