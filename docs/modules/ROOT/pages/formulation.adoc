@@ -3,9 +3,9 @@
 
 == Differential form of Maxwell's equations
 
-Les équations de Maxwell, sont des lois de la physique, constituant les postulats de base de l'éléctromagnétisme. Elle traduisent, sous forme locale, plusieurs théorème qui régissaient l'élécromagnétisme, que Maxwell a réuni sous forme intégrale.
-Ces équations définissent des relations entre les champs éléctromagnetiques et le elements sources.
-La forme differentiel des équations de Maxwell est la suivante:
+Maxwell's equations, are laws of physics, constituting the basic postulates of electromagnetism. They translate, in local form, several theorems that governed electromagnetism, that Maxwell gathered in integral form.
+These equations define relations between the electromagnetic fields and the source elements.
+The differential form of Maxwell's equations is as follows:
 
 [stem]
 ++++
@@ -37,7 +37,7 @@ stem:[\epsilon_0(r,t)] is the permittivity of vacuum.
 
 == The magnetique vector potential and electric scalar potential formulation
 
-On s'interesse aux équations simplifiés:
+We're interested in simplified equations:
 
 [stem]
 ++++
