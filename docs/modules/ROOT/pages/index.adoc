@@ -12,3 +12,9 @@ We will therefore study a formulation of Maxwell's equations, in the quasi-stati
 
 The National Laboratory for Intense Magnetic Fields (LNCMI), is a research infrastructure of the CNRS, located on two sites. Grenoble, where continuous fields are processed, and Toulouse, where pulsed fields are processed. It welcomes scientists from all over the world to carry out intense field experiments. France is thus positioned, alongside Germany, China and the United States, as the owner of the most powerful continuous field magnets in the world, capable of providing fields of up to 37 Tesla. The annual use of magnets in Grenoble (more than 3000h) pushes to understand as much as possible the different physical phenomena involved, in order to optimize the use of magnets as much as possible. This is why understanding the starting of magnets, as well as their stopping, is essential. A correct modelling of the phenomena coming into play in this period is therefore necessary. The principle is therefore, based on the magnetic and electrical potential model of Maxwell's equations, to accurately model the starting and stopping of magnets, including the skin effects that are created during these moments.
 
+<<<<<<< HEAD
+include::./formulation.adoc[<attrlist>]
+
+include::./validation.adoc[<attrlist>]
+=======
+>>>>>>> 878e905b08049c61313f886f73d4ce63e494de65
