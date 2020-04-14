@@ -24,7 +24,11 @@
 
 == May
 
-* Beginning of May : Implementation of the model under feel++ (40h)
+* Beginning of May : Learning and appropriation of coding under feel++ (8h)
+
+* Implementation of the model under feel++, unit test development (22h)
+
+* Code verification on test cases and possibles corrections (10h)
 
 * 19/05 : Report V1 (8h)
 
