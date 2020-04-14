@@ -1,7 +1,12 @@
+node_modules/
+install/
 build/
 docs/cache/
 docs/public/
 *.bak
+*.log
+nohup.out
+log
 # Prerequisites
 *.d
 
