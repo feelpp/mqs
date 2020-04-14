@@ -4,23 +4,23 @@
 
 Modeling with getdp relies on:
 
-* a formal description of the variational formulation to be solved,
-* a file for describing numerical integration methods to be used,
-* a file for ...,
+* a formal description of the variational formulation to be solved: link:{attachmentsdir}/aximodel/getdp/MagDyn-av_Axi.pro[MagDyn-av_Axi.pro]
+* a file for describing numerical integration methods to be used: link:{attachmentsdir}/aximodel/getdp/Integration_Lib.pro[Integration_Lib.pro]
+* a file for describing transformation to be done: link:{attachmentsdir}/aximodel/getdp/Jacobian_Lib.pro[Jacobian_Lib.pro]
 
 To actually run a simulation, you would also need:
 
-* a geometry mesh file,
-* a file describing the properties of the materials, the boundary conditions and ... 
+* a geometry mesh file: link:{attachmentsdir}/aximodel/helix/helix.geo[helix.geo],
+* a file describing the properties of the materials, the boundary conditions and postprocessing: link:{attachmentsdir}/aximodel/helix/helix.pro[helix.pro] 
 
 === Running the simulation
 
-Install `gmsh` and `getdp`. Then run the following command:
+Install `gmsh` and `getdp`. Download the files needed to run the simulation. Then run the following command:
 
 [source,bash]
 ----
 gmsh -2 -bin helix.geo
-getdp -m helix.msh helix.pro -solve xxx -pos Map_a 
+getdp -m helix.msh helix.pro -solve MagDyn_t_av_Axi -pos Map_a U_av
 ----
 
 [NOTE]
@@ -35,9 +35,12 @@ when generating the mesh that will be used by `getdp`. If you have an error mess
 gnuplot> load "I_vs_t.cmd"
 ----
 
+[NOTE]
+The command file for `gnuplot`may be found link:{attachmentsdir}/aximodel/helix/I-vs_t.cmd[here].
+
 [source,bash]
 ----
-gmsh file.pos
+gmsh testMagDyn_a.pos
 ----
 
 == Computing Self and Mutual Inductances

@@ -1,5 +1,6 @@
 = Formulation
 :stem: latexmath
+:eqnums:
 
 == Differential form of Maxwell's equations
 
@@ -22,20 +23,22 @@ D(r,t) &=& \epsilon_0 E(r,t) + P(r,t)
 
 where : 
 
-stem:[H(r,t)] is the magnetic field intensity,
-stem:[E(r,t)] is the electric field intensity,
-stem:[B(r,t)] is the magnetic flux density,
-stem:[D(r,t)] is the electric flux density,
-stem:[J(r,t)] is the electric current density,
-stem:[\rho(r,t)] is the electric charge density,
-stem:[M(r,t)] is the magnetization,
-stem:[E_i(r,t)] are the impressed electric field,
-stem:[P(r,t)] is the polarization,
-stem:[\mu_0(r,t)] is the permeability of vaccum,
-stem:[\sigma(r,t)] is the conductivity,
-stem:[\epsilon_0(r,t)] is the permittivity of vacuum.
+|===
+|stem:[H(r,t)] | the magnetic field intensity,
+|stem:[E(r,t)] | the electric field intensity,
+|stem:[B(r,t)] | the magnetic flux density,
+|stem:[D(r,t)] | the electric flux density,
+|stem:[J(r,t)] | the electric current density,
+|stem:[\rho(r,t)] | the electric charge density,
+|stem:[M(r,t)] | the magnetization,
+|stem:[E_i(r,t)] | the impressed electric field,
+|stem:[P(r,t)] | the polarization,
+|stem:[\mu_0(r,t)] | the permeability of vaccum,
+|stem:[\sigma(r,t)] | the conductivity,
+|stem:[\epsilon_0(r,t)] | the permittivity of vacuum.
+|===
 
-== The magnetique vector potential and electric scalar potential formulation
+== The magnetic vector and electric scalar potentials formulation
 
 We're interested in simplified equations:
 
@@ -54,16 +57,19 @@ J(r,t) &=& \sigma E(r,t)
 
 The MQS approximation consists in neglecting the so-called displacement current, aka stem:[\frac{\partial D}{\partial t}]. In this context, the equations to solve are:
 
+[[Faraday]][[Ampere]]
 [stem]
 ++++
 \begin{align}
 \nabla \times H(r,t) &=& J(r,t),\label{Ampere} \\
 \nabla \times E(r,t) &=& -\frac{\partial B(r,t)}{\partial t}, \label{Faraday} \\
 B(r,t) &=& \mu_0H(r,t) \\
-D(r,t) &=& \epsilon_0 E(r,t) \\
-J(r,t) &=& \sigma[E(r,t)
+J(r,t) &=& \sigma\,E(r,t)
 \end{align}
 ++++
+
+[NOTE]
+The first two equations are respectively the so-called *Ampere* and *Faraday* equations.
 
 A classical way to solve these equations is to introduce a magnetic potential stem:[A] and a scalar electric potential stem:[V]. As stem:[B] is a divergence free field, we can define stem:[A] as:
 [stem]
@@ -77,11 +83,11 @@ To ensure stem:[A] unicity we will need to add a gauge condition. Most commonly:
 [stem]
 ++++
 \begin{equation*}
-\cdot A = 0
+\nabla \cdot A = 0
 \end{equation*}
 ++++
 
-The Faraday equation stem:[(\ref{Faraday})] may, then, be rewritten as:
+The <<Faraday, Faraday equation>> may, then, be rewritten as:
 [stem]
 ++++
 \begin{equation*}
@@ -93,7 +99,7 @@ We can define the electric scalar potential stem:[V] as:
 [stem]
 ++++
 \begin{equation*}
-E +\frac{\partial A}{\partial t} = -\mathbf{grad} V.
+E +\frac{\partial A}{\partial t} = -\nabla V.
 \end{equation*}
 ++++
 
@@ -101,15 +107,16 @@ It follows that:
 [stem]
 ++++
 \begin{equation*}
-J = \sigma ( -\mathbf{grad} V -\frac{\partial A}{\partial t}).
+J = \sigma ( -\nabla V -\frac{\partial A}{\partial t}).
 \end{equation*}
 ++++
 
-From this expression of the current density, we may rewrite the Ampere equation stem:[(\ref{Ampere})] as:
+From this expression of the current density, we may rewrite the <<Ampere, Ampere equation>> as:
+[[nAmpere]]
 [stem]
 ++++
 \begin{equation}
-\nabla \times (\frac{1}{\mu}\,\nabla \times A) + \sigma  \frac{\partial A}{\partial t} = -\sigma \mathbf{grad} V.\label{nAmpere}
+\nabla \times (\frac{1}{\mu}\,\nabla \times A) + \sigma  \frac{\partial A}{\partial t} = -\sigma \, \nabla V.\quad\text{(1)}\label{nAmpere}
 \end{equation}
 ++++
 
@@ -129,10 +136,12 @@ so :
 ++++
 
 To this equation, we add the conservation of the current density:
+[[nConservation]]
 [stem]
 ++++
 \begin{equation}
-0 = \nabla \cdot (\nabla \times H) = \nabla \cdot (J) = \nabla \cdot (\sigma ( -\mathbf{grad} V -\frac{\partial A}{\partial t}))
+\nabla \cdot (J) = \nabla \cdot (\sigma ( -\nabla V -\frac{\partial A}{\partial t})) = 0\quad\text{(2)}
 \end{equation}\label{nConservation}
 ++++
-stem:[(\ref{nAmpere})] and stem:[(\ref{nConservation})] are the equations that we will solve for the MQS model.
+
+Equations <<nAmpere, (1)>> and <<nConservation, (2)>> are the equations that we will solve for the MQS model.
