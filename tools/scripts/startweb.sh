@@ -58,7 +58,13 @@ antora --stacktrace generate --cache-dir cache --redirect-facility disabled --cl
 VERSION="0.1.0"
 echo "************************************************************"
 echo "Starting WEB server on port 8080"
-sudo npm i -g live-server
+
+npm list -g live-server > /dev/null
+IsInstalled=$?
+if [ ! $IsInstalled ]; then
+   sudo npm i -g live-server
+fi
+
 if [ "${TERM_PROGRAM}" = "vscode" ]; then 
    echo "To access the docs:"
    echo "Tape F1 and Forward port 8080"
