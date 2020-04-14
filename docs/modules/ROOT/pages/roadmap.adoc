@@ -1,0 +1,39 @@
+= Roadmap
+:stem: latexmath
+
+== End of March
+* Beginning of the project, contact with Christophe Trophime and Christophe Prudhomm to talk about the topic (2h)
+
+* Installation and configuration of ressources needed for the project (2h)
+
+== April
+
+* 01/04 : Writing the introduction and context of the project (4h)
+
+* Reading of bibliographical sources about the Maxwell's equations (3h)
+
+* 07/04 : Writing the Maxwell quasi-static modeling (2h30)
+
+* Writing the roadmap, expected time for each steps, and bibliography (2h)
+
+* 14/04 : Report V0 
+
+* 17/04 : Writing the variational formulation of the MQS model (3h)
+
+* End of April : Discretisation selection, solver selection (4h)
+
+== May
+
+* Beginning of May : Learning and appropriation of coding under feel++ (8h)
+
+* Implementation of the model under feel++, unit test development (22h)
+
+* Code verification on test cases and possibles corrections (10h)
+
+* 19/05 : Report V1 (8h)
+
+* Last verification and validation (6h) 
+
+* 29/05 : Report final version (6h)
+
+* Writing the presentation (6h)
