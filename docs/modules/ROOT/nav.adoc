@@ -2,6 +2,7 @@
 * Outline of the project
 ** xref:index.adoc[Introduction]
 * xref:toolboxes:maxwell:mqs/README.adoc[Eddy Currents]
+* xref:formulation.adoc[Formulation]
 * xref:validation.adoc[Validations]
 * xref:appendix.adoc[Appendix]
 
