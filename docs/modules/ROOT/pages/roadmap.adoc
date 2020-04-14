@@ -26,8 +26,10 @@
 
 * Beginning of May : Implementation of the model under feel++ (40h)
 
-* 19/05 : Report V1 (6h)
+* 19/05 : Report V1 (8h)
 
 * Last verification and validation (6h) 
 
 * 29/05 : Report final version (6h)
+
+* Writing the presentation (6h)
