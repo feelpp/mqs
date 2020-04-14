@@ -159,7 +159,7 @@ In our case, we have stem:[R_1=R_2] and stem:[L_1=L_2].
 |           | Value     | Unit 
 | stem:[R]  | stem:[7.5313 10^{-6}]      | Ohm 
 | stem:[L]  | stem:[1.9204 10^{-7}] | Henry 
-| stem:[M]  | stem:[xxxxx}] | Henry 
+| stem:[M]  | stem:[2.6487 10^{-8}] | Henry 
 |===
 
 === Results
