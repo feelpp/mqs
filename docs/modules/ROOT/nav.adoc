@@ -4,8 +4,9 @@
 ** xref:formulation.adoc[Formulation]
 ** xref:validation.adoc[Validations]
 ** xref:appendix.adoc[Appendix]
+* Roadmap
+** xref:roadmap.adoc[Roadmap]
 * References
 ** xref:toolboxes:maxwell:mqs/README.adoc[Eddy Currents]
-** xref:roadmap.adoc[Roadmap]
 //** xref:cases:electric:[Eddy Currents]
 
