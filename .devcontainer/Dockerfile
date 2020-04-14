@@ -44,4 +44,5 @@ RUN apt-get update \
 # Switch back to dialog for any ad-hoc use of apt-get
 ENV DEBIAN_FRONTEND=dialog
 
-RUN npm i -g @antora/cli@2.2 @antora/site-generator-default@2.2; 
+RUN npm i -g @antora/cli@2.2 @antora/site-generator-default@2.2 && \
+    npm i -g asciidoctor-js asciidoctor-plantuml

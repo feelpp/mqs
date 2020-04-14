@@ -1,5 +1,5 @@
 .MQS
 * Outline of the project
-** xref:README.adoc[Introduction]
+** xref:index.adoc[Introduction]
 * xref:toolboxes:maxwell:mqs/README.adoc[Eddy Currents]
 

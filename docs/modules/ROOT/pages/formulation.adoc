@@ -1,0 +1,138 @@
+= Formulation
+:stem: latexmath
+
+== Differential form of Maxwell's equations
+
+Maxwell's equations, are laws of physics, constituting the basic postulates of electromagnetism. They translate, in local form, several theorems that governed electromagnetism, that Maxwell gathered in integral form.
+These equations define relations between the electromagnetic fields and the source elements.
+The differential form of Maxwell's equations is as follows:
+
+[stem]
+++++
+\begin{align*}
+\nabla \times H(r,t) &=& J(r,t) + \frac{\partial D(r,t)}{\partial t} \\
+\nabla \times E(r,t) &=& -\frac{\partial B(r,t)}{\partial t} \\
+\nabla \cdot B(r,t) &=& 0 \\
+\nabla \cdot D(r,t) &=& \rho(r,t) \\
+B(r,t) &=& \mu_0[H(r,t)+M(r,t)] \\
+J(r,t) &=& \sigma[E(r,t)+E_i(r,t)] \\
+D(r,t) &=& \epsilon_0 E(r,t) + P(r,t)
+\end{align*}
+++++
+
+where : 
+
+stem:[H(r,t)] is the magnetic field intensity,
+stem:[E(r,t)] is the electric field intensity,
+stem:[B(r,t)] is the magnetic flux density,
+stem:[D(r,t)] is the electric flux density,
+stem:[J(r,t)] is the electric current density,
+stem:[\rho(r,t)] is the electric charge density,
+stem:[M(r,t)] is the magnetization,
+stem:[E_i(r,t)] are the impressed electric field,
+stem:[P(r,t)] is the polarization,
+stem:[\mu_0(r,t)] is the permeability of vaccum,
+stem:[\sigma(r,t)] is the conductivity,
+stem:[\epsilon_0(r,t)] is the permittivity of vacuum.
+
+== The magnetique vector potential and electric scalar potential formulation
+
+We're interested in simplified equations:
+
+[stem]
+++++
+\begin{align*}
+\nabla \times H(r,t) &=& J(r,t) + \frac{\partial D(r,t)}{\partial t} \\
+\nabla \times E(r,t) &=& -\frac{\partial B(r,t)}{\partial t} \\
+\nabla \cdot B(r,t) &=& 0 \\
+\nabla \cdot D(r,t) &=& 0 \\
+B(r,t) &=& \mu_0H(r,t) \\
+D(r,t) &=& \epsilon_0 E(r,t) \\
+J(r,t) &=& \sigma E(r,t)
+\end{align*}
+++++
+
+The MQS approximation consists in neglecting the so-called displacement current, aka stem:[\frac{\partial D}{\partial t}]. In this context, the equations to solve are:
+
+[stem]
+++++
+\begin{align}
+\nabla \times H(r,t) &=& J(r,t),\label{Ampere} \\
+\nabla \times E(r,t) &=& -\frac{\partial B(r,t)}{\partial t}, \label{Faraday} \\
+B(r,t) &=& \mu_0H(r,t) \\
+D(r,t) &=& \epsilon_0 E(r,t) \\
+J(r,t) &=& \sigma[E(r,t)
+\end{align}
+++++
+
+A classical way to solve these equations is to introduce a magnetic potential stem:[A] and a scalar electric potential stem:[V]. As stem:[B] is a divergence free field, we can define stem:[A] as:
+[stem]
+++++
+\begin{equation*}
+B = \nabla \times A.
+\end{equation*}
+++++
+
+To ensure stem:[A] unicity we will need to add a gauge condition. Most commonly:
+[stem]
+++++
+\begin{equation*}
+\cdot A = 0
+\end{equation*}
+++++
+
+The Faraday equation stem:[(\ref{Faraday})] may, then, be rewritten as:
+[stem]
+++++
+\begin{equation*}
+\nabla \times (E +\frac{\partial A}{\partial t} ) = 0.
+\end{equation*}
+++++
+
+We can define the electric scalar potential stem:[V] as:
+[stem]
+++++
+\begin{equation*}
+E +\frac{\partial A}{\partial t} = -\mathbf{grad} V.
+\end{equation*}
+++++
+
+It follows that:
+[stem]
+++++
+\begin{equation*}
+J = \sigma ( -\mathbf{grad} V -\frac{\partial A}{\partial t}).
+\end{equation*}
+++++
+
+From this expression of the current density, we may rewrite the Ampere equation stem:[(\ref{Ampere})] as:
+[stem]
+++++
+\begin{equation}
+\nabla \times (\frac{1}{\mu}\,\nabla \times A) + \sigma  \frac{\partial A}{\partial t} = -\sigma \mathbf{grad} V.\label{nAmpere}
+\end{equation}
+++++
+
+because :
+[stem]
+++++
+\begin{equation*}
+B = \nabla \times A = \mu H
+\end{equation*}
+++++
+so : 
+[stem]
+++++
+\begin{equation*}
+\nabla \times H = \nabla \times ( \frac{1}{\mu} \nabla \times A)
+\end{equation*}
+++++
+
+To this equation, we add the conservation of the current density:
+[stem]
+++++
+\begin{equation}
+0 = \nabla \cdot (\nabla \times H) = \nabla \cdot (J) = \nabla \cdot (\sigma ( -\mathbf{grad} V -\frac{\partial A}{\partial t}))
+\end{equation}\label{nConservation}
+++++
+stem:[(\ref{nAmpere})] and stem:[(\ref{nConservation})] are the equations that we will solve for the MQS model.
