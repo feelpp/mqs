@@ -6,5 +6,6 @@
 ** xref:appendix.adoc[Appendix]
 * References
 ** xref:toolboxes:maxwell:mqs/README.adoc[Eddy Currents]
+** xref:roadmap.adoc[Roadmap]
 //** xref:cases:electric:[Eddy Currents]
 
