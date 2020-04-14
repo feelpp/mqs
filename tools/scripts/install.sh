@@ -93,10 +93,10 @@ cmake ${SRCDIR} \
  -DCMAKE_fortran_COMPILER:FILEPATH=/usr/bin/${FC} \
  -DCMAKE_VERBOSE_MAKEFILE=ON \
  -DCMAKE_BUILD_TYPE=Release \
- -DCMAKE_INSTALL_PREFIX=${INSTALLDIR}
+ -DCMAKE_INSTALL_PREFIX=${INSTALLDIR} > cmake.log 2>&1
 
-make -j${NJOBS}
-make install
+make -j${NJOBS} > make.log 2>&1
+make install > install.log 2>&1
 
 if [ "${TESTON}" = "1" ]; then
    mkdir check
@@ -109,12 +109,12 @@ if [ "${WEBON}" = "1" ]; then
    VERSION="0.1.0"
    echo "************************************************************"
    echo "Starting WEB server on port 8080"
-   sudo npm -i live-server
+   sudo npm i -g live-server
    if [ "${TERM_PROGRAM}" = "vscode" ]; then 
       echo "To access the docs:"
       echo "Tape F1 and Forward port 8080"
    fi
-   nohup live-server --wait=1000 ${INSTALLDIR}/share/mqs/mqs/${VERSION} > output.log &
+   nohup live-server --wait=1000 ${INSTALLDIR}/share/doc/mqs > output.log &
    
    # get PID
    WEBPID=$(ps -ef|grep /usr/local/bin/live-server | head -1 |  tr -s ' ' | cut -d' ' -f 2)

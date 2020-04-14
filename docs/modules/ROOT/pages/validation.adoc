@@ -1,6 +1,7 @@
-= Validation
+= Validations
 :stem: latexmath
 
+== Introduction
 Two simple test cases are used to validate the formulation:
 
 * a single magnet,
