@@ -1,6 +1,6 @@
+build*/
 node_modules/
 install/
-build/
 docs/cache/
 docs/public/
 *.bak
