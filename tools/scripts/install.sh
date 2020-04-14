@@ -119,7 +119,7 @@ if [ "${WEBON}" = "1" ]; then
    # get PID
    WEBPID=$(ps -ef|grep /usr/local/bin/live-server | head -1 |  tr -s ' ' | cut -d' ' -f 2)
    
-   echo "To view the docs; run Firefox in private mode and load localhost:8080"
+   echo "To view the docs; run Firefox in private mode and load localhost:8080/mqs/${VERSION}"
    echo "If you make change to the docs, do not forget to run make docs in ${BUILDDIR}"
    echo "To stop the server: kill $WEBPID"
    echo "************************************************************"

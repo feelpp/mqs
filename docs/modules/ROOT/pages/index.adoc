@@ -27,8 +27,4 @@ phenomena coming into play in this period is therefore necessary. The principle 
 model of Maxwell's equations, to accurately model the starting and stopping of magnets, including the skin effects that are created during 
 these moments.
 
-** xref:formulation.adoc[Formulation]
-** xref:validation.adoc[Validations]
-** xref:appendix.adoc[Appendix]
-
 
