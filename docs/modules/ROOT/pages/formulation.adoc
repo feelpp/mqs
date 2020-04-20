@@ -154,7 +154,7 @@ Considerons de plus l'ensemble :
 [stem]
 ++++
 \begin{equation}
-H_{rot}(\Omega) = \{v \in H^1(\Omega)| \nabla \times v \in L^2(\Omega)\}
+H_{curl}(\Omega) = \{v \in L^2(\Omega)| \nabla \times v \in L^2(\Omega)\}
 \end{equation}
 ++++
 
@@ -179,25 +179,16 @@ Qui peux se réecrire :
 En utilisant la relation : 
 [stem]
 ++++
-\Delta = \nabla(\nabla \cdot) - \nabla \times(\nabla \times)
+\nabla \cdot (u \times v) = v (\nabla \times u) - u (\nabla \times v)
 ++++
 
 on en déduit que : 
 [stem]
 ++++
 \begin{equation}
-\int_{\Omega} \frac{1}{\mu} \, \phi \nabla(\nabla \cdot A) - \int_{\Omega} \frac{1}{\mu} \phi \Delta A = - \int_{\Omega} \phi(\sigma \, \nabla V + \frac{\partial A}{\partial t})
+\int_{\Omega} \frac{1}{\mu} \, \nabla \times \phi \nabla \times A + \int_{\Omega} \frac{1}{\mu} \nabla \cdot (\phi \nabla \times A) = - \int_{\Omega} \phi(\sigma \, \nabla V + \frac{\partial A}{\partial t})
 \end{equation}
 ++++
-
-En utilisant la formule de Green on obtient :
-[stem]
-++++
-\begin{equation}
-\int_{\Omega} \frac{1}{\mu} \, \phi \nabla(\nabla \cdot A) + \int_{\Omega} \frac{1}{\mu} \nabla \phi \nabla A - \int_{\Gamma} \frac{\partial \phi}{\partial n} A = - \int_{\Omega} \phi(\sigma \, \nabla V + \frac{\partial A}{\partial t})
-\end{equation}
-++++
-
 
 De la même facon, considerons l'équation <<nConservation, (2)>> : En multipliant par stem:[\psi \in H_1(\Omega)] et en intégrant sur stem:[\Omega] on obtient : 
 
