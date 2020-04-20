@@ -204,7 +204,7 @@ De la même facon, considerons l'équation <<nConservation, (2)>> : En multiplia
 [stem]
 ++++
 \begin{equation}
-\int_{\Gamma} \psi \nabla \cdot (\sigma ( -\nabla V -\frac{\partial A}{\partial t})) = 0
+\int_{\Omega} \psi \nabla \cdot (\sigma ( -\nabla V -\frac{\partial A}{\partial t})) = 0
 \end{equation}
 ++++
 
@@ -220,7 +220,7 @@ on obtient :
 [stem]
 ++++
 \begin{equation}
-\int_{\Gamma} \nabla \cdot ( \psi \sigma ( -\nabla V -\frac{\partial A}{\partial t})) - \int_{\Gamma} \sigma ( -\nabla V -\frac{\partial A}{\partial t}) \nabla \psi = 0
+\int_{\Omega} \nabla \cdot ( \psi \sigma ( -\nabla V -\frac{\partial A}{\partial t})) - \int_{\Omega} \sigma ( -\nabla V -\frac{\partial A}{\partial t}) \nabla \psi = 0
 \end{equation} 
 ++++
 
@@ -229,6 +229,6 @@ En utilisant la formule de la divergence on obtient finalement:
 [stem]
 ++++
 \begin{equation}
-\int_{\Gamma} \psi \sigma ( -\nabla V -\frac{\partial A}{\partial t}) \cdot n - \int_{\Gamma} \sigma ( -\nabla V -\frac{\partial A}{\partial t}) \nabla \psi = 0
+\int_{\Omega} \psi \sigma ( -\nabla V -\frac{\partial A}{\partial t}) \cdot n - \int_{\Omega} \sigma ( -\nabla V -\frac{\partial A}{\partial t}) \nabla \psi = 0
 \end{equation} 
 ++++
