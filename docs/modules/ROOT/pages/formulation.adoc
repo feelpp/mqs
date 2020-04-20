@@ -145,3 +145,90 @@ To this equation, we add the conservation of the current density:
 ++++
 
 Equations <<nAmpere, (1)>> and <<nConservation, (2)>> are the equations that we will solve for the MQS model.
+
+== Weak formulation
+
+Notons stem:[\Omega] le domaine, comprenant le conducteur et l'air, et notons stem:[\Gamma] le bord de ce domaine, à savoir le bord de l'air,l'entré et la sortie.
+
+Considerons de plus l'ensemble :
+[stem]
+++++
+\begin{equation}
+H_{rot}(\Omega) = \{v \in H^1(\Omega)| \nabla \times v \in L^2(\Omega)\}
+\end{equation}
+++++
+
+On considere maintenant l'équation <<nAmpere, (1)>> : En multipliant par stem:[\phi \in H_{rot}(\Omega)] et en intégrant sur stem:[\Omega] on obtient : 
+
+[stem]
+++++
+\begin{equation}
+\int_{\Omega} \phi(\nabla \times (\frac{1}{\mu}\,\nabla \times A) + \sigma  \frac{\partial A}{\partial t}) = \int_{\Omega} \phi(-\sigma \, \nabla V)
+\end{equation}
+++++
+
+Qui peux se réecrire : 
+
+[stem]
+++++
+\begin{equation}
+\int_{\Omega} \frac{1}{\mu} \, \phi\nabla \times (\nabla \times A) = - \int_{\Omega} \phi(\sigma \, \nabla V + \frac{\partial A}{\partial t})
+\end{equation}
+++++
+
+En utilisant la relation : 
+[stem]
+++++
+\Delta = \nabla(\nabla \cdot) - \nabla \times(\nabla \times)
+++++
+
+on en déduit que : 
+[stem]
+++++
+\begin{equation}
+\int_{\Omega} \frac{1}{\mu} \, \phi \nabla(\nabla \cdot A) - \int_{\Omega} \frac{1}{\mu} \phi \Delta A = - \int_{\Omega} \phi(\sigma \, \nabla V + \frac{\partial A}{\partial t})
+\end{equation}
+++++
+
+En utilisant la formule de Green on obtient :
+[stem]
+++++
+\begin{equation}
+\int_{\Omega} \frac{1}{\mu} \, \phi \nabla(\nabla \cdot A) + \int_{\Omega} \frac{1}{\mu} \nabla \phi \nabla A - \int_{\Gamma} \frac{\partial \phi}{\partial n} A = - \int_{\Omega} \phi(\sigma \, \nabla V + \frac{\partial A}{\partial t})
+\end{equation}
+++++
+
+
+De la même facon, considerons l'équation <<nConservation, (2)>> : En multipliant par stem:[\psi \in H_1(\Omega)] et en intégrant sur stem:[\Omega] on obtient : 
+
+[stem]
+++++
+\begin{equation}
+\int_{\Gamma} \psi \nabla \cdot (\sigma ( -\nabla V -\frac{\partial A}{\partial t})) = 0
+\end{equation}
+++++
+
+En utilisant la relation : 
+
+[stem]
+++++
+\nabla \cdot (uv) = v\nabla u + u \nabla \cdot v
+++++
+
+on obtient : 
+
+[stem]
+++++
+\begin{equation}
+\int_{\Gamma} \nabla \cdot ( \psi \sigma ( -\nabla V -\frac{\partial A}{\partial t})) - \int_{\Gamma} \sigma ( -\nabla V -\frac{\partial A}{\partial t}) \nabla \psi = 0
+\end{equation} 
+++++
+
+En utilisant la formule de la divergence on obtient finalement: 
+
+[stem]
+++++
+\begin{equation}
+\int_{\Gamma} \psi \sigma ( -\nabla V -\frac{\partial A}{\partial t}) \cdot n - \int_{\Gamma} \sigma ( -\nabla V -\frac{\partial A}{\partial t}) \nabla \psi = 0
+\end{equation} 
+++++
