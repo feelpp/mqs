@@ -148,22 +148,22 @@ Equations <<nAmpere, (1)>> and <<nConservation, (2)>> are the equations that we 
 
 == Weak formulation
 
-Let us note stem:[\Omega] the domain, comprising the conductor and the air, and let us note  stem:[\Gamma] the edge of this domain, namely the edge of the air, the inlet and the outlet.
+Let us note stem:[\Omega] the domain, comprising the conductor and the air, and let us note  stem:[\Gamma] the edge of this domain, namely the edge of the air, the inlet and the outlet. Let us not stem:[\Gamma_D] the edges with Dirichlet boundary condition, and stem:[\Gamma_N] the edges with Neumann bondary condition, such that stem:[\Gamma = \Gamma_D \cup \Gamma_N].
 
 Let's look at the set:
 [stem]
 ++++
 \begin{equation}
-H_{curl}(\Omega) = \{v \in L^2(\Omega)| \nabla \times v \in L^2(\Omega)\}
+H^{curl}(\Omega) = \{v \in L^2(\Omega)| \nabla \times v \in L^2(\Omega)\}
 \end{equation}
 ++++
 
-We now consider the equation <<nAmpere, (1)>> : By multiplying by stem:[\phi \in H_{rot}(\Omega)] and by integrating on stem:[\Omega] we get : 
+We now consider the equation <<nAmpere, (1)>> : By making the scalar product with stem:[\phi \in H^{curl}(\Omega)] and by integrating on stem:[\Omega] we get : 
 
 [stem]
 ++++
 \begin{equation}
-\int_{\Omega} \phi(\nabla \times (\frac{1}{\mu}\,\nabla \times A) + \sigma  \frac{\partial A}{\partial t}) = \int_{\Omega} \phi(-\sigma \, \nabla V)
+\int_{\Omega} \phi \cdot (\nabla \times (\frac{1}{\mu}\,\nabla \times A) + \sigma  \frac{\partial A}{\partial t}) = \int_{\Omega} \phi \cdot (-\sigma \, \nabla V)
 \end{equation}
 ++++
 
@@ -172,21 +172,21 @@ Who can rewrite themselves:
 [stem]
 ++++
 \begin{equation}
-\int_{\Omega} \frac{1}{\mu} \, \phi\nabla \times (\nabla \times A) = - \int_{\Omega} \phi(\sigma \, \nabla V + \frac{\partial A}{\partial t})
+\int_{\Omega} \frac{1}{\mu} \, \phi \cdot \nabla \times (\nabla \times A) = - \int_{\Omega} \phi \cdot (\sigma \, \nabla V + \frac{\partial A}{\partial t})
 \end{equation}
 ++++
 
 Using the relationship: 
 [stem]
 ++++
-\nabla \cdot (u \times v) = v (\nabla \times u) - u (\nabla \times v)
+\nabla \cdot (u \times v) = v \cdot (\nabla \times u) - u \cdot (\nabla \times v)
 ++++
 
 we deduce that:  
 [stem]
 ++++
 \begin{equation}
-\int_{\Omega} \frac{1}{\mu} \, (\nabla \times \phi) \cdot (\nabla \times A) + \int_{\Omega} \frac{1}{\mu} \nabla \cdot (\phi \nabla \times A) = - \int_{\Omega} \phi(\sigma \, \nabla V + \frac{\partial A}{\partial t})
+\int_{\Omega} \frac{1}{\mu} \, (\nabla \times \phi) \cdot (\nabla \times A) + \int_{\Omega} \frac{1}{\mu} \nabla \cdot (\phi \cross (\nabla \times A)) = - \int_{\Omega} \phi \cdot (\sigma \, \nabla V + \frac{\partial A}{\partial t})
 \end{equation}
 ++++
 
@@ -195,27 +195,36 @@ Using the divergence theorem we get:
 [stem]
 ++++
 \begin{equation}
-\int_{\Omega} \frac{1}{\mu} \, (\nabla \times \phi) \cdot (\nabla \times A) + \int_{\Gamma} \frac{1}{\mu} \phi \cdot (\nabla \times A)\cdot n = - \int_{\Omega} \phi(\sigma \, \nabla V + \frac{\partial A}{\partial t})
+\int_{\Omega} \frac{1}{\mu} \, (\nabla \times \phi) \cdot (\nabla \times A) + \int_{\Gamma_D} \frac{1}{\mu} (\phi \cross (\nabla \times A))\cdot n + \int_{\Gamma_N} \frac{1}{\mu} (\phi \cross (\nabla \times A))\cdot n = - \int_{\Omega} \phi \cdot (\sigma \, \nabla V + \frac{\partial A}{\partial t})
 \end{equation}
 ++++
 
-Dirichlet's conditions dictate that stem:[\int_{\Gamma} \frac{1}{\mu} \phi \cdot (\nabla \times A)\cdot n = 0].
+By performing a circular permutation on stem:[\Gamma_N] and stem:[\Gamma_D] we have : 
+
+[stem]
+++++
+\begin{equation}
+\int_{\Omega} \frac{1}{\mu} \, (\nabla \times \phi) \cdot (\nabla \times A) + \int_{\Gamma_D} \frac{1}{\mu} (\phi \cross n) \cdot (\nabla \times A) + \int_{\Gamma_N} \frac{1}{\mu} ((\nabla \times A) \cross n ) \cdot \phi = - \int_{\Omega} \phi \cdot (\sigma \, \nabla V + \frac{\partial A}{\partial t})
+\end{equation}
+++++
+
+Neumann's conditions dictate that stem:[(\nabla \times A) \cross n = 0] on stem:[\Gamma_N].
 
 We finally get the weak formulation:
 
 [stem]
 ++++
 \begin{equation}
-\int_{\Omega} \frac{1}{\mu} \, (\nabla \times \phi) \cdot (\nabla \times A) = - \int_{\Omega} \phi(\sigma \, \nabla V + \frac{\partial A}{\partial t})
+\int_{\Omega} \frac{1}{\mu} \, (\nabla \times \phi) \cdot (\nabla \times A) + \int_{\Gamma_D} \frac{1}{\mu} (\phi \cross n) \cdot (\nabla \times A) = - \int_{\Omega} \phi \cdot (\sigma \, \nabla V + \frac{\partial A}{\partial t})
 \end{equation}
 ++++
 
-By the same way, let's consider the equation <<nConservation, (2)>> : Multiplying by stem:[\psi \in H_1(\Omega)] and integrating over stem:[\Omega] we get : 
+By the same way, let's consider the equation <<nConservation, (2)>> : By making the scalar product with stem:[\psi \in H^1(\Omega)] and integrating over stem:[\Omega] we get : 
 
 [stem]
 ++++
 \begin{equation}
-\int_{\Omega} \psi \nabla \cdot (\sigma ( -\nabla V -\frac{\partial A}{\partial t})) = 0
+\int_{\Omega} \psi \cdot \nabla \cdot (\sigma ( -\nabla V -\frac{\partial A}{\partial t})) = 0
 \end{equation}
 ++++
 
@@ -223,7 +232,7 @@ Using the relationship:
 
 [stem]
 ++++
-\nabla \cdot (uv) = v\nabla u + u \nabla \cdot v
+\nabla \cdot (u \dot v) = v \cdot \nabla u + u \nabla \cdot v
 ++++
 
 we get : 
@@ -231,7 +240,7 @@ we get :
 [stem]
 ++++
 \begin{equation}
-\int_{\Omega} \nabla \cdot ( \psi \sigma ( -\nabla V -\frac{\partial A}{\partial t})) - \int_{\Omega} \sigma ( -\nabla V -\frac{\partial A}{\partial t}) \nabla \psi = 0
+\int_{\Omega} \nabla \cdot (\sigma \psi \cdot ( -\nabla V -\frac{\partial A}{\partial t})) - \int_{\Omega} \sigma ( -\nabla V -\frac{\partial A}{\partial t}) \cdot \nabla \psi = 0
 \end{equation} 
 ++++
 
@@ -240,6 +249,6 @@ By using the formula of divergence we finally get:
 [stem]
 ++++
 \begin{equation}
-\int_{\Gamma} \psi \sigma ( -\nabla V -\frac{\partial A}{\partial t}) \cdot n - \int_{\Omega} \sigma ( -\nabla V -\frac{\partial A}{\partial t}) \nabla \psi = 0
+\int_{\Gamma} \sigma \psi \cdot ( -\nabla V -\frac{\partial A}{\partial t}) \cdot n - \int_{\Omega} \sigma ( -\nabla V -\frac{\partial A}{\partial t}) \cdot \nabla \psi = 0
 \end{equation} 
 ++++
