@@ -158,7 +158,16 @@ H^{curl}(\Omega) = \{v \in L^2(\Omega)| \nabla \times v \in L^2(\Omega)\}
 \end{equation}
 ++++
 
-We now consider the equation <<nAmpere, (1)>> : By making the scalar product with stem:[\phi \in H^{curl}(\Omega)] and by integrating on stem:[\Omega] we get : 
+and let define the set containing Dirichlet's boundary condition :
+
+[stem]
+++++
+\begin{equation}
+H_{A_D}^{curl}(\Omega) = \{v \in H^{curl}(\Omega)| v \times n = A_D \text{ on } \Gamma_D\}
+\end{equation}
+++++
+
+We now consider the equation <<nAmpere, (1)>> : By making the scalar product with stem:[\phi \in H_{A_D}^{curl}(\Omega)] and by integrating on stem:[\Omega] we get : 
 
 [stem]
 ++++
@@ -208,14 +217,14 @@ By performing a circular permutation on stem:[\Gamma_N] and stem:[\Gamma_D] we h
 \end{equation}
 ++++
 
-Neumann's conditions dictate that stem:[(\nabla \times A) \times n = 0] on stem:[\Gamma_N].
+Neumann's conditions dictate that stem:[(\nabla \times A) \times n = 0] on stem:[\Gamma_N], and Dirichlet's conditions dictate that stem:[ \phi \times n = A_D] .
 
 We finally get the weak formulation:
 
 [stem]
 ++++
 \begin{equation}
-\int_{\Omega} \frac{1}{\mu} \, (\nabla \times \phi) \cdot (\nabla \times A) + \int_{\Gamma_D} \frac{1}{\mu} (\phi \times n) \cdot (\nabla \times A) = - \int_{\Omega} \phi \cdot (\sigma \, \nabla V + \frac{\partial A}{\partial t})
+\int_{\Omega} \frac{1}{\mu} \, (\nabla \times \phi) \cdot (\nabla \times A) + \int_{\Gamma_D} \frac{1}{\mu} A_D \cdot (\nabla \times A) = - \int_{\Omega} \phi \cdot (\sigma \, \nabla V + \frac{\partial A}{\partial t})
 \end{equation}
 ++++
 
@@ -232,7 +241,7 @@ Using the relationship:
 
 [stem]
 ++++
-\nabla \cdot (u \dot v) = v \cdot \nabla u + u \nabla \cdot v
+\nabla \cdot (u \cdot v) = v \cdot \nabla u + u \nabla \cdot v
 ++++
 
 we get : 
