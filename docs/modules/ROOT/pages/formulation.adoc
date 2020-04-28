@@ -148,7 +148,7 @@ Equations <<nAmpere, (1)>> and <<nConservation, (2)>> are the equations that we 
 
 == Weak formulation
 
-Let us note stem:[\Omega] the domain, comprising the conductor stem:[\Omega_C] and the air stem:[\Omega_C], and let us note stem:[\Gamma] the edge of this domain, comprising the edge of the air stem:[\Gamma_A], the inlet stem:[\Gamma_I] and the outlet stem:[\Gamma_O]. To simplify, let us not stem:[\Gamma_D] the edges with Dirichlet boundary condition, and stem:[\Gamma_N] the edges with Neumann bondary condition, such that stem:[\Gamma = \Gamma_D \cup \Gamma_N].
+Let us note stem:[\Omega] the domain, comprising the conductor stem:[\Omega_C] and the air stem:[\Omega_A], and let us note stem:[\Gamma] the edge of this domain, comprising the edge of the air stem:[\Gamma_A], the inlet stem:[\Gamma_I] and the outlet stem:[\Gamma_O]. To simplify, let us note stem:[\Gamma_D] the edges with Dirichlet boundary condition, and stem:[\Gamma_N] the edges with Neumann bondary condition, such that stem:[\Gamma = \Gamma_D \cup \Gamma_N].
 
 image:Weak_f/domain.png[geometry,50%]
 
@@ -176,7 +176,7 @@ We now consider the equation <<nAmpere, (1)>> : By making the scalar product wit
 \begin{equation}
 \int_{\Omega} \phi \cdot (\nabla \times (\frac{1}{\mu}\,\nabla \times A) + \sigma  \frac{\partial A}{\partial t}) = \int_{\Omega_C} \phi \cdot (-\sigma \, \nabla V)
 \end{equation}
-++++s
+++++
 
 Using the relationship: 
 [stem]
