@@ -1,0 +1,53 @@
+Start testing: May 06 17:12 CEST
+----------------------------------------------------------
+2/2 Testing: feelpp_mqs_mqs-mqs-1-np-1
+2/2 Test: feelpp_mqs_mqs-mqs-1-np-1
+Command: "/home/anki/csmi/mqs/build/src/feelpp_mqs_mqs" "feelpp_p_mqs"
+Directory: /home/anki/csmi/mqs/build/src
+"feelpp_mqs_mqs-mqs-1-np-1" start time: May 06 17:12 CEST
+Output:
+----------------------------------------------------------
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+E0506 17:12:16.178189 1436921 environment.cpp:1340] Some options (1) were not recognized.
+E0506 17:12:16.178273 1436921 environment.cpp:1341] We remove them from Feel++ options management system and pass them to PETSc/SLEPc
+E0506 17:12:16.178280 1436921 environment.cpp:1342] and other third party libraries
+E0506 17:12:16.178284 1436921 environment.cpp:1346]   |- unrecognized option: feelpp_p_mqs
+[ Starting Feel++ ] application mqs version 0.109.0-alpha.10 date 2020-May-06
+ . mqs files are stored in /home/anki/feel/mqs/np_1
+ .. logfiles :/home/anki/feel/mqs/np_1/logs
+[env] Time : 0.0402893s
+[ Stopping Feel++ ] application mqs execution time 0.0402893s
+<end of output>
+Test time =   0.83 sec
+----------------------------------------------------------
+Test Passed.
+"feelpp_mqs_mqs-mqs-1-np-1" end time: May 06 17:12 CEST
+"feelpp_mqs_mqs-mqs-1-np-1" time elapsed: 00:00:00
+----------------------------------------------------------
+
+1/2 Testing: feelpp_mqs_mqs-mqs-1-np-6
+1/2 Test: feelpp_mqs_mqs-mqs-1-np-6
+Command: "/usr/bin/mpiexec" "-n" "6" "/home/anki/csmi/mqs/build/src/feelpp_mqs_mqs" "feelpp_p_mqs"
+Directory: /home/anki/csmi/mqs/build/src
+"feelpp_mqs_mqs-mqs-1-np-6" start time: May 06 17:12 CEST
+Output:
+----------------------------------------------------------
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+E0506 17:12:16.354429 1436925 environment.cpp:1340] Some options (1) were not recognized.
+E0506 17:12:16.354511 1436925 environment.cpp:1341] We remove them from Feel++ options management system and pass them to PETSc/SLEPc
+E0506 17:12:16.354516 1436925 environment.cpp:1342] and other third party libraries
+E0506 17:12:16.354518 1436925 environment.cpp:1346]   |- unrecognized option: feelpp_p_mqs
+[ Starting Feel++ ] [32mapplication mqs version 0.109.0-alpha.10 date 2020-May-06[00m
+[31m . mqs files are stored in [31m/home/anki/feel/mqs/np_6[00m
+ .. logfiles :/home/anki/feel/mqs/np_6/logs
+[env] Time : 0.0391937s
+[ Stopping Feel++ ] [32mapplication mqs execution time 0.0391937s[00m
+<end of output>
+Test time =   1.00 sec
+----------------------------------------------------------
+Test Passed.
+"feelpp_mqs_mqs-mqs-1-np-6" end time: May 06 17:12 CEST
+"feelpp_mqs_mqs-mqs-1-np-6" time elapsed: 00:00:01
+----------------------------------------------------------
+
+End testing: May 06 17:12 CEST
