@@ -466,3 +466,27 @@ Run Build Command(s):/usr/bin/ninja cmTC_8444b && [1/2] Building C object CMakeF
 
 
 
+Determining if the function SCOTCH_graphInit exists passed with the following output:
+Change Dir: /home/anki/csmi/mqs/build/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/ninja cmTC_239f1 && [1/2  50% :: 0.086] Building C object CMakeFiles/cmTC_239f1.dir/CheckFunctionExists.c.o
+[2/2 100% :: 0.160] Linking C executable cmTC_239f1
+
+
+
+Determining if the function SCOTCH_graphInit exists passed with the following output:
+Change Dir: /home/anki/csmi/mqs/build/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/ninja cmTC_0a86e && [1/2] Building C object CMakeFiles/cmTC_0a86e.dir/CheckFunctionExists.c.o
+[2/2] Linking C executable cmTC_0a86e
+
+
+
+Determining if the function SCOTCH_graphInit exists passed with the following output:
+Change Dir: /home/anki/csmi/mqs/build/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/ninja cmTC_94fee && [1/2  50% :: 0.074] Building C object CMakeFiles/cmTC_94fee.dir/CheckFunctionExists.c.o
+[2/2 100% :: 0.155] Linking C executable cmTC_94fee
+
+
+

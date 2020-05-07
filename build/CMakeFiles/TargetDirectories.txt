@@ -21,13 +21,3 @@
 /home/anki/csmi/mqs/build/src/CMakeFiles/rebuild_cache.dir
 /home/anki/csmi/mqs/build/src/CMakeFiles/package.dir
 /home/anki/csmi/mqs/build/src/CMakeFiles/feelpp_mqs_feelpp2d.dir
-/home/anki/csmi/mqs/build/docs/CMakeFiles/install/strip.dir
-/home/anki/csmi/mqs/build/docs/CMakeFiles/install/local.dir
-/home/anki/csmi/mqs/build/docs/CMakeFiles/edit_cache.dir
-/home/anki/csmi/mqs/build/docs/CMakeFiles/test.dir
-/home/anki/csmi/mqs/build/docs/CMakeFiles/package_source.dir
-/home/anki/csmi/mqs/build/docs/CMakeFiles/install.dir
-/home/anki/csmi/mqs/build/docs/CMakeFiles/list_install_components.dir
-/home/anki/csmi/mqs/build/docs/CMakeFiles/rebuild_cache.dir
-/home/anki/csmi/mqs/build/docs/CMakeFiles/package.dir
-/home/anki/csmi/mqs/build/docs/CMakeFiles/doc.dir

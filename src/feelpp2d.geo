@@ -12,6 +12,8 @@ Line (2)={2,3};
 Line (3)={3,4};
 Line (4)={4,1};
 // Definition de la surface
-Line Loop (1)={1,2,3,4} ;
+Curve Loop (1)={1,2,3,4} ;
 Plane Surface (1)={1};
-Physical Surface (1)={1};
+
+Physical Curve ("Gamma") = {1,2,3,4};
+Physical Surface ("Omega")={1};

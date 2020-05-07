@@ -295,136 +295,7 @@ build src/feelpp_mqs_feelpp2d: CXX_EXECUTABLE_LINKER__feelpp_mqs_feelpp2d src/CM
   TARGET_PDB = feelpp_mqs_feelpp2d.dbg
 
 # =============================================================================
-# Write statements declared in CMakeLists.txt:
-# /home/anki/csmi/mqs/CMakeLists.txt
-# =============================================================================
-
-
-#############################################
-# Utility command for install/strip
-
-build docs/CMakeFiles/install/strip.util: CUSTOM_COMMAND docs/all
-  COMMAND = cd /home/anki/csmi/mqs/build/docs && /usr/bin/cmake -DCMAKE_INSTALL_DO_STRIP=1 -P cmake_install.cmake
-  DESC = Installing the project stripped...
-  pool = console
-  restat = 1
-
-build docs/install/strip: phony docs/CMakeFiles/install/strip.util
-
-
-#############################################
-# Utility command for install/local
-
-build docs/CMakeFiles/install/local.util: CUSTOM_COMMAND docs/all
-  COMMAND = cd /home/anki/csmi/mqs/build/docs && /usr/bin/cmake -DCMAKE_INSTALL_LOCAL_ONLY=1 -P cmake_install.cmake
-  DESC = Installing only the local directory...
-  pool = console
-  restat = 1
-
-build docs/install/local: phony docs/CMakeFiles/install/local.util
-
-
-#############################################
-# Utility command for edit_cache
-
-build docs/CMakeFiles/edit_cache.util: CUSTOM_COMMAND
-  COMMAND = cd /home/anki/csmi/mqs/build/docs && /usr/bin/cmake -E echo No\ interactive\ CMake\ dialog\ available.
-  DESC = No interactive CMake dialog available...
-  restat = 1
-
-build docs/edit_cache: phony docs/CMakeFiles/edit_cache.util
-
-
-#############################################
-# Utility command for test
-
-build docs/CMakeFiles/test.util: CUSTOM_COMMAND
-  COMMAND = cd /home/anki/csmi/mqs/build/docs && /usr/bin/ctest --force-new-ctest-process
-  DESC = Running tests...
-  pool = console
-  restat = 1
-
-build docs/test: phony docs/CMakeFiles/test.util
-
-
-#############################################
-# Utility command for package_source
-
-build docs/CMakeFiles/package_source.util: CUSTOM_COMMAND
-  COMMAND = cd /home/anki/csmi/mqs/build && /usr/bin/cpack --config ./CPackSourceConfig.cmake /home/anki/csmi/mqs/build/CPackSourceConfig.cmake
-  DESC = Run CPack packaging tool for source...
-  pool = console
-  restat = 1
-
-build docs/package_source: phony docs/CMakeFiles/package_source.util
-
-
-#############################################
-# Utility command for install
-
-build docs/CMakeFiles/install.util: CUSTOM_COMMAND docs/all
-  COMMAND = cd /home/anki/csmi/mqs/build/docs && /usr/bin/cmake -P cmake_install.cmake
-  DESC = Install the project...
-  pool = console
-  restat = 1
-
-build docs/install: phony docs/CMakeFiles/install.util
-
-
-#############################################
-# Utility command for list_install_components
-
-build docs/list_install_components: phony
-
-
-#############################################
-# Utility command for rebuild_cache
-
-build docs/CMakeFiles/rebuild_cache.util: CUSTOM_COMMAND
-  COMMAND = cd /home/anki/csmi/mqs/build/docs && /usr/bin/cmake -S/home/anki/csmi/mqs -B/home/anki/csmi/mqs/build
-  DESC = Running CMake to regenerate build system...
-  pool = console
-  restat = 1
-
-build docs/rebuild_cache: phony docs/CMakeFiles/rebuild_cache.util
-
-
-#############################################
-# Utility command for package
-
-build docs/CMakeFiles/package.util: CUSTOM_COMMAND docs/all
-  COMMAND = cd /home/anki/csmi/mqs/build && /usr/bin/cpack --config ./CPackConfig.cmake
-  DESC = Run CPack packaging tool...
-  pool = console
-  restat = 1
-
-build docs/package: phony docs/CMakeFiles/package.util
-
-
-#############################################
-# Utility command for doc
-
-build docs/doc: phony docs/CMakeFiles/doc ../docs/public docs/ALL
-
-
-#############################################
-# Phony custom command for docs/CMakeFiles/doc
-
-build docs/CMakeFiles/doc: phony ../docs/public
-
-
-#############################################
-# Custom command for ../docs/public
-
-build ../docs/public docs/ALL: CUSTOM_COMMAND
-  COMMAND = cd /home/anki/csmi/mqs/docs && /usr/bin/npm run antora
-  DESC = Building documentation...
-  restat = 1
-
-# =============================================================================
 # Target aliases.
-
-build doc: phony docs/doc
 
 build feelpp_mqs_feelpp2d: phony src/feelpp_mqs_feelpp2d
 
@@ -436,14 +307,7 @@ build feelpp_mqs_feelpp2d: phony src/feelpp_mqs_feelpp2d
 #############################################
 # Folder: /home/anki/csmi/mqs/build
 
-build all: phony src/all docs/all
-
-# =============================================================================
-
-#############################################
-# Folder: /home/anki/csmi/mqs/build/docs
-
-build docs/all: phony docs/doc
+build all: phony src/all
 
 # =============================================================================
 
@@ -464,14 +328,14 @@ default all
 #############################################
 # Re-run CMake if any of its inputs changed.
 
-build build.ninja: RERUN_CMAKE | ../CMakeLists.txt ../docs/CMakeLists.txt ../src/CMakeLists.txt /usr/share/cmake-3.16/Modules/CMakeCInformation.cmake /usr/share/cmake-3.16/Modules/CMakeCXXInformation.cmake /usr/share/cmake-3.16/Modules/CMakeCheckCompilerFlagCommonPatterns.cmake /usr/share/cmake-3.16/Modules/CMakeCommonLanguageInclude.cmake /usr/share/cmake-3.16/Modules/CMakeFindDependencyMacro.cmake /usr/share/cmake-3.16/Modules/CMakeGenericSystem.cmake /usr/share/cmake-3.16/Modules/CMakeInitializeConfigs.cmake /usr/share/cmake-3.16/Modules/CMakeLanguageInformation.cmake /usr/share/cmake-3.16/Modules/CMakeParseArguments.cmake /usr/share/cmake-3.16/Modules/CMakeSystemSpecificInformation.cmake /usr/share/cmake-3.16/Modules/CMakeSystemSpecificInitialize.cmake /usr/share/cmake-3.16/Modules/CPack.cmake /usr/share/cmake-3.16/Modules/CPackComponent.cmake /usr/share/cmake-3.16/Modules/CheckCSourceCompiles.cmake /usr/share/cmake-3.16/Modules/CheckCSourceRuns.cmake /usr/share/cmake-3.16/Modules/CheckCXXCompilerFlag.cmake /usr/share/cmake-3.16/Modules/CheckCXXSourceCompiles.cmake /usr/share/cmake-3.16/Modules/CheckFunctionExists.c /usr/share/cmake-3.16/Modules/CheckFunctionExists.cmake /usr/share/cmake-3.16/Modules/CheckIncludeFile.cmake /usr/share/cmake-3.16/Modules/CheckIncludeFileCXX.cmake /usr/share/cmake-3.16/Modules/CheckLibraryExists.cmake /usr/share/cmake-3.16/Modules/Compiler/CMakeCommonCompilerMacros.cmake /usr/share/cmake-3.16/Modules/Compiler/Clang-C.cmake /usr/share/cmake-3.16/Modules/Compiler/Clang-CXX.cmake /usr/share/cmake-3.16/Modules/Compiler/Clang.cmake /usr/share/cmake-3.16/Modules/Compiler/GNU.cmake /usr/share/cmake-3.16/Modules/FindBoost.cmake /usr/share/cmake-3.16/Modules/FindGit.cmake /usr/share/cmake-3.16/Modules/FindMPI.cmake /usr/share/cmake-3.16/Modules/FindMPI/test_mpi.c /usr/share/cmake-3.16/Modules/FindPackageHandleStandardArgs.cmake /usr/share/cmake-3.16/Modules/FindPackageMessage.cmake /usr/share/cmake-3.16/Modules/FindPythonInterp.cmake /usr/share/cmake-3.16/Modules/FindThreads.cmake /usr/share/cmake-3.16/Modules/GNUInstallDirs.cmake /usr/share/cmake-3.16/Modules/Internal/CMakeCheckCompilerFlag.cmake /usr/share/cmake-3.16/Modules/Platform/Linux-Clang-C.cmake /usr/share/cmake-3.16/Modules/Platform/Linux-Clang-CXX.cmake /usr/share/cmake-3.16/Modules/Platform/Linux-GNU-C.cmake /usr/share/cmake-3.16/Modules/Platform/Linux-GNU-CXX.cmake /usr/share/cmake-3.16/Modules/Platform/Linux-GNU.cmake /usr/share/cmake-3.16/Modules/Platform/Linux.cmake /usr/share/cmake-3.16/Modules/Platform/UnixPaths.cmake /usr/share/cmake-3.16/Modules/ProcessorCount.cmake /usr/share/cmake-3.16/Templates/CPackConfig.cmake.in /usr/share/feelpp/eigen3/cmake/Eigen3Config.cmake /usr/share/feelpp/eigen3/cmake/Eigen3ConfigVersion.cmake /usr/share/feelpp/eigen3/cmake/Eigen3Targets.cmake /usr/share/feelpp/feel/cmake/modules/Feel++Config.cmake /usr/share/feelpp/feel/cmake/modules/FeelppContribConfig.cmake /usr/share/feelpp/feel/cmake/modules/FeelppTargets-release.cmake /usr/share/feelpp/feel/cmake/modules/FeelppTargets.cmake /usr/share/feelpp/feel/cmake/modules/FindANN.cmake /usr/share/feelpp/feel/cmake/modules/FindGLPK.cmake /usr/share/feelpp/feel/cmake/modules/FindPythonLibsNew.cmake /usr/share/feelpp/feel/cmake/modules/FindScotch.cmake /usr/share/feelpp/feel/cmake/modules/MmgTargets-release.cmake /usr/share/feelpp/feel/cmake/modules/MmgTargets.cmake /usr/share/feelpp/feel/cmake/modules/ParseArguments.cmake /usr/share/feelpp/feel/cmake/modules/cotire.cmake /usr/share/feelpp/feel/cmake/modules/feelpp-contrib-export-targets-release.cmake /usr/share/feelpp/feel/cmake/modules/feelpp-contrib-export-targets.cmake /usr/share/feelpp/feel/cmake/modules/feelpp.host.cmake /usr/share/feelpp/feel/cmake/modules/feelpp.macros.cmake /usr/share/feelpp/feel/cmake/modules/feelpp.macros.crb.cmake /usr/share/feelpp/feel/cmake/modules/feelpp.precompiled.headers.cmake /usr/share/feelpp/feel/cmake/modules/feelpp.sched.ccc.cmake /usr/share/feelpp/feel/cmake/modules/feelpp.sched.loadleveler.cmake /usr/share/feelpp/feel/cmake/modules/feelpp.sched.oar.cmake /usr/share/feelpp/feel/cmake/modules/feelpp.sched.slurm.cmake /usr/share/feelpp/feel/cmake/modules/feelpp.schedulers.cmake /usr/share/feelpp/feel/cmake/modules/feelpp.version.cmake /usr/share/feelpp/feel/cmake/modules/indicatorsConfig.cmake /usr/share/feelpp/feel/cmake/modules/indicatorsConfigVersion.cmake /usr/share/feelpp/feel/cmake/modules/indicatorsTargets.cmake /usr/share/feelpp/feel/cmake/modules/mmgConfig.cmake /usr/share/feelpp/feel/cmake/modules/pybind11Config.cmake /usr/share/feelpp/feel/cmake/modules/pybind11ConfigVersion.cmake /usr/share/feelpp/feel/cmake/modules/pybind11Targets.cmake /usr/share/feelpp/feel/cmake/modules/pybind11Tools.cmake /usr/share/feelpp/feel/cmake/modules/tabulateConfig.cmake /usr/share/feelpp/feel/cmake/modules/tabulateTargets.cmake /usr/share/feelpp/feelpp_gflags/cmake/feelpp_gflags-config-version.cmake /usr/share/feelpp/feelpp_gflags/cmake/feelpp_gflags-config.cmake /usr/share/feelpp/feelpp_gflags/cmake/feelpp_gflags-targets-release.cmake /usr/share/feelpp/feelpp_gflags/cmake/feelpp_gflags-targets.cmake /usr/share/feelpp/glog/cmake/glog-config-version.cmake /usr/share/feelpp/glog/cmake/glog-config.cmake /usr/share/feelpp/glog/cmake/glog-targets-release.cmake /usr/share/feelpp/glog/cmake/glog-targets.cmake /usr/share/feelpp/nlopt/cmake/NLoptConfig.cmake /usr/share/feelpp/nlopt/cmake/NLoptConfigVersion.cmake /usr/share/feelpp/nlopt/cmake/NLoptLibraryDepends-release.cmake /usr/share/feelpp/nlopt/cmake/NLoptLibraryDepends.cmake CMakeCache.txt CMakeFiles/3.16.3/CMakeCCompiler.cmake CMakeFiles/3.16.3/CMakeCXXCompiler.cmake CMakeFiles/3.16.3/CMakeSystem.cmake CMakeFiles/FindMPI/test_mpi.cpp
+build build.ninja: RERUN_CMAKE | ../CMakeLists.txt ../src/CMakeLists.txt /usr/share/cmake-3.16/Modules/CMakeCInformation.cmake /usr/share/cmake-3.16/Modules/CMakeCXXInformation.cmake /usr/share/cmake-3.16/Modules/CMakeCheckCompilerFlagCommonPatterns.cmake /usr/share/cmake-3.16/Modules/CMakeCommonLanguageInclude.cmake /usr/share/cmake-3.16/Modules/CMakeFindDependencyMacro.cmake /usr/share/cmake-3.16/Modules/CMakeGenericSystem.cmake /usr/share/cmake-3.16/Modules/CMakeInitializeConfigs.cmake /usr/share/cmake-3.16/Modules/CMakeLanguageInformation.cmake /usr/share/cmake-3.16/Modules/CMakeParseArguments.cmake /usr/share/cmake-3.16/Modules/CMakeSystemSpecificInformation.cmake /usr/share/cmake-3.16/Modules/CMakeSystemSpecificInitialize.cmake /usr/share/cmake-3.16/Modules/CPack.cmake /usr/share/cmake-3.16/Modules/CPackComponent.cmake /usr/share/cmake-3.16/Modules/CheckCSourceCompiles.cmake /usr/share/cmake-3.16/Modules/CheckCSourceRuns.cmake /usr/share/cmake-3.16/Modules/CheckCXXCompilerFlag.cmake /usr/share/cmake-3.16/Modules/CheckCXXSourceCompiles.cmake /usr/share/cmake-3.16/Modules/CheckFunctionExists.c /usr/share/cmake-3.16/Modules/CheckFunctionExists.cmake /usr/share/cmake-3.16/Modules/CheckIncludeFile.cmake /usr/share/cmake-3.16/Modules/CheckIncludeFileCXX.cmake /usr/share/cmake-3.16/Modules/CheckLibraryExists.cmake /usr/share/cmake-3.16/Modules/Compiler/CMakeCommonCompilerMacros.cmake /usr/share/cmake-3.16/Modules/Compiler/Clang-C.cmake /usr/share/cmake-3.16/Modules/Compiler/Clang-CXX.cmake /usr/share/cmake-3.16/Modules/Compiler/Clang.cmake /usr/share/cmake-3.16/Modules/Compiler/GNU.cmake /usr/share/cmake-3.16/Modules/FindBoost.cmake /usr/share/cmake-3.16/Modules/FindGit.cmake /usr/share/cmake-3.16/Modules/FindMPI.cmake /usr/share/cmake-3.16/Modules/FindMPI/test_mpi.c /usr/share/cmake-3.16/Modules/FindPackageHandleStandardArgs.cmake /usr/share/cmake-3.16/Modules/FindPackageMessage.cmake /usr/share/cmake-3.16/Modules/FindPythonInterp.cmake /usr/share/cmake-3.16/Modules/FindThreads.cmake /usr/share/cmake-3.16/Modules/GNUInstallDirs.cmake /usr/share/cmake-3.16/Modules/Internal/CMakeCheckCompilerFlag.cmake /usr/share/cmake-3.16/Modules/Platform/Linux-Clang-C.cmake /usr/share/cmake-3.16/Modules/Platform/Linux-Clang-CXX.cmake /usr/share/cmake-3.16/Modules/Platform/Linux-GNU-C.cmake /usr/share/cmake-3.16/Modules/Platform/Linux-GNU-CXX.cmake /usr/share/cmake-3.16/Modules/Platform/Linux-GNU.cmake /usr/share/cmake-3.16/Modules/Platform/Linux.cmake /usr/share/cmake-3.16/Modules/Platform/UnixPaths.cmake /usr/share/cmake-3.16/Modules/ProcessorCount.cmake /usr/share/cmake-3.16/Templates/CPackConfig.cmake.in /usr/share/feelpp/eigen3/cmake/Eigen3Config.cmake /usr/share/feelpp/eigen3/cmake/Eigen3ConfigVersion.cmake /usr/share/feelpp/eigen3/cmake/Eigen3Targets.cmake /usr/share/feelpp/feel/cmake/modules/Feel++Config.cmake /usr/share/feelpp/feel/cmake/modules/FeelppContribConfig.cmake /usr/share/feelpp/feel/cmake/modules/FeelppTargets-release.cmake /usr/share/feelpp/feel/cmake/modules/FeelppTargets.cmake /usr/share/feelpp/feel/cmake/modules/FindANN.cmake /usr/share/feelpp/feel/cmake/modules/FindGLPK.cmake /usr/share/feelpp/feel/cmake/modules/FindPythonLibsNew.cmake /usr/share/feelpp/feel/cmake/modules/FindScotch.cmake /usr/share/feelpp/feel/cmake/modules/MmgTargets-release.cmake /usr/share/feelpp/feel/cmake/modules/MmgTargets.cmake /usr/share/feelpp/feel/cmake/modules/ParseArguments.cmake /usr/share/feelpp/feel/cmake/modules/cotire.cmake /usr/share/feelpp/feel/cmake/modules/feelpp-contrib-export-targets-release.cmake /usr/share/feelpp/feel/cmake/modules/feelpp-contrib-export-targets.cmake /usr/share/feelpp/feel/cmake/modules/feelpp.host.cmake /usr/share/feelpp/feel/cmake/modules/feelpp.macros.cmake /usr/share/feelpp/feel/cmake/modules/feelpp.macros.crb.cmake /usr/share/feelpp/feel/cmake/modules/feelpp.precompiled.headers.cmake /usr/share/feelpp/feel/cmake/modules/feelpp.sched.ccc.cmake /usr/share/feelpp/feel/cmake/modules/feelpp.sched.loadleveler.cmake /usr/share/feelpp/feel/cmake/modules/feelpp.sched.oar.cmake /usr/share/feelpp/feel/cmake/modules/feelpp.sched.slurm.cmake /usr/share/feelpp/feel/cmake/modules/feelpp.schedulers.cmake /usr/share/feelpp/feel/cmake/modules/feelpp.version.cmake /usr/share/feelpp/feel/cmake/modules/indicatorsConfig.cmake /usr/share/feelpp/feel/cmake/modules/indicatorsConfigVersion.cmake /usr/share/feelpp/feel/cmake/modules/indicatorsTargets.cmake /usr/share/feelpp/feel/cmake/modules/mmgConfig.cmake /usr/share/feelpp/feel/cmake/modules/pybind11Config.cmake /usr/share/feelpp/feel/cmake/modules/pybind11ConfigVersion.cmake /usr/share/feelpp/feel/cmake/modules/pybind11Targets.cmake /usr/share/feelpp/feel/cmake/modules/pybind11Tools.cmake /usr/share/feelpp/feel/cmake/modules/tabulateConfig.cmake /usr/share/feelpp/feel/cmake/modules/tabulateTargets.cmake /usr/share/feelpp/feelpp_gflags/cmake/feelpp_gflags-config-version.cmake /usr/share/feelpp/feelpp_gflags/cmake/feelpp_gflags-config.cmake /usr/share/feelpp/feelpp_gflags/cmake/feelpp_gflags-targets-release.cmake /usr/share/feelpp/feelpp_gflags/cmake/feelpp_gflags-targets.cmake /usr/share/feelpp/glog/cmake/glog-config-version.cmake /usr/share/feelpp/glog/cmake/glog-config.cmake /usr/share/feelpp/glog/cmake/glog-targets-release.cmake /usr/share/feelpp/glog/cmake/glog-targets.cmake /usr/share/feelpp/nlopt/cmake/NLoptConfig.cmake /usr/share/feelpp/nlopt/cmake/NLoptConfigVersion.cmake /usr/share/feelpp/nlopt/cmake/NLoptLibraryDepends-release.cmake /usr/share/feelpp/nlopt/cmake/NLoptLibraryDepends.cmake CMakeCache.txt CMakeFiles/3.16.3/CMakeCCompiler.cmake CMakeFiles/3.16.3/CMakeCXXCompiler.cmake CMakeFiles/3.16.3/CMakeSystem.cmake CMakeFiles/FindMPI/test_mpi.cpp
   pool = console
 
 
 #############################################
 # A missing CMake input file is not an error.
 
-build ../CMakeLists.txt ../docs/CMakeLists.txt ../src/CMakeLists.txt /usr/share/cmake-3.16/Modules/CMakeCInformation.cmake /usr/share/cmake-3.16/Modules/CMakeCXXInformation.cmake /usr/share/cmake-3.16/Modules/CMakeCheckCompilerFlagCommonPatterns.cmake /usr/share/cmake-3.16/Modules/CMakeCommonLanguageInclude.cmake /usr/share/cmake-3.16/Modules/CMakeFindDependencyMacro.cmake /usr/share/cmake-3.16/Modules/CMakeGenericSystem.cmake /usr/share/cmake-3.16/Modules/CMakeInitializeConfigs.cmake /usr/share/cmake-3.16/Modules/CMakeLanguageInformation.cmake /usr/share/cmake-3.16/Modules/CMakeParseArguments.cmake /usr/share/cmake-3.16/Modules/CMakeSystemSpecificInformation.cmake /usr/share/cmake-3.16/Modules/CMakeSystemSpecificInitialize.cmake /usr/share/cmake-3.16/Modules/CPack.cmake /usr/share/cmake-3.16/Modules/CPackComponent.cmake /usr/share/cmake-3.16/Modules/CheckCSourceCompiles.cmake /usr/share/cmake-3.16/Modules/CheckCSourceRuns.cmake /usr/share/cmake-3.16/Modules/CheckCXXCompilerFlag.cmake /usr/share/cmake-3.16/Modules/CheckCXXSourceCompiles.cmake /usr/share/cmake-3.16/Modules/CheckFunctionExists.c /usr/share/cmake-3.16/Modules/CheckFunctionExists.cmake /usr/share/cmake-3.16/Modules/CheckIncludeFile.cmake /usr/share/cmake-3.16/Modules/CheckIncludeFileCXX.cmake /usr/share/cmake-3.16/Modules/CheckLibraryExists.cmake /usr/share/cmake-3.16/Modules/Compiler/CMakeCommonCompilerMacros.cmake /usr/share/cmake-3.16/Modules/Compiler/Clang-C.cmake /usr/share/cmake-3.16/Modules/Compiler/Clang-CXX.cmake /usr/share/cmake-3.16/Modules/Compiler/Clang.cmake /usr/share/cmake-3.16/Modules/Compiler/GNU.cmake /usr/share/cmake-3.16/Modules/FindBoost.cmake /usr/share/cmake-3.16/Modules/FindGit.cmake /usr/share/cmake-3.16/Modules/FindMPI.cmake /usr/share/cmake-3.16/Modules/FindMPI/test_mpi.c /usr/share/cmake-3.16/Modules/FindPackageHandleStandardArgs.cmake /usr/share/cmake-3.16/Modules/FindPackageMessage.cmake /usr/share/cmake-3.16/Modules/FindPythonInterp.cmake /usr/share/cmake-3.16/Modules/FindThreads.cmake /usr/share/cmake-3.16/Modules/GNUInstallDirs.cmake /usr/share/cmake-3.16/Modules/Internal/CMakeCheckCompilerFlag.cmake /usr/share/cmake-3.16/Modules/Platform/Linux-Clang-C.cmake /usr/share/cmake-3.16/Modules/Platform/Linux-Clang-CXX.cmake /usr/share/cmake-3.16/Modules/Platform/Linux-GNU-C.cmake /usr/share/cmake-3.16/Modules/Platform/Linux-GNU-CXX.cmake /usr/share/cmake-3.16/Modules/Platform/Linux-GNU.cmake /usr/share/cmake-3.16/Modules/Platform/Linux.cmake /usr/share/cmake-3.16/Modules/Platform/UnixPaths.cmake /usr/share/cmake-3.16/Modules/ProcessorCount.cmake /usr/share/cmake-3.16/Templates/CPackConfig.cmake.in /usr/share/feelpp/eigen3/cmake/Eigen3Config.cmake /usr/share/feelpp/eigen3/cmake/Eigen3ConfigVersion.cmake /usr/share/feelpp/eigen3/cmake/Eigen3Targets.cmake /usr/share/feelpp/feel/cmake/modules/Feel++Config.cmake /usr/share/feelpp/feel/cmake/modules/FeelppContribConfig.cmake /usr/share/feelpp/feel/cmake/modules/FeelppTargets-release.cmake /usr/share/feelpp/feel/cmake/modules/FeelppTargets.cmake /usr/share/feelpp/feel/cmake/modules/FindANN.cmake /usr/share/feelpp/feel/cmake/modules/FindGLPK.cmake /usr/share/feelpp/feel/cmake/modules/FindPythonLibsNew.cmake /usr/share/feelpp/feel/cmake/modules/FindScotch.cmake /usr/share/feelpp/feel/cmake/modules/MmgTargets-release.cmake /usr/share/feelpp/feel/cmake/modules/MmgTargets.cmake /usr/share/feelpp/feel/cmake/modules/ParseArguments.cmake /usr/share/feelpp/feel/cmake/modules/cotire.cmake /usr/share/feelpp/feel/cmake/modules/feelpp-contrib-export-targets-release.cmake /usr/share/feelpp/feel/cmake/modules/feelpp-contrib-export-targets.cmake /usr/share/feelpp/feel/cmake/modules/feelpp.host.cmake /usr/share/feelpp/feel/cmake/modules/feelpp.macros.cmake /usr/share/feelpp/feel/cmake/modules/feelpp.macros.crb.cmake /usr/share/feelpp/feel/cmake/modules/feelpp.precompiled.headers.cmake /usr/share/feelpp/feel/cmake/modules/feelpp.sched.ccc.cmake /usr/share/feelpp/feel/cmake/modules/feelpp.sched.loadleveler.cmake /usr/share/feelpp/feel/cmake/modules/feelpp.sched.oar.cmake /usr/share/feelpp/feel/cmake/modules/feelpp.sched.slurm.cmake /usr/share/feelpp/feel/cmake/modules/feelpp.schedulers.cmake /usr/share/feelpp/feel/cmake/modules/feelpp.version.cmake /usr/share/feelpp/feel/cmake/modules/indicatorsConfig.cmake /usr/share/feelpp/feel/cmake/modules/indicatorsConfigVersion.cmake /usr/share/feelpp/feel/cmake/modules/indicatorsTargets.cmake /usr/share/feelpp/feel/cmake/modules/mmgConfig.cmake /usr/share/feelpp/feel/cmake/modules/pybind11Config.cmake /usr/share/feelpp/feel/cmake/modules/pybind11ConfigVersion.cmake /usr/share/feelpp/feel/cmake/modules/pybind11Targets.cmake /usr/share/feelpp/feel/cmake/modules/pybind11Tools.cmake /usr/share/feelpp/feel/cmake/modules/tabulateConfig.cmake /usr/share/feelpp/feel/cmake/modules/tabulateTargets.cmake /usr/share/feelpp/feelpp_gflags/cmake/feelpp_gflags-config-version.cmake /usr/share/feelpp/feelpp_gflags/cmake/feelpp_gflags-config.cmake /usr/share/feelpp/feelpp_gflags/cmake/feelpp_gflags-targets-release.cmake /usr/share/feelpp/feelpp_gflags/cmake/feelpp_gflags-targets.cmake /usr/share/feelpp/glog/cmake/glog-config-version.cmake /usr/share/feelpp/glog/cmake/glog-config.cmake /usr/share/feelpp/glog/cmake/glog-targets-release.cmake /usr/share/feelpp/glog/cmake/glog-targets.cmake /usr/share/feelpp/nlopt/cmake/NLoptConfig.cmake /usr/share/feelpp/nlopt/cmake/NLoptConfigVersion.cmake /usr/share/feelpp/nlopt/cmake/NLoptLibraryDepends-release.cmake /usr/share/feelpp/nlopt/cmake/NLoptLibraryDepends.cmake CMakeCache.txt CMakeFiles/3.16.3/CMakeCCompiler.cmake CMakeFiles/3.16.3/CMakeCXXCompiler.cmake CMakeFiles/3.16.3/CMakeSystem.cmake CMakeFiles/FindMPI/test_mpi.cpp: phony
+build ../CMakeLists.txt ../src/CMakeLists.txt /usr/share/cmake-3.16/Modules/CMakeCInformation.cmake /usr/share/cmake-3.16/Modules/CMakeCXXInformation.cmake /usr/share/cmake-3.16/Modules/CMakeCheckCompilerFlagCommonPatterns.cmake /usr/share/cmake-3.16/Modules/CMakeCommonLanguageInclude.cmake /usr/share/cmake-3.16/Modules/CMakeFindDependencyMacro.cmake /usr/share/cmake-3.16/Modules/CMakeGenericSystem.cmake /usr/share/cmake-3.16/Modules/CMakeInitializeConfigs.cmake /usr/share/cmake-3.16/Modules/CMakeLanguageInformation.cmake /usr/share/cmake-3.16/Modules/CMakeParseArguments.cmake /usr/share/cmake-3.16/Modules/CMakeSystemSpecificInformation.cmake /usr/share/cmake-3.16/Modules/CMakeSystemSpecificInitialize.cmake /usr/share/cmake-3.16/Modules/CPack.cmake /usr/share/cmake-3.16/Modules/CPackComponent.cmake /usr/share/cmake-3.16/Modules/CheckCSourceCompiles.cmake /usr/share/cmake-3.16/Modules/CheckCSourceRuns.cmake /usr/share/cmake-3.16/Modules/CheckCXXCompilerFlag.cmake /usr/share/cmake-3.16/Modules/CheckCXXSourceCompiles.cmake /usr/share/cmake-3.16/Modules/CheckFunctionExists.c /usr/share/cmake-3.16/Modules/CheckFunctionExists.cmake /usr/share/cmake-3.16/Modules/CheckIncludeFile.cmake /usr/share/cmake-3.16/Modules/CheckIncludeFileCXX.cmake /usr/share/cmake-3.16/Modules/CheckLibraryExists.cmake /usr/share/cmake-3.16/Modules/Compiler/CMakeCommonCompilerMacros.cmake /usr/share/cmake-3.16/Modules/Compiler/Clang-C.cmake /usr/share/cmake-3.16/Modules/Compiler/Clang-CXX.cmake /usr/share/cmake-3.16/Modules/Compiler/Clang.cmake /usr/share/cmake-3.16/Modules/Compiler/GNU.cmake /usr/share/cmake-3.16/Modules/FindBoost.cmake /usr/share/cmake-3.16/Modules/FindGit.cmake /usr/share/cmake-3.16/Modules/FindMPI.cmake /usr/share/cmake-3.16/Modules/FindMPI/test_mpi.c /usr/share/cmake-3.16/Modules/FindPackageHandleStandardArgs.cmake /usr/share/cmake-3.16/Modules/FindPackageMessage.cmake /usr/share/cmake-3.16/Modules/FindPythonInterp.cmake /usr/share/cmake-3.16/Modules/FindThreads.cmake /usr/share/cmake-3.16/Modules/GNUInstallDirs.cmake /usr/share/cmake-3.16/Modules/Internal/CMakeCheckCompilerFlag.cmake /usr/share/cmake-3.16/Modules/Platform/Linux-Clang-C.cmake /usr/share/cmake-3.16/Modules/Platform/Linux-Clang-CXX.cmake /usr/share/cmake-3.16/Modules/Platform/Linux-GNU-C.cmake /usr/share/cmake-3.16/Modules/Platform/Linux-GNU-CXX.cmake /usr/share/cmake-3.16/Modules/Platform/Linux-GNU.cmake /usr/share/cmake-3.16/Modules/Platform/Linux.cmake /usr/share/cmake-3.16/Modules/Platform/UnixPaths.cmake /usr/share/cmake-3.16/Modules/ProcessorCount.cmake /usr/share/cmake-3.16/Templates/CPackConfig.cmake.in /usr/share/feelpp/eigen3/cmake/Eigen3Config.cmake /usr/share/feelpp/eigen3/cmake/Eigen3ConfigVersion.cmake /usr/share/feelpp/eigen3/cmake/Eigen3Targets.cmake /usr/share/feelpp/feel/cmake/modules/Feel++Config.cmake /usr/share/feelpp/feel/cmake/modules/FeelppContribConfig.cmake /usr/share/feelpp/feel/cmake/modules/FeelppTargets-release.cmake /usr/share/feelpp/feel/cmake/modules/FeelppTargets.cmake /usr/share/feelpp/feel/cmake/modules/FindANN.cmake /usr/share/feelpp/feel/cmake/modules/FindGLPK.cmake /usr/share/feelpp/feel/cmake/modules/FindPythonLibsNew.cmake /usr/share/feelpp/feel/cmake/modules/FindScotch.cmake /usr/share/feelpp/feel/cmake/modules/MmgTargets-release.cmake /usr/share/feelpp/feel/cmake/modules/MmgTargets.cmake /usr/share/feelpp/feel/cmake/modules/ParseArguments.cmake /usr/share/feelpp/feel/cmake/modules/cotire.cmake /usr/share/feelpp/feel/cmake/modules/feelpp-contrib-export-targets-release.cmake /usr/share/feelpp/feel/cmake/modules/feelpp-contrib-export-targets.cmake /usr/share/feelpp/feel/cmake/modules/feelpp.host.cmake /usr/share/feelpp/feel/cmake/modules/feelpp.macros.cmake /usr/share/feelpp/feel/cmake/modules/feelpp.macros.crb.cmake /usr/share/feelpp/feel/cmake/modules/feelpp.precompiled.headers.cmake /usr/share/feelpp/feel/cmake/modules/feelpp.sched.ccc.cmake /usr/share/feelpp/feel/cmake/modules/feelpp.sched.loadleveler.cmake /usr/share/feelpp/feel/cmake/modules/feelpp.sched.oar.cmake /usr/share/feelpp/feel/cmake/modules/feelpp.sched.slurm.cmake /usr/share/feelpp/feel/cmake/modules/feelpp.schedulers.cmake /usr/share/feelpp/feel/cmake/modules/feelpp.version.cmake /usr/share/feelpp/feel/cmake/modules/indicatorsConfig.cmake /usr/share/feelpp/feel/cmake/modules/indicatorsConfigVersion.cmake /usr/share/feelpp/feel/cmake/modules/indicatorsTargets.cmake /usr/share/feelpp/feel/cmake/modules/mmgConfig.cmake /usr/share/feelpp/feel/cmake/modules/pybind11Config.cmake /usr/share/feelpp/feel/cmake/modules/pybind11ConfigVersion.cmake /usr/share/feelpp/feel/cmake/modules/pybind11Targets.cmake /usr/share/feelpp/feel/cmake/modules/pybind11Tools.cmake /usr/share/feelpp/feel/cmake/modules/tabulateConfig.cmake /usr/share/feelpp/feel/cmake/modules/tabulateTargets.cmake /usr/share/feelpp/feelpp_gflags/cmake/feelpp_gflags-config-version.cmake /usr/share/feelpp/feelpp_gflags/cmake/feelpp_gflags-config.cmake /usr/share/feelpp/feelpp_gflags/cmake/feelpp_gflags-targets-release.cmake /usr/share/feelpp/feelpp_gflags/cmake/feelpp_gflags-targets.cmake /usr/share/feelpp/glog/cmake/glog-config-version.cmake /usr/share/feelpp/glog/cmake/glog-config.cmake /usr/share/feelpp/glog/cmake/glog-targets-release.cmake /usr/share/feelpp/glog/cmake/glog-targets.cmake /usr/share/feelpp/nlopt/cmake/NLoptConfig.cmake /usr/share/feelpp/nlopt/cmake/NLoptConfigVersion.cmake /usr/share/feelpp/nlopt/cmake/NLoptLibraryDepends-release.cmake /usr/share/feelpp/nlopt/cmake/NLoptLibraryDepends.cmake CMakeCache.txt CMakeFiles/3.16.3/CMakeCCompiler.cmake CMakeFiles/3.16.3/CMakeCXXCompiler.cmake CMakeFiles/3.16.3/CMakeSystem.cmake CMakeFiles/FindMPI/test_mpi.cpp: phony
 
 
 #############################################
