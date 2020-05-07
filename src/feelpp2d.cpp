@@ -23,9 +23,11 @@ int main(int argc, char**argv )
     auto u0 = expr(soption(_name = "functions.u"));
     Feel::cout << "u0=" << u0 << std::endl;
 
-    double tmax = doption(_name = "ts.tmax");
+    double dt = doption(_name = "ts.time-step");
+    std::cout << "time-step=" << u0 << std::endl;
 
-    double dt = doption(_name = "ts.dt");
+    double tmax = doption(_name = "ts.time-final");
+    std::cout << "time-final=" << u0 << std::endl;
 
     auto mesh = loadMesh(_mesh=new Mesh<Simplex<2>>);
     auto Vh = Pch<2>( mesh );
