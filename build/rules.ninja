@@ -22,7 +22,7 @@ rule CUSTOM_COMMAND
 #############################################
 # Rule for compiling CXX files.
 
-rule CXX_COMPILER__feelpp_mqs_mqs
+rule CXX_COMPILER__feelpp_mqs_feelpp2d
   depfile = $DEP_FILE
   deps = gcc
   command = /usr/bin/clang++-9  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
@@ -32,7 +32,7 @@ rule CXX_COMPILER__feelpp_mqs_mqs
 #############################################
 # Rule for linking CXX executable.
 
-rule CXX_EXECUTABLE_LINKER__feelpp_mqs_mqs
+rule CXX_EXECUTABLE_LINKER__feelpp_mqs_feelpp2d
   command = $PRE_LINK && /usr/bin/clang++-9  $FLAGS  $LINK_FLAGS $in  -o $TARGET_FILE $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
   description = Linking CXX executable $TARGET_FILE
   restat = $RESTAT

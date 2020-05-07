@@ -442,3 +442,27 @@ int main(int argc, char **argv) {
     return 1;
 }
 
+Determining if the function SCOTCH_graphInit exists passed with the following output:
+Change Dir: /home/anki/csmi/mqs/build/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/ninja cmTC_6b68b && [1/2] Building C object CMakeFiles/cmTC_6b68b.dir/CheckFunctionExists.c.o
+[2/2] Linking C executable cmTC_6b68b
+
+
+
+Determining if the function SCOTCH_graphInit exists passed with the following output:
+Change Dir: /home/anki/csmi/mqs/build/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/ninja cmTC_1720b && [1/2] Building C object CMakeFiles/cmTC_1720b.dir/CheckFunctionExists.c.o
+[2/2] Linking C executable cmTC_1720b
+
+
+
+Determining if the function SCOTCH_graphInit exists passed with the following output:
+Change Dir: /home/anki/csmi/mqs/build/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/ninja cmTC_8444b && [1/2] Building C object CMakeFiles/cmTC_8444b.dir/CheckFunctionExists.c.o
+[2/2] Linking C executable cmTC_8444b
+
+
+

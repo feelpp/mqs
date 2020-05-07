@@ -37,23 +37,7 @@ if(NOT DEFINED CMAKE_CROSSCOMPILING)
   set(CMAKE_CROSSCOMPILING "FALSE")
 endif()
 
-if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xBinx" OR NOT CMAKE_INSTALL_COMPONENT)
-  if(EXISTS "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/bin/feelpp_mqs_mqs" AND
-     NOT IS_SYMLINK "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/bin/feelpp_mqs_mqs")
-    file(RPATH_CHECK
-         FILE "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/bin/feelpp_mqs_mqs"
-         RPATH "/usr/local/lib:/usr/lib/x86_64-linux-gnu/openmpi/lib:/usr/lib/x86_64-linux-gnu/hdf5/openmpi/lib:/usr/lib/petscdir/petsc3.12/x86_64-linux-gnu-real/lib:/usr/lib/x86_64-linux-gnu/hdf5/openmpi")
-  endif()
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/bin" TYPE EXECUTABLE FILES "/home/anki/csmi/mqs/build/src/feelpp_mqs_mqs")
-  if(EXISTS "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/bin/feelpp_mqs_mqs" AND
-     NOT IS_SYMLINK "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/bin/feelpp_mqs_mqs")
-    file(RPATH_CHANGE
-         FILE "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/bin/feelpp_mqs_mqs"
-         OLD_RPATH "/usr/lib/x86_64-linux-gnu/openmpi/lib:/usr/lib/x86_64-linux-gnu/hdf5/openmpi/lib:/usr/lib/petscdir/petsc3.12/x86_64-linux-gnu-real/lib:/usr/lib/x86_64-linux-gnu/hdf5/openmpi:::::::::::::::"
-         NEW_RPATH "/usr/local/lib:/usr/lib/x86_64-linux-gnu/openmpi/lib:/usr/lib/x86_64-linux-gnu/hdf5/openmpi/lib:/usr/lib/petscdir/petsc3.12/x86_64-linux-gnu-real/lib:/usr/lib/x86_64-linux-gnu/hdf5/openmpi")
-    if(CMAKE_INSTALL_DO_STRIP)
-      execute_process(COMMAND "/usr/bin/strip" "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/bin/feelpp_mqs_mqs")
-    endif()
-  endif()
+if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/feelpp/feel/geo" TYPE FILE FILES "/home/anki/csmi/mqs/src/feelpp2d.geo")
 endif()
 
