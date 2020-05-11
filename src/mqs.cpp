@@ -20,8 +20,16 @@ int main(int argc, char**argv )
     auto f = expr(soption(_name="functions.f"));
     Feel::cout << "f=" << f << std::endl;
 
-    auto u0 = expr(soption(_name = "functions.u"));
-    Feel::cout << "u0=" << u0 << std::endl;
+    auto h = expr(soption(_name="functions.h"));
+    Feel::cout << "h=" << h << std::endl;
+
+    //auto Ad = expr(soption(_name="functions.Ad"));
+    //Feel::cout << "h=" << h << std::endl;
+
+    //Recuperer mu,sigma,
+
+    //auto u0 = expr(soption(_name = "functions.u"));
+    //Feel::cout << "u0=" << u0 << std::endl;
 
     double dt = doption(_name = "ts.time-step");
     std::cout << "time-step=" << u0 << std::endl;
@@ -30,41 +38,42 @@ int main(int argc, char**argv )
     std::cout << "time-final=" << u0 << std::endl;
 
     auto mesh = loadMesh(_mesh=new Mesh<Simplex<2>>);
-    auto Vh = Pchv<2>( mesh );
+    auto cond_mesh = createSubmesh(mesh,markedelements(mesh,"Omega_c"));
 
-    auto A = Vh->element();
+    auto Vh = Pchv<3>( mesh );
+    auto Ah = Pch<3>( cond_mesh );
+
     auto V = Vh->element();
+    auto A = Ah->element();
 
-    auto psi = Vh->element();
     auto phi = Vh->element();
+    //auto psi = Vh->element();
+
+    auto curl_A = curl(A);
+    auto curl_phi = curl(phi);
 
     auto l1 = form1( _test=Vh );
-    auto l2 = form1( _test=Vh );
+    //auto l2 = form1( _test=Vh );
 
     double t = dt;
 
     auto e = exporter( _mesh=mesh );
 
     while(t < tmax){
-        /*l = integrate(_range=elements(mesh),
-                    _expr =  (idv(u) + dt*f) * id(v));
 
-        auto a = form2( _trial=Vh, _test=Vh);
-        a = integrate(_range=elements(mesh),
-                    _expr = idt(u)*id(v) + dt*gradt(u)*trans(grad(v)) );
-        a+=on(_range=boundaryfaces(mesh), _rhs=l, _element=u, _expr=g );
-        a.solve(_rhs=l,_solution=u);
-        */
-        l1 = integrate(_range=elements(mesh),_expr = );
+        l1 = integrate(_range=elements(cond_mesh),_expr = sigma*id(phi)*(grad(V) + idv(A)/dt));
         auto a = form2( _trial=Vh, _test=Vh);
         a1 = integrate(_range=elements(mesh),
-                    _expr = );
-        a1+=on(_range=boundaryfaces(mesh), _rhs=l1, _element=, _expr= );
+                    _expr = (1/mu)*id(curl_phi)*idt(curl_A));
+        a1 += on(_range=markedfaces(mesh,"Omega_D"), _rhs=l1, _element=phi, _expr= Ad*idt(curl_A) );
+        a1 += on( range=elements(cond_mesh),_expr = sigma*id(phi)*(grad(V) + idt(A)/dt));
 
-        l2 = integrate(_range=elements(mesh),_expr = 0);
+        a1.solve(_rhs=l,_solution=u);
+
+        /*l2 = integrate(_range=elements(mesh),_expr = 0);
         auto a = form2( _trial=Vh, _test=Vh);
         a2 = integrate(_range=elements(mesh),
-                    _expr = );
+                    _expr = );*/
 
         e->step(t)->add( "u", u);
         e->save();
