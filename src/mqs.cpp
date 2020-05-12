@@ -55,12 +55,12 @@ int main(int argc, char**argv )
     double t = dt;
 
     auto e = exporter( _mesh=mesh );
-
+    auto a = form2( _trial=Vh, _test=Vh);
     while(t < tmax){
 
         l1 = integrate(_range=elements(cond_mesh),_expr = sigma*inner(id(phi),trans(grad(V)) + idv(A)/dt));
         //l1 = integrate(_range=elements(cond_mesh),_expr = sigma*grad(V)*id(phi) + trans(id(phi))*idv(A)/dt));
-        auto a = form2( _trial=Vh, _test=Vh);
+        
         a1 = integrate(_range=elements(mesh),
                     _expr = (1/mu)*inner(curl(phi),curlt(A)));
         a1 += on(_range=markedfaces(mesh,"Omega_D"), _rhs=l1, _element=phi, _expr= Ad );
