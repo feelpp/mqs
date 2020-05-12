@@ -7,8 +7,11 @@
 int main(int argc, char**argv )
 {
      using namespace Feel;
-
-     Environment env( _argc=argc, _argv=argv,
+    po::options_description options( "Laplacian options" );
+    options.add_options()
+      ( "hc", po::value<std::string>()->default_value( "1" ), "convective heat transfer coefficient" )
+      ( "Tinf", po::value<std::string>()->default_value( "1" ), "Temperature far from boundary" );
+     Environment env( _argc=argc, _argv=argv,_desc=options,
                       _about=about(_name="heat",
                                    _author="Feel++ Consortium",
                                    _email="feelpp-devel@feelpp.org"));
