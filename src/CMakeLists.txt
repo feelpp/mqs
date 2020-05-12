@@ -10,3 +10,5 @@ foreach(app ${SRC})
     feelpp_add_application( ${app} SRCS ${app}.cpp TESTS )
   endif()
 endforeach()
+
+feelpp_add_testcase(cases)
