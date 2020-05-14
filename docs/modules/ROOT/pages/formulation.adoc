@@ -173,7 +173,9 @@ H_{A_D}^{curl}(\Omega) = \{v \in H^{curl}(\Omega)| v \times n = A_D \text{ on } 
 \end{equation}
 ++++
 
-We now consider the equation <<nAmpere, (1)>> : By making the scalar product with stem:[\phi \in H_{A_D}^{curl}(\Omega)] and by integrating on stem:[\Omega] we get : 
+We can now distinguish two cases. First, if the edges are not curved, we have the following case, where stem:[A_D = 0] :
+
+Let us consider the equation <<nAmpere, (1)>> : By making the scalar product with stem:[\phi \in H_{A_D}^{curl}(\Omega)] and by integrating on stem:[\Omega] we get : 
 
 [stem]
 ++++
@@ -216,7 +218,19 @@ By performing a circular permutation on stem:[\Gamma_N] and stem:[\Gamma_D] we h
 
 On stem:[\Gamma_N] we impose homogeneous Neumann boundary conditions stem:[B \times n = 0] since stem:[B = \nabla \times A]. This condition typically apply for physical symetry on some bounday (cf 1/8 of a torus example). So stem:[(\nabla \times A) \times n = 0] on stem:[\Gamma_N]. On stem:[\Gamma_D] we impose Dirichlet boundary condition stem:[ \phi \times n = A_D], where stem:[A_D] is known.
 
-We finally get the weak formulation:
+In the case where edges are not curved, we have stem:[ \phi \times n = A_D = 0].
+So we finally get the weak formulation:
+
+[stem]
+++++
+\begin{equation}
+\int_{\Omega} \frac{1}{\mu} \, (\nabla \times \phi) \cdot (\nabla \times A) = - \int_{\Omega_C} \sigma \phi \cdot (\nabla V + \frac{\partial A}{\partial t})
+\end{equation}
+++++
+
+In the second case, were we have curved edges, we concider that stem:[ \phi \times n = A_D], where stem:[A_D] is known.
+
+So we have :
 
 [stem]
 ++++
@@ -224,6 +238,7 @@ We finally get the weak formulation:
 \int_{\Omega} \frac{1}{\mu} \, (\nabla \times \phi) \cdot (\nabla \times A) - \int_{\Gamma_D} \frac{1}{\mu} A_D \cdot (\nabla \times A) = - \int_{\Omega_C} \sigma \phi \cdot (\nabla V + \frac{\partial A}{\partial t})
 \end{equation}
 ++++
+
 
 The border of stem:[\Omega_C] is considered to be splitted into stem:[\Gamma_I], stem:[\Gamma_O] respectively the input and output of current and the rest will be noted stem:[\Gamma_C]. On stem:[\Gamma_I] and stem:[\Gamma_O] we consider Dirichlet Boundary condition for the electrical potential. Thus we will take stem:[\psi \in H^1(\Omega_C)].
 
