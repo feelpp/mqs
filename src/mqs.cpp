@@ -61,22 +61,22 @@ int main(int argc, char**argv )
     auto a = form2( _trial=Vh, _test=Vh);
     while(t < tmax){
 
-        l1 = integrate(_range=elements(cond_mesh),_expr = sigma*inner(id(phi),trans(grad(V)) + idv(A)/dt));
+        l1 = integrate(_range=elements(cond_mesh),_expr = -sigma*inner(id(phi),trans(grad(V)) - idv(A)/dt));
         //l1 = integrate(_range=elements(cond_mesh),_expr = sigma*grad(V)*id(phi) + trans(id(phi))*idv(A)/dt));
         
         a1 = integrate(_range=elements(mesh),
                     _expr = (1/mu)*inner(curl(phi),curlt(A)));
-        a1 += on(_range=markedfaces(mesh,"Omega_D"), _rhs=l1, _element=phi, _expr= Ad );
-        a1 += on( range=elements(cond_mesh),_expr = sigma*i )
+        a1 += on(_range=markedfaces(mesh,"Omega_D"), _rhs=l1, _element=phi, _expr= Ad*inner(curlt(A)) );
+        a1 += on( range=elements(cond_mesh),_expr = sigma*inner(id(phi),trans(grad(V)) + idt(A)/dt));
 
-        a1.solve(_rhs=l,_solution=u);
+        a1.solve(_rhs=l1,_solution=a1);
 
         /*l2 = integrate(_range=elements(mesh),_expr = 0);
         auto a = form2( _trial=Vh, _test=Vh);
         a2 = integrate(_range=elements(mesh),
                     _expr = );*/
 
-        e->step(t)->add( "u", u);
+        e->step(t)->add( "a1", a1);
         e->save();
         t += dt;
     }
