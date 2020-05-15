@@ -43,31 +43,34 @@ int main(int argc, char**argv )
     auto mesh = loadMesh(_mesh=new Mesh<Simplex<2>>);
     auto cond_mesh = createSubmesh(mesh,markedelements(mesh,"Omega_c"));
 
-    auto Vh = Pchv<3>( mesh );
-    auto Ah = Pch<3>( cond_mesh );
+    auto Ah = Pchv<3>( mesh );
+    auto Vh = Pch<3>( cond_mesh );
 
-    auto V = Vh->element();
     auto A = Ah->element();
+    auto V = Vh->element();
 
     auto phi = Vh->element();
     //auto psi = Vh->element();
 
-    auto l1 = form1( _test=Vh );
+    auto l1 = form1( _test=Ah );
     //auto l2 = form1( _test=Vh );
 
     double t = dt;
 
     auto e = exporter( _mesh=mesh );
-    auto a = form2( _trial=Vh, _test=Vh);
+    auto a1 = form2( _trial=Ah, _test=Ah);
     while(t < tmax){
 
-        l1 = integrate(_range=elements(cond_mesh),_expr = -sigma*inner(id(phi),trans(grad(V)) - idv(A)/dt));
+        l1 = integrate(_range=elements(cond_mesh),
+                        _expr = -sigma * inner(id(phi) , trans(grad(V))-idv(A)/dt) );
         //l1 = integrate(_range=elements(cond_mesh),_expr = sigma*grad(V)*id(phi) + trans(id(phi))*idv(A)/dt));
         
         a1 = integrate(_range=elements(mesh),
-                    _expr = (1/mu)*inner(curl(phi),curlt(A)));
-        a1 += on(_range=markedfaces(mesh,"Omega_D"), _rhs=l1, _element=phi, _expr= Ad*inner(curlt(A)) );
-        a1 += on( range=elements(cond_mesh),_expr = sigma*inner(id(phi),trans(grad(V)) + idt(A)/dt));
+                    _expr = (1/mu) * inner(curl(phi) , curlt(A)) );
+        a1 += on(_range=markedfaces(mesh,"Omega_D"), _rhs=l1, _element=phi, 
+                _expr= (1/mu) *inner(Ad, curlt(A)) );
+        a1 += on( range=elements(cond_mesh),
+                _expr = sigma * inner(id(phi) , trans(grad(V)) + idt(A)/dt) );
 
         a1.solve(_rhs=l1,_solution=a1);
 
