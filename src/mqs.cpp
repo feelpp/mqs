@@ -66,11 +66,11 @@ int main(int argc, char**argv )
         //l1 = integrate(_range=elements(cond_mesh),_expr = sigma*grad(V)*id(phi) + trans(id(phi))*idv(A)/dt));
         
         a1 = integrate(_range=elements(mesh),
-                    _expr = (1/mu) * inner(curl(phi) , curlt(A)) );
+                    _expr = (dt/mu) * inner(curl(phi) , curlt(A)) );
+        a1 += integrate( range=elements(cond_mesh),
+                    _expr = sigma * inner(id(phi) , idt(A) ));
         a1 += on(_range=markedfaces(mesh,"Omega_D"), _rhs=l1, _element=phi, 
-                _expr= (1/mu) *inner(Ad, curlt(A)) );
-        a1 += on( range=elements(cond_mesh),
-                _expr = sigma * inner(id(phi) , trans(grad(V)) + idt(A)/dt) );
+                _expr= Ad );
 
         a1.solve(_rhs=l1,_solution=a1);
 
