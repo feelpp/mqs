@@ -62,7 +62,7 @@ int main(int argc, char**argv )
     while(t < tmax){
 
         l1 = integrate(_range=elements(cond_mesh),
-                        _expr = -sigma * inner(id(phi) , trans(grad(V))-idv(A)/dt) );
+                        _expr = sigma * inner(id(phi) , idv(A)/dt) );
         //l1 = integrate(_range=elements(cond_mesh),_expr = sigma*grad(V)*id(phi) + trans(id(phi))*idv(A)/dt));
         
         a1 = integrate(_range=elements(mesh),
