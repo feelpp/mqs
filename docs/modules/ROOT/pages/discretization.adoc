@@ -48,7 +48,7 @@ In other words :
 [stem]
 ++++
 \begin{equation}
-\int_{\Omega} \frac{1}{\mu} \, (\nabla \times \phi) \cdot (\nabla \times A^n) + \int_{\Omega_C} \sigma \phi \cdot (\nabla V + \frac{A^n}{\Delta t}) = - \int_{\Omega_C} \sigma \phi \cdot (\nabla V - \frac{A^{n-1}}{\Delta t})
+\int_{\Omega} \frac{1}{\mu} \, (\nabla \times \phi) \cdot (\nabla \times A^n) + \int_{\Omega_C} \sigma \phi \cdot (\nabla V + \frac{A^n}{\Delta t}) = \int_{\Omega_C} \sigma \phi \cdot \frac{A^{n-1}}{\Delta t}
 \end{equation}
 ++++ 
 
@@ -57,7 +57,7 @@ and the second equations :
 [stem]
 ++++
 \begin{equation}
- \int_{\Omega_C} \sigma ( \nabla V  + \frac{A^n}{\Delta t}) \cdot \nabla \psi =  \int_{\Omega_C} \sigma ( \nabla V  - \frac{A^{n-1}}{\Delta t}) \cdot \nabla \psi
+ \int_{\Omega_C} \sigma ( \nabla V  + \frac{A^n}{\Delta t}) \cdot \nabla \psi =  \int_{\Omega_C} \sigma \frac{A^{n-1}}{\Delta t} \cdot \nabla \psi
 \end{equation} 
 ++++
 
@@ -66,6 +66,6 @@ If the edges are curved, our first equation becomes :
 [stem]
 ++++
 \begin{equation}
-\int_{\Omega} \frac{1}{\mu} \, (\nabla \times \phi) \cdot (\nabla \times A^n) - \int_{\Gamma_D} \frac{1}{\mu} A_D \cdot (\nabla \times A^n) + \int_{\Omega_C} \sigma \phi \cdot (\nabla V + \frac{A^n}{\Delta t}) = - \int_{\Omega_C} \sigma \phi \cdot (\nabla V - \frac{A^{n-1}}{\Delta t})
+\int_{\Omega} \frac{1}{\mu} \, (\nabla \times \phi) \cdot (\nabla \times A^n) - \int_{\Gamma_D} \frac{1}{\mu} A_D \cdot (\nabla \times A^n) + \int_{\Omega_C} \sigma \phi \cdot (\nabla V + \frac{A^n}{\Delta t}) =  \int_{\Omega_C} \sigma \phi \cdot \frac{A^{n-1}}{\Delta t}
 \end{equation}
 ++++ 
