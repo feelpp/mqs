@@ -49,16 +49,18 @@ int main(int argc, char**argv )
     auto A = Ah->element();
     auto V = Vh->element();
 
-    auto phi = Vh->element();
-    //auto psi = Vh->element();
+    auto phi = Ah->element();
+    auto psi = Vh->element();
 
     auto l1 = form1( _test=Ah );
-    //auto l2 = form1( _test=Vh );
+    auto l2 = form1( _test=Vh );
 
     double t = dt;
 
     auto e = exporter( _mesh=mesh );
     auto a1 = form2( _trial=Ah, _test=Ah);
+    auto a2 = form2( _trial=Vh, _test=Ah);
+
     while(t < tmax){
 
         l1 = integrate(_range=elements(cond_mesh),
@@ -74,11 +76,12 @@ int main(int argc, char**argv )
 
         a1.solve(_rhs=l1,_solution=a1);
 
-        /*l2 = integrate(_range=elements(mesh),_expr = 0);
-        auto a = form2( _trial=Vh, _test=Vh);
-        a2 = integrate(_range=elements(mesh),
-                    _expr = );*/
-
+        /*l2 = integrate(_range=elements(cond_mesh),
+                    _expr = sigma * inner( idv(A) - idt(A), grad(phi) );
+        
+        a2 += integrate( range=elements(cond_mesh),
+                    _expr = sigma * dt * inner(idt(V), grad(phi) );
+        */           
         e->step(t)->add( "a1", a1);
         e->save();
         t += dt;
