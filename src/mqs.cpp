@@ -16,23 +16,13 @@ int main(int argc, char**argv )
                                    _author="Feel++ Consortium",
                                    _email="feelpp-devel@feelpp.org"));
 
+    auto Ad = expr(soption(_name="functions.Ad"));
+    Feel::cout << "Ad=" << Ad << std::endl;
 
-    auto g = expr(soption(_name="functions.g"));
-    Feel::cout << "g=" << g << std::endl;
-
-    auto f = expr(soption(_name="functions.f"));
-    Feel::cout << "f=" << f << std::endl;
-
-    auto h = expr(soption(_name="functions.h"));
-    Feel::cout << "h=" << h << std::endl;
-
-    //auto Ad = expr(soption(_name="functions.Ad"));
-    //Feel::cout << "h=" << h << std::endl;
+    auto A0 = expr(soption(_name="functions.A"));
+    Feel::cout << "A0=" << A0 << std::endl;
 
     //Recuperer mu,sigma,
-
-    //auto u0 = expr(soption(_name = "functions.u"));
-    //Feel::cout << "u0=" << u0 << std::endl;
 
     double dt = doption(_name = "ts.time-step");
     std::cout << "time-step=" << u0 << std::endl;
@@ -46,7 +36,7 @@ int main(int argc, char**argv )
     auto Ah = Pchv<3>( mesh );
     auto Vh = Pch<3>( cond_mesh );
 
-    auto A = Ah->element();
+    auto A = Ah->element(A0);
     auto V = Vh->element();
 
     auto phi = Ah->element();
