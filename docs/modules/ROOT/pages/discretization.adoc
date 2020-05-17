@@ -48,7 +48,7 @@ In other words :
 [stem]
 ++++
 \begin{equation}
-\int_{\Omega} \frac{\Delta t}{\mu} \, (\nabla \times \phi) \cdot (\nabla \times A^n) + \int_{\Omega_C} \sigma \phi \cdot A^n} = \int_{\Omega_C} \sigma \phi \cdot (A^{n-1} - \Delta t\nabla V)
+\int_{\Omega} \frac{\Delta t}{\mu} \, (\nabla \times \phi) \cdot (\nabla \times A^n) + \int_{\Omega_C} \sigma \phi \cdot A^n = \int_{\Omega_C} \sigma \phi \cdot (A^{n-1} - \Delta t\nabla V)
 \end{equation}
 ++++ 
 
