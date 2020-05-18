@@ -1,39 +1,34 @@
-// Gmsh project created on Sun May 17 19:22:38 2020
-//+
-Point(1) = {0, -0, 0, 1.0};
-//+
-Point(2) = {-0, 1, 0, 1.0};
-//+
-Point(3) = {5, 1, 0, 1.0};
-//+
-Point(4) = {5, 0, 0, 1.0};
-//+
-Line(1) = {1, 4};
-//+
-Line(2) = {4, 3};
-//+
-Line(3) = {3, 2};
-//+
-Line(4) = {2, 1};
-//+
-Curve Loop(1) = {3, 4, 1, 2};
-//+
-Surface(1) = {1};
-//+
-Physical Surface("Gamma_C", 5) = {1};
-//+
-Extrude {0, 0, 1} {
+// parametres
+h = 0.025;
+L =1;
+Lz = 5*L;
+
+// Definition des points: stem:[(x, y, z)] et taille de l'element /
+Point (1)={0,0,0,h};
+Point (2)={L,0,0,h};
+Point (3)={L,L,0,h};
+Point (4)={0,L,0,h};
+// Definition des lignes
+Line (1)={1,2};
+Line (2)={2,3};
+Line (3)={3,4};
+Line (4)={4,1};
+// Definition de la surface
+Curve Loop (1)={1,2,3,4} ;
+Plane Surface (1)={1};
+
+//Physical Curve ("Gamma") = {1,2,3,4};
+Physical Surface ("Gamma_I", 1)={1};
+
+out[] = Extrude {0, 0, Lz} {
   Surface{1}; 
-}
-//+
-Physical Surface("gamma_I", 28) = {18};
-//+
-Physical Surface("gamma_O", 29) = {26};
-//+
-Physical Volume("Omega_C", 30) = {1};
-//+
-Physical Surface("Gamma_C", 31) += {27};
-//+
-Physical Surface("Gamma_C", 31) += {14};
-//+
-Physical Surface("Gamma_C", 31) += {22};
+};
+
+Printf ("out[0]=%g", out[0]);
+Printf ("out[2]=%g", out[2]);
+Printf ("out[3]=%g", out[3]);
+Printf ("out[4]=%g", out[4]);
+
+Physical Volume ("Omega_C", out[1])={out[1]};
+Physical Surface ("Gamma_O", out[0])={out[0]};
+Physical Surface ("Gamma_C", 2)={out[2], out[3], out[4], out[5]};
