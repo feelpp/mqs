@@ -21,6 +21,12 @@ int main(int argc, char**argv )
 
     auto A0 = expr(soption(_name="functions.A"));
     Feel::cout << "A0=" << A0 << std::endl;
+     
+    auto gI = expr(soption(_name="functions.gI"));
+    Feel::cout << "gI=" << gI << std::endl;
+
+    auto g0 = expr(soption(_name="functions.gO"));
+    Feel::cout << "gO=" << gO << std::endl;
 
     //Recuperer mu,sigma,
 
@@ -66,12 +72,18 @@ int main(int argc, char**argv )
 
         a1.solve(_rhs=l1,_solution=a1);
 
-        /*l2 = integrate(_range=elements(cond_mesh),
-                    _expr = sigma * inner( idv(A) - idt(A), grad(phi) );
+        /*
+        l2 = integrate(_range=elements(cond_mesh),
+                    _expr = sigma * inner( idv(A) - idt(A), grad(psi) );
         
         a2 += integrate( range=elements(cond_mesh),
-                    _expr = sigma * dt * inner(idt(V), grad(phi) );
-        */           
+                    _expr = sigma * dt * inner(idt(V), grad(psi) );
+
+        a2 += on(_range=markedfaces(cond_mesh,"Omega_I"), _rhs=l2, _element=psi, 
+                _expr= gI );
+        a2 += on(_range=markedfaces(cond_mesh,"Omega_O"), _rhs=l2, _element=psi, 
+                _expr= gO );
+        */              
         e->step(t)->add( "a1", a1);
         e->save();
         t += dt;
