@@ -79,9 +79,9 @@ int main(int argc, char**argv )
         a2 += integrate( range=elements(cond_mesh),
                     _expr = sigma * dt * inner(idt(V), grad(psi) );
 
-        a2 += on(_range=markedfaces(cond_mesh,"Omega_I"), _rhs=l2, _element=psi, 
+        a2 += on(_range=markedfaces(cond_mesh,"Gamma_I"), _rhs=l2, _element=psi, 
                 _expr= gI );
-        a2 += on(_range=markedfaces(cond_mesh,"Omega_O"), _rhs=l2, _element=psi, 
+        a2 += on(_range=markedfaces(cond_mesh,"Gamma_O"), _rhs=l2, _element=psi, 
                 _expr= gO );
         */              
         e->step(t)->add( "a1", a1);
