@@ -38,17 +38,17 @@ int main(int argc, char**argv )
 
     //Recuperer mu,sigma,
 
-    double mu = 1
+    double mu = 1;
 
-    double sigma = 58000
+    double sigma = 58000;
 
     double dt = doption(_name = "ts.time-step");
-    std::cout << "time-step=" << u0 << std::endl;
+    std::cout << "time-step=" << dt << std::endl;
 
     double tmax = doption(_name = "ts.time-final");
-    std::cout << "time-final=" << u0 << std::endl;
+    std::cout << "time-final=" << tmax << std::endl;
 
-    auto mesh = loadMesh(_mesh=new Mesh<Simplex<2>>);
+    auto mesh = loadMesh(_mesh=new Mesh<Simplex<3>>);
     auto cond_mesh = createSubmesh(mesh,markedelements(mesh,"Omega_C"));
 
     auto Ah = Pchv<3>( mesh );
