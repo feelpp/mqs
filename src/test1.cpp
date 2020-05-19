@@ -16,18 +16,13 @@ int main(int argc, char**argv )
                                    _author="Feel++ Consortium",
                                    _email="feelpp-devel@feelpp.org"));
 
-    /*
-    auto Ad = expr(soption(_name="functions.Ad"));
-    Feel::cout << "Ad=" << Ad << std::endl;
-    */
-
-    auto A0 = expr<3,1>(soption(_name="functions.A"));
+    auto A0 = expr<3,1>(soption(_name="functions.a"));
     Feel::cout << "A0=" << A0 << std::endl;
      
-    auto gI = expr<3,1>(soption(_name="functions.I"));
+    auto gI = expr<3,1>(soption(_name="functions.i"));
     Feel::cout << "gI=" << gI << std::endl;
 
-    auto gO = expr<3,1>(soption(_name="functions.O"));
+    auto gO = expr<3,1>(soption(_name="functions.o"));
     Feel::cout << "gO=" << gO << std::endl;
 
 #if 0
@@ -35,7 +30,7 @@ int main(int argc, char**argv )
     Feel::cout << "gC=" << gC << std::endl;
 #endif
 
-    auto V = expr(soption(_name="functions.V"));
+    auto V = expr(soption(_name="functions.v"));
     Feel::cout << "V=" << V << std::endl;
 
     //Recuperer mu,sigma,
