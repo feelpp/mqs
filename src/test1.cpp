@@ -24,14 +24,16 @@ int main(int argc, char**argv )
     auto A0 = expr(soption(_name="functions.A"));
     Feel::cout << "A0=" << A0 << std::endl;
      
-    auto gI = expr(soption(_name="functions.gI"));
+    auto gI = expr<3,1>(soption(_name="functions.I"));
     Feel::cout << "gI=" << gI << std::endl;
 
-    auto gO = expr(soption(_name="functions.gO"));
+    auto gO = expr<3,1>(soption(_name="functions.O"));
     Feel::cout << "gO=" << gO << std::endl;
 
-    auto gC = expr(soption(_name="functions.gC"));
+#if 0
+    auto gC = expr<3,1>(soption(_name="functions.C"));
     Feel::cout << "gC=" << gC << std::endl;
+#endif
 
     auto V = expr(soption(_name="functions.V"));
     Feel::cout << "V=" << V << std::endl;
@@ -71,7 +73,7 @@ int main(int argc, char**argv )
         
         a1 = integrate(_range=elements(mesh),
                     _expr = (dt/mu) * inner(curl(phi) , curlt(A)) );
-        a1 += integrate( range=elements(cond_mesh),
+        a1 += integrate(_range=elements(cond_mesh),
                     _expr = sigma * inner(id(phi) , idt(A) ));
         a1 += on(_range=markedfaces(mesh,"Gamma_I"), _rhs=l1, _element=phi, 
                 _expr= gI );
@@ -81,14 +83,9 @@ int main(int argc, char**argv )
         a1 += on(_range=markedfaces(mesh,"Gamma_C"), _rhs=l1, _element=phi, 
                 _expr= gC);
 #endif
-        /*
-        a1 += on(_range=markedfaces(mesh,"Gamma_D"), _rhs=l1, _element=phi, 
-                _expr= Ad );
-        */
-
-        a1.solve(_rhs=l1,_solution=a1);
+        a1.solve(_rhs=l1,_solution=A);
        
-        e->step(t)->add( "a1", a1);
+        e->step(t)->add( "A", A);
         e->save();
         t += dt;
     }
