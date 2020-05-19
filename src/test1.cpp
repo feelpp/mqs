@@ -21,7 +21,7 @@ int main(int argc, char**argv )
     Feel::cout << "Ad=" << Ad << std::endl;
     */
 
-    auto A0 = expr(soption(_name="functions.A"));
+    auto A0 = expr<3,1>(soption(_name="functions.A"));
     Feel::cout << "A0=" << A0 << std::endl;
      
     auto gI = expr<3,1>(soption(_name="functions.I"));
