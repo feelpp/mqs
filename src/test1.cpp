@@ -67,7 +67,7 @@ int main(int argc, char**argv )
     while(t < tmax){
 
         l1 = integrate(_range=elements(cond_mesh),
-                        _expr = sigma * inner(id(phi) , idv(A) - dt*grad(V)) );
+                        _expr = sigma * inner(id(phi) , idv(A) - dt*grad<3,1>(V)) );
         
         a1 = integrate(_range=elements(mesh),
                     _expr = (dt/mu) * inner(curl(phi) , curlt(A)) );
@@ -77,8 +77,10 @@ int main(int argc, char**argv )
                 _expr= gI );
         a1 += on(_range=markedfaces(mesh,"Gamma_O"), _rhs=l1, _element=phi, 
                 _expr= gO);
+#if 0
         a1 += on(_range=markedfaces(mesh,"Gamma_C"), _rhs=l1, _element=phi, 
                 _expr= gC);
+#endif
         /*
         a1 += on(_range=markedfaces(mesh,"Gamma_D"), _rhs=l1, _element=phi, 
                 _expr= Ad );
