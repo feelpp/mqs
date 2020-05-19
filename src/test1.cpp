@@ -67,7 +67,7 @@ int main(int argc, char**argv )
     while(t < tmax){
 
         l1 = integrate(_range=elements(cond_mesh),
-                        _expr = sigma * inner(id(phi) , idv(A) - dt*grad<3,1>(V)) );
+                        _expr = sigma * inner(id(phi) , idv(A) - dt*trans(grad<3>(V))) );
         
         a1 = integrate(_range=elements(mesh),
                     _expr = (dt/mu) * inner(curl(phi) , curlt(A)) );
