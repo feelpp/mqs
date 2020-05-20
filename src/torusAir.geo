@@ -54,7 +54,6 @@ Physical Surface("V1") = {out[11]};
 Bord=newl; Surface Loop(Bord) = {out[0], S, out[2], out[3], out[4], out[5],
                                             out[7], out[8], out[9], out[10],
                                             out[6], out[11]};
-
 // Define Air (inf section)
 
 If ( IsAir != 0 )
@@ -62,3 +61,61 @@ If ( IsAir != 0 )
   P8=newp; Point(P8) = {0,     0, -r_inf, h_inf};
   P9=newp; Point(P9) = {r_inf, 0, 0, h_inf};
   P10=newp; Point(P10) = {0,   0, r_inf, h_inf};
+
+  // L58=newl; Line(L58) = {5, P8};
+  C89=newl; Circle(C89) = {P8, P0, P9};
+  C910=newl; Circle(C910) = {P9, P0, P10};
+  L107=newl; Line(L107) = {P8, P10};
+
+  L_inf=newl; Line Loop(L_inf) = {C89, C910, -L107};
+  // L_inf=newl; Line Loop(L_inf) = {L58, C89, C910, L107, -C67, -C56};
+  S_inf=newreg; Plane Surface(S_inf) = {L_inf};
+
+  // Build 3D geom
+  quart1[] = Extrude { {0,0,1} , {0,0,0} , Pi/2. } { 
+    Surface{S_inf}; //Layers{N_Layers}; //Recombine; 
+  };
+
+  quart2[] = Extrude { {0,0,1} , {0,0,0} , Pi/2 } { 
+    Surface{quart1[0]}; //Layers{N_Layers/2}; //Recombine; 
+  };
+
+  quart3[] = Extrude { {0,0,1} , {0,0,0} , Pi/2 } { 
+    Surface{quart2[0]}; //Layers{N_Layers/2}; //Recombine; 
+  };
+
+  quart4[] = Extrude { {0,0,1} , {0,0,0} , Pi/2 } { 
+    Surface{quart3[0]}; //Layers{N_Layers/2}; //Recombine; 
+  };
+
+  // size of an array
+  Printf("quart1[2]=%g", quart1[2]);
+  Printf("quart1[3]=%g", quart1[3]);
+  Printf("quart2[3]=%g", quart2[3]);
+  Printf("quart3[3]=%g", quart3[3]);
+  Printf("quart4[3]=%g", quart4[3]);
+  
+  Recursive Delete {
+    Surface{S_inf};
+    Surface{quart1[0]}; 
+    Surface{quart2[0]}; 
+    Surface{quart3[0]}; 
+    Surface{quart4[0]}; 
+  }
+
+  Infty=newl; Surface Loop(Infty) = {quart1[2], quart2[2], quart3[2], quart4[2],
+                                     quart1[3], quart2[3], quart3[3], quart4[3]};
+  Air = newv; Volume(Air) = {Infty, -Bord};
+  Physical Volume("air") = {Air};
+  Physical Surface("Infty") = {quart1[2], quart2[2], quart3[2], quart4[2],
+                               quart1[3], quart2[3], quart3[3], quart4[3]};
+
+  Recursive Delete {
+    Volume{quart1[1]};
+    Volume{quart2[1]};
+    Volume{quart3[1]};
+    Volume{quart4[1]};
+  }
+
+  Coherence;
+EndIf
