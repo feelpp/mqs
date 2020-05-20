@@ -1,5 +1,6 @@
 SET(SRC
   test1
+  test2
   mqs-blockform
   )
 foreach(app ${SRC})
