@@ -58,7 +58,7 @@ int main(int argc, char**argv )
                     _expr = sigma * inner( -dA, trans(grad(psi)) ));
         
         a2 = integrate(_range=elements(cond_mesh),
-                    _expr = sigma * dt * inner(idt(V), trans(grad(psi)) ));
+                    _expr = sigma * dt * inner(gradt(V), trans(grad(psi)) ));
 
         a2 += on(_range=markedfaces(cond_mesh,"Gamma_I"), _rhs=l2, _element=psi, 
                 _expr= gI );
