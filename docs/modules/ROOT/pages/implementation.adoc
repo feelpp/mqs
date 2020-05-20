@@ -1,0 +1,85 @@
+= Implementation
+
+To implement the two discretized equations obtained in the discretization paragraph, we will first program the resolution of the first equation and then of the second one. Finally, we will implement the two equations together, and solve the system.
+
+== First equation
+
+Remember that for the first equation we have : 
+
+[stem]
+++++
+\begin{equation}
+\int_{\Omega} \frac{\Delta t}{\mu} \, (\nabla \times \phi) \cdot (\nabla \times A^n) - \int_{\Gamma_D} \frac{1}{\mu} A_D \cdot (\nabla \times A^n) + \int_{\Omega_C} \sigma \phi \cd(ot A^n + \Delta t \nabla V) =  \int_{\Omega_C} \sigma \phi \cdot A^{n-1}
+\end{equation}
+++++ 
+
+To solve the first equation only, we will assume that V is known.
+By slightly transforming the first equation, we obtain :
+
+[stem]
+++++
+\begin{equation}
+\int_{\Omega} \frac{\Delta t}{\mu} \, (\nabla \times \phi) \cdot (\nabla \times A^n) - \int_{\Gamma_D} \frac{1}{\mu} A_D \cdot (\nabla \times A^n) + \int_{\Omega_C} \sigma \phi \cdot A^n =  \int_{\Omega_C} \sigma \phi \cdot (A^{n-1} - \Delta t \nabla V)
+\end{equation}
+++++ 
+
+We will implement this equation under feelpp, using the function stem:[V = -\frac{1}{\mu*\sigma}z] (the exact solution stem:[A] for this stem:[V] is stem:[A = (xz,0,0)])
+
+This is the code:
+
+[sources,cpp]
+----
+include::{src}/test1.cpp[tag=all]
+----
+
+and the config file :
+
+[sources,cfg]
+----
+include::{src}/test1.cfg[]
+----
+
+(here will be the results and analysis of error)
+
+== Second equation
+
+Our second equation is : 
+
+[stem]
+++++
+\begin{equation}
+ \int_{\Omega_C} \sigma (A^n + \Delta t\nabla V) \cdot \nabla \psi =  \int_{\Omega_C} \sigma A^{n-1} \cdot \nabla \psi
+\end{equation} 
+++++
+
+To solve the first equation only, we will assume that stem:[\frac{\partial A}{\partial t}] is known.
+By slightly transforming this equation, we obtain :
+
+[stem]
+++++
+\begin{equation}
+ \int_{\Omega_C} \sigma \Delta t\nabla V \cdot \nabla \psi = - \int_{\Omega_C} \frac{\partial A}{\partial t} \cdot \nabla \psi
+\end{equation} 
+++++
+
+We will implement this equation under feelpp, using the function stem:[\frac{\partial A}{\partial t} = (0,0,1)] (it's one solution for stem:[V = z] )
+
+This is the code:
+
+[sources,cpp]
+----
+include::{src}/test2.cpp[tag=all]
+----
+
+and the config file :
+
+[sources,cfg]
+----
+include::{src}/test2.cfg[]
+----
+
+(here will be the results and analysis of error)
+
+== Coupled system
+
+...
