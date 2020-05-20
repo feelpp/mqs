@@ -12,7 +12,7 @@ int main(int argc, char**argv )
       ( "hc", po::value<std::string>()->default_value( "1" ), "convective heat transfer coefficient" )
       ( "Tinf", po::value<std::string>()->default_value( "1" ), "Temperature far from boundary" );
      Environment env( _argc=argc, _argv=argv,_desc=options,
-                      _about=about(_name="heat",
+                      _about=about(_name="test2",
                                    _author="Feel++ Consortium",
                                    _email="feelpp-devel@feelpp.org"));
      
@@ -23,7 +23,7 @@ int main(int argc, char**argv )
     Feel::cout << "gO=" << gO << std::endl;
 
     auto dA = expr<3,1>(soption(_name="functions.a"));
-    Feel::cout << "A=" << A << std::endl;
+    Feel::cout << "dA=" << dA << std::endl;
 
     //Recuperer sigma,
 
@@ -55,10 +55,10 @@ int main(int argc, char**argv )
     while(t < tmax){
 
         l2 = integrate(_range=elements(cond_mesh),
-                    _expr = sigma * inner( dA, grad(psi) );
+                    _expr = sigma * inner( -dA, trans(grad(psi)) ));
         
-        a2 += integrate(_range=elements(cond_mesh),
-                    _expr = sigma * dt * inner(idt(V), grad(psi) );
+        a2 = integrate(_range=elements(cond_mesh),
+                    _expr = sigma * dt * inner(idt(V), trans(grad(psi)) ));
 
         a2 += on(_range=markedfaces(cond_mesh,"Gamma_I"), _rhs=l2, _element=psi, 
                 _expr= gI );
