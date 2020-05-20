@@ -25,15 +25,8 @@ int main(int argc, char**argv )
     auto gO = expr<3,1>(soption(_name="functions.o"));
     Feel::cout << "gO=" << gO << std::endl;
 
-#if 0
-    auto gC = expr<3,1>(soption(_name="functions.C"));
-    Feel::cout << "gC=" << gC << std::endl;
-#endif
-
     auto V = expr(soption(_name="functions.v"));
     Feel::cout << "V=" << V << std::endl;
-
-    //Recuperer mu,sigma,
 
     double mu = 1;
 
@@ -48,7 +41,7 @@ int main(int argc, char**argv )
     auto mesh = loadMesh(_mesh=new Mesh<Simplex<3>>);
     auto cond_mesh = createSubmesh(mesh,markedelements(mesh,"Omega_C"));
 
-    auto Ah = Pchv<3>( mesh );
+    auto Ah = Pchv<1>( mesh );
 
     auto A = Ah->element(A0);
 
@@ -74,10 +67,7 @@ int main(int argc, char**argv )
                 _expr= gI );
         a1 += on(_range=markedfaces(mesh,"Gamma_O"), _rhs=l1, _element=phi, 
                 _expr= gO);
-#if 0
-        a1 += on(_range=markedfaces(mesh,"Gamma_C"), _rhs=l1, _element=phi, 
-                _expr= gC);
-#endif
+                
         a1.solve(_rhs=l1,_solution=A);
        
         e->step(t)->add( "A", A);
