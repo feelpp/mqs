@@ -25,9 +25,11 @@ int main(int argc, char**argv )
     auto dA = expr<3,1>(soption(_name="functions.a"));
     Feel::cout << "dA=" << dA << std::endl;
 
-    //Recuperer sigma,
+    auto sigma = expr(soption(_name="functions.s"));
+    Feel::cout << "sigma=" << sigma << std::endl;
 
-    double sigma = 58000;
+    auto uexact = expr<3,1>(soption(_name="functions.e"));
+    Feel::cout << "uexact=" << uexact << std::endl; 
 
     double dt = doption(_name = "ts.time-step");
     std::cout << "time-step=" << dt << std::endl;
@@ -38,8 +40,8 @@ int main(int argc, char**argv )
     auto mesh = loadMesh(_mesh=new Mesh<Simplex<3>>);
     auto cond_mesh = createSubmesh(mesh,markedelements(mesh,"Omega_C"));
 
-    auto Ah = Pchv<3>( mesh );
-    auto Vh = Pch<3>( cond_mesh );
+    auto Ah = Pchv<1>( mesh );
+    auto Vh = Pch<1>( cond_mesh );
 
     auto V = Vh->element();
 
@@ -58,7 +60,7 @@ int main(int argc, char**argv )
                     _expr = sigma * inner( -dA, trans(grad(psi)) ));
         
         a2 = integrate(_range=elements(cond_mesh),
-                    _expr = sigma * dt * inner(gradt(V), trans(grad(psi)) ));
+                    _expr = sigma * dt * inner(gradt(V), grad(psi) ));
 
         a2 += on(_range=markedfaces(cond_mesh,"Gamma_I"), _rhs=l2, _element=psi, 
                 _expr= gI );
