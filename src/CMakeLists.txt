@@ -1,7 +1,5 @@
 SET(SRC
-  test1
   test2
-  mqs-blockform
   )
 foreach(app ${SRC})
   if ( EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${app}.cfg AND EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${app}.geo  )
