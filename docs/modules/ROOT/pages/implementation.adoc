@@ -28,10 +28,9 @@ Note that the exact solution stem:[A] for this stem:[V] is stem:[A = (xz,0,0)].
 
 This is the code:
 
-:sourcedir: src/
 [source,cpp]
 ----
-include::{sourcedir}/test1.cpp[tag=all]
+include::/src/test1.cpp[tag=all]
 ----
 
 and the config file :
