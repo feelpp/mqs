@@ -12,7 +12,7 @@ int main(int argc, char**argv )
       ( "hc", po::value<std::string>()->default_value( "1" ), "convective heat transfer coefficient" )
       ( "Tinf", po::value<std::string>()->default_value( "1" ), "Temperature far from boundary" );
      Environment env( _argc=argc, _argv=argv,_desc=options,
-                      _about=about(_name="heat",
+                      _about=about(_name="test1",
                                    _author="Feel++ Consortium",
                                    _email="feelpp-devel@feelpp.org"));
 
@@ -28,9 +28,14 @@ int main(int argc, char**argv )
     auto V = expr(soption(_name="functions.v"));
     Feel::cout << "V=" << V << std::endl;
 
-    double mu = 1;
+    auto mu = expr(soption(_name="functions.m"));
+    Feel::cout << "mu=" << mu<< std::endl;
 
-    double sigma = 58000;
+    auto sigma = expr(soption(_name="functions.s"));
+    Feel::cout << "sigma=" << sigma << std::endl;
+
+    auto uexact = expr<3,1>(soption(_name="functions.e"));
+    Feel::cout << "uexact=" << uexact << std::endl; 
 
     double dt = doption(_name = "ts.time-step");
     std::cout << "time-step=" << dt << std::endl;
