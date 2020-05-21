@@ -27,14 +27,15 @@ We will implement this equation under feelpp, using the function stem:[V = -\fra
 
 This is the code:
 
-[sources,cpp]
+:sourcedir: src
+[source,cpp]
 ----
-include::{src}/test1.cpp[tag=all]
+include::{sourcedir}/test1.cpp[tag=all]
 ----
 
 and the config file :
 
-[sources,cfg]
+[source,cfg]
 ----
 include::{src}/test1.cfg[]
 ----
@@ -66,16 +67,16 @@ We will implement this equation under feelpp, using the function stem:[\frac{\pa
 
 This is the code:
 
-[sources,cpp]
+[source,cpp]
 ----
-include::{src}/test2.cpp[tag=all]
+include::{sourcedir}/test2.cpp[tag=all]
 ----
 
 and the config file :
 
-[sources,cfg]
+[source,cfg]
 ----
-include::{src}/test2.cfg[]
+include::{sourcedir}/test2.cfg[]
 ----
 
 (here will be the results and analysis of error)
