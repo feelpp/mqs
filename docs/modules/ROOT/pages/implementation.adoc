@@ -9,7 +9,7 @@ Remember that for the first equation we have :
 [stem]
 ++++
 \begin{equation}
-\int_{\Omega} \frac{\Delta t}{\mu} \, (\nabla \times \phi) \cdot (\nabla \times A^n) - \int_{\Gamma_D} \frac{1}{\mu} A_D \cdot (\nabla \times A^n) + \int_{\Omega_C} \sigma \phi \cd(ot A^n + \Delta t \nabla V) =  \int_{\Omega_C} \sigma \phi \cdot A^{n-1}
+\int_{\Omega} \frac{\Delta t}{\mu} \, (\nabla \times \phi) \cdot (\nabla \times A^n) - \int_{\Gamma_D} \frac{1}{\mu} A_D \cdot (\nabla \times A^n) + \int_{\Omega_C} \sigma \phi \cdot (A^n + \Delta t \nabla V) =  \int_{\Omega_C} \sigma \phi \cdot A^{n-1}
 \end{equation}
 ++++ 
 
@@ -23,11 +23,12 @@ By slightly transforming the first equation, we obtain :
 \end{equation}
 ++++ 
 
-We will implement this equation under feelpp, using the function stem:[V = -\frac{1}{\mu*\sigma}z] (the exact solution stem:[A] for this stem:[V] is stem:[A = (xz,0,0)])
+We will implement this equation under feelpp, using the function stem:[V = -\frac{1}{\mu*\sigma}z] 
+Note that the exact solution stem:[A] for this stem:[V] is stem:[A = (xz,0,0)].
 
 This is the code:
 
-:sourcedir: src
+:sourcedir: src/
 [source,cpp]
 ----
 include::{sourcedir}/test1.cpp[tag=all]
@@ -37,7 +38,7 @@ and the config file :
 
 [source,cfg]
 ----
-include::{src}/test1.cfg[]
+include::{sourcedir}/test1.cfg[]
 ----
 
 (here will be the results and analysis of error)
@@ -63,7 +64,8 @@ By slightly transforming this equation, we obtain :
 \end{equation} 
 ++++
 
-We will implement this equation under feelpp, using the function stem:[\frac{\partial A}{\partial t} = (0,0,1)] (it's one solution for stem:[V = z] )
+We will implement this equation under feelpp, using the function stem:[\frac{\partial A}{\partial t} = (0,0,1)]
+It's one solution when we take stem:[V = z].
 
 This is the code:
 
