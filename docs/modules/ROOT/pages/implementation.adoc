@@ -30,14 +30,14 @@ This is the code:
 
 [source,cpp]
 ----
-include::https://raw.githubusercontent.com/feelpp/mqs/master/src/test1.cpp?token=AOQZFZ3Y57SROO2SCQDG5Z262DIXC
+include::https://raw.githubusercontent.com/feelpp/mqs/master/src/test1.cpp[tag=all]
 ----
 
 and the config file :
 
 [source,cfg]
 ----
-include::https://raw.githubusercontent.com/feelpp/mqs/master/src/test1.cfg?token=AOQZFZ4MQDNHRRANWZD55G262DIZU[]
+include::https://raw.githubusercontent.com/feelpp/mqs/master/src/test1.cfg[tag=all]
 ----
 
 (here will be the results and analysis of error)
@@ -70,14 +70,14 @@ This is the code:
 
 [source,cpp]
 ----
-include::https://raw.githubusercontent.com/feelpp/mqs/master/src/test2.cpp?token=AOQZFZYUAYGMMKWUDT6IHIS62DI46[]
+include::https://raw.githubusercontent.com/feelpp/mqs/master/src/test2.cpp[tag=all]
 ----
 
 and the config file :
 
 [source,cfg]
 ----
-include::https://raw.githubusercontent.com/feelpp/mqs/master/src/test2.cfg?token=AOQZFZ2KK33JSLQPPOUKYDK62DI7C[]
+include::https://raw.githubusercontent.com/feelpp/mqs/master/src/test2.cfg[tag=all]
 ----
 
 (here will be the results and analysis of error)
