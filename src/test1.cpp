@@ -24,18 +24,20 @@ int main(int argc, char**argv )
 
     auto gO = expr<3,1>(soption(_name="functions.o"));
     Feel::cout << "gO=" << gO << std::endl;
-
+#if 0
     auto V = expr(soption(_name="functions.v"));
     Feel::cout << "V=" << V << std::endl;
-
+#endif
+    auto V = expr<3,1>(soption(_name="functions.v"));
+    Feel::cout << "V=" << V << std::endl;
     auto mu = expr(soption(_name="functions.m"));
     Feel::cout << "mu=" << mu<< std::endl;
 
     auto sigma = expr(soption(_name="functions.s"));
     Feel::cout << "sigma=" << sigma << std::endl;
 
-    auto uexact = expr<3,1>(soption(_name="functions.e"));
-    Feel::cout << "uexact=" << uexact << std::endl; 
+    auto Aexact = expr<3,1>(soption(_name="functions.e"));
+    Feel::cout << "uexact=" << Aexact << std::endl; 
 
     double dt = doption(_name = "ts.time-step");
     std::cout << "time-step=" << dt << std::endl;
@@ -60,10 +62,12 @@ int main(int argc, char**argv )
     auto a1 = form2( _trial=Ah, _test=Ah);
 
     while(t < tmax){
-
+#if 0
         l1 = integrate(_range=elements(cond_mesh),
                         _expr = sigma * inner(id(phi) , idv(A) - dt*trans(grad<3>(V))) );
-        
+#endif  
+        l1 = integrate(_range=elements(cond_mesh),
+                        _expr = sigma * inner(id(phi) , idv(A) - dt*V) );     
         a1 = integrate(_range=elements(mesh),
                     _expr = (dt/mu) * inner(curl(phi) , curlt(A)) );
         a1 += integrate(_range=elements(cond_mesh),
@@ -76,6 +80,7 @@ int main(int argc, char**argv )
         a1.solve(_rhs=l1,_solution=A);
        
         e->step(t)->add( "A", A);
+        e->step(t)->add( "Aexact", Aexact);
         e->save();
         t += dt;
     }
