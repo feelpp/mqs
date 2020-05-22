@@ -30,14 +30,14 @@ This is the code:
 
 [source,cpp]
 ----
-include::https://raw.githubusercontent.com/feelpp/mqs/master/src/test1.cpp[tag=all]
+include::https://raw.githubusercontent.com/feelpp/mqs/master/src/test1.cpp[]
 ----
 
 and the config file :
 
 [source,cfg]
 ----
-include::https://raw.githubusercontent.com/feelpp/mqs/master/src/test1.cfg[tag=all]
+include::https://raw.githubusercontent.com/feelpp/mqs/master/src/test1.cfg
 ----
 
 (here will be the results and analysis of error)
