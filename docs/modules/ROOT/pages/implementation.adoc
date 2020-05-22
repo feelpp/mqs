@@ -30,7 +30,7 @@ This is the code:
 
 [source,cpp]
 ----
-include::https://raw.githubusercontent.com/feelpp/mqs/master/src/test1.cpp?token=AOQZFZ3Y57SROO2SCQDG5Z262DIXC[]
+include::https://raw.githubusercontent.com/feelpp/mqs/master/src/test1.cpp?token=AOQZFZ3Y57SROO2SCQDG5Z262DIXC
 ----
 
 and the config file :
@@ -53,7 +53,7 @@ Our second equation is :
 \end{equation} 
 ++++
 
-To solve the first equation only, we will assume that stem:[\frac{\partial A}{\partial t}] is known.
+To solve the second equation only, we will assume that stem:[\frac{\partial A}{\partial t}] is known.
 By slightly transforming this equation, we obtain :
 
 [stem]
