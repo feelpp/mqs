@@ -40,8 +40,8 @@ int main(int argc, char**argv )
     auto sigma = expr(soption(_name="functions.s"));
     Feel::cout << "sigma=" << sigma << std::endl;
 
-    auto Aexact = expr<3,1>(soption(_name="functions.e"));
-    Feel::cout << "uexact=" << Aexact << std::endl; 
+    auto Aexact_g = expr<3,1>(soption(_name="functions.e"));
+    Feel::cout << "Aexact=" << Aexact_g << std::endl; 
 
     double dt = doption(_name = "ts.time-step");
     std::cout << "time-step=" << dt << std::endl;
@@ -58,6 +58,8 @@ int main(int argc, char**argv )
 
     auto phi = Ah->element();
 
+    auto Aexact = Ah->element();
+
     auto l1 = form1( _test=Ah );
 
     double t = 0;
@@ -65,7 +67,11 @@ int main(int argc, char**argv )
     auto e = exporter( _mesh=mesh );
     auto a1 = form2( _trial=Ah, _test=Ah);
 
-    Aexact.setParameterValues({{"t",t}});
+
+
+    Aexact_g.setParameterValues({{"t",t}});
+    Aexact = project(_space=Ah, _expr=Aexact_g);
+
     gradV.setParameterValues({{"t",t}});
     e->step(t)->add( "A", A0);
     e->step(t)->add( "Aexact", Aexact);
@@ -82,7 +88,8 @@ int main(int argc, char**argv )
         l1 = integrate(_range=elements(cond_mesh),
                         _expr = sigma * inner(id(phi) , idv(A) - dt*trans(grad<3>(V))) );
 #endif  
-        Aexact.setParameterValues({{"t",t}});
+        Aexact_g.setParameterValues({{"t",t}});
+        Aexact = project(_space=Ah, _expr=Aexact_g);
         gradV.setParameterValues({{"t",t}});
         gO.setParameterValues({{"t",t}});
         gI.setParameterValues({{"t",t}});
@@ -107,8 +114,8 @@ int main(int argc, char**argv )
         e->step(t)->add( "Aexact", Aexact);
         e->save();
 
-        L2error = normL2(elements(mesh), (idv(A) - Aexact));
-        H1error = normH1(elements(mesh), _expr=(idv(A)-Aexact), _grad_expr=(gradv(A) - grad<3>(Aexact)) );
+        L2error = normL2(elements(mesh), (idv(A) - idv(Aexact)));
+        H1error = normH1(elements(mesh), _expr=(idv(A)-idv(Aexact)), _grad_expr=(gradv(A) - gradv(Aexact)) );
 
         Feel::cout << "H1 error at t = " << t << ": " << H1error << std::endl;
         Feel::cout << "L2 error at t = " << t << ": " << L2error << std::endl;
