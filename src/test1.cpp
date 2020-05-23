@@ -71,6 +71,11 @@ int main(int argc, char**argv )
     e->step(t)->add( "Aexact", Aexact);
     e->save();
 
+    double H1error = 0;
+    double L2error = 0;
+    Feel::cout << "H1 error at t = " << t << ": " << H1error << std::endl;
+    Feel::cout << "L2 error at t = " << t << ": " << L2error << std::endl;
+
     t += dt;
     while(t <= tmax){
 #if 0
@@ -101,6 +106,12 @@ int main(int argc, char**argv )
         e->step(t)->add( "A", A);
         e->step(t)->add( "Aexact", Aexact);
         e->save();
+
+        L2error = normL2(elements(mesh), (idv(A) - Aexact));
+        H1error = normH1(elements(mesh), _expr=(idv(A)-Aexact), _grad_expr=(gradv(A) - grad<3>(Aexact)) );
+
+        Feel::cout << "H1 error at t = " << t << ": " << H1error << std::endl;
+        Feel::cout << "L2 error at t = " << t << ": " << L2error << std::endl;
 
         t += dt;
     }
