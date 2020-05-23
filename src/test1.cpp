@@ -28,8 +28,12 @@ int main(int argc, char**argv )
     auto V = expr(soption(_name="functions.v"));
     Feel::cout << "V=" << V << std::endl;
 #endif
-    auto V = expr<3,1>(soption(_name="functions.v"));
-    Feel::cout << "V=" << V << std::endl;
+    auto gradV = expr<3,1>(soption(_name="functions.v"));
+    Feel::cout << "gradV=" << gradV << std::endl;
+
+    auto Ad = expr<3,1>(soption(_name="functions.d"));
+    Feel::cout << "Ad=" << Ad << std::endl;
+
     auto mu = expr(soption(_name="functions.m"));
     Feel::cout << "mu=" << mu<< std::endl;
 
@@ -56,18 +60,31 @@ int main(int argc, char**argv )
 
     auto l1 = form1( _test=Ah );
 
-    double t = dt;
+    double t = 0;
 
     auto e = exporter( _mesh=mesh );
     auto a1 = form2( _trial=Ah, _test=Ah);
 
-    while(t < tmax){
+    Aexact.setParameterValues({{"t",t}});
+    gradV.setParameterValues({{"t",t}});
+    e->step(t)->add( "A", A0);
+    e->step(t)->add( "Aexact", Aexact);
+    e->save();
+
+    t += dt;
+    while(t <= tmax){
 #if 0
         l1 = integrate(_range=elements(cond_mesh),
                         _expr = sigma * inner(id(phi) , idv(A) - dt*trans(grad<3>(V))) );
 #endif  
+        Aexact.setParameterValues({{"t",t}});
+        gradV.setParameterValues({{"t",t}});
+        gO.setParameterValues({{"t",t}});
+        gI.setParameterValues({{"t",t}});
+        Ad.setParameterValues({{"t",t}});
+
         l1 = integrate(_range=elements(cond_mesh),
-                        _expr = sigma * inner(id(phi) , idv(A) - dt*V) );     
+                        _expr = sigma * inner(id(phi) , idv(A) - dt*gradV) );     
         a1 = integrate(_range=elements(mesh),
                     _expr = (dt/mu) * inner(curl(phi) , curlt(A)) );
         a1 += integrate(_range=elements(cond_mesh),
@@ -76,12 +93,15 @@ int main(int argc, char**argv )
                 _expr= gI );
         a1 += on(_range=markedfaces(mesh,"Gamma_O"), _rhs=l1, _element=phi, 
                 _expr= gO);
+        a1 += on(_range=markedfaces(mesh,"Gamma_C"), _rhs=l1, _element=phi, 
+                _expr= Ad);
                 
         a1.solve(_rhs=l1,_solution=A);
-       
+
         e->step(t)->add( "A", A);
         e->step(t)->add( "Aexact", Aexact);
         e->save();
+
         t += dt;
     }
 }
