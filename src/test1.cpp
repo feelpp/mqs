@@ -67,8 +67,6 @@ int main(int argc, char**argv )
     auto e = exporter( _mesh=mesh );
     auto a1 = form2( _trial=Ah, _test=Ah);
 
-
-
     Aexact_g.setParameterValues({{"t",t}});
     Aexact = project(_space=Ah, _expr=Aexact_g);
 
