@@ -79,42 +79,43 @@ int main(int argc, char **argv)
         Feel::cout << "L2 error at t = " << t << ": " << L2error << std::endl;
 
         for (t = dt; t < max; t += dt)
+        {
 #if 0
         l1 = integrate(_range=elements(cond_mesh),
                         _expr = sigma * inner(id(phi) , idv(A) - dt*trans(grad<3>(V))) );
 #endif
-        Aexact_g.setParameterValues({{"t", t}});
-        Aexact = project(_space = Ah, _expr = Aexact_g);
-        gradV.setParameterValues({{"t", t}});
-        gO.setParameterValues({{"t", t}});
-        gI.setParameterValues({{"t", t}});
-        Ad.setParameterValues({{"t", t}});
+                Aexact_g.setParameterValues({{"t", t}});
+                Aexact = project(_space = Ah, _expr = Aexact_g);
+                gradV.setParameterValues({{"t", t}});
+                gO.setParameterValues({{"t", t}});
+                gI.setParameterValues({{"t", t}});
+                Ad.setParameterValues({{"t", t}});
 
-        l1.zero();
-        a1.zero();
-        l1 = integrate(_range = elements(cond_mesh),
-                       _expr = sigma * inner(id(phi), idv(A) - dt * gradV));
-        a1 = integrate(_range = elements(mesh),
-                       _expr = (dt / mu) * inner(curl(phi), curlt(A)));
-        a1 += integrate(_range = elements(cond_mesh),
-                        _expr = sigma * inner(id(phi), idt(A)));
-        a1 += on(_range = markedfaces(mesh, "Gamma_I"), _rhs = l1, _element = phi,
-                 _expr = gI);
-        a1 += on(_range = markedfaces(mesh, "Gamma_O"), _rhs = l1, _element = phi,
-                 _expr = gO);
-        a1 += on(_range = markedfaces(mesh, "Gamma_C"), _rhs = l1, _element = phi,
-                 _expr = Ad);
+                l1.zero();
+                a1.zero();
+                l1 = integrate(_range = elements(cond_mesh),
+                               _expr = sigma * inner(id(phi), idv(A) - dt * gradV));
+                a1 = integrate(_range = elements(mesh),
+                               _expr = (dt / mu) * inner(curl(phi), curlt(A)));
+                a1 += integrate(_range = elements(cond_mesh),
+                                _expr = sigma * inner(id(phi), idt(A)));
+                a1 += on(_range = markedfaces(mesh, "Gamma_I"), _rhs = l1, _element = phi,
+                         _expr = gI);
+                a1 += on(_range = markedfaces(mesh, "Gamma_O"), _rhs = l1, _element = phi,
+                         _expr = gO);
+                a1 += on(_range = markedfaces(mesh, "Gamma_C"), _rhs = l1, _element = phi,
+                         _expr = Ad);
 
-        a1.solve(_rhs = l1, _solution = A);
+                a1.solve(_rhs = l1, _solution = A);
 
-        e->step(t)->add("A", A);
-        e->step(t)->add("Aexact", Aexact_g);
-        e->save();
+                e->step(t)->add("A", A);
+                e->step(t)->add("Aexact", Aexact_g);
+                e->save();
 
-        L2Aexact = normL2(_range = elements(mesh), _expr = Aexact_g);
-        L2error = normL2(elements(mesh), (idv(A) - idv(Aexact)));
-        H1error = normH1(elements(mesh), _expr = (idv(A) - idv(Aexact)), _grad_expr = (gradv(A) - gradv(Aexact)));
+                L2Aexact = normL2(_range = elements(mesh), _expr = Aexact_g);
+                L2error = normL2(elements(mesh), (idv(A) - idv(Aexact)));
+                H1error = normH1(elements(mesh), _expr = (idv(A) - idv(Aexact)), _grad_expr = (gradv(A) - gradv(Aexact)));
 
-        Feel::cout << t << "" << L2error << " " << L2error / L2Aexact << " " << H1error << std::endl;
-}
+                Feel::cout << t << "" << L2error << " " << L2error / L2Aexact << " " << H1error << std::endl;
+        }
 }
