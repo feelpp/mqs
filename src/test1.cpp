@@ -78,7 +78,7 @@ int main(int argc, char **argv)
         Feel::cout << "H1 error at t = " << t << ": " << H1error << std::endl;
         Feel::cout << "L2 error at t = " << t << ": " << L2error << std::endl;
 
-        for (t = dt; t < max; t += dt)
+        for (t = dt; t < tmax; t += dt)
         {
 #if 0
         l1 = integrate(_range=elements(cond_mesh),
