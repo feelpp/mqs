@@ -35,3 +35,10 @@ ninja feelpp_add_testcase_cases
 
 it will install the data in the build directory to ease the access to the application.
 If you modify the cases files in the source directory, simply re-run the `ninja feelpp_add_testcase_cases` to update the data
+
+== Get  simulation Data from remote location
+
+----
+mkdir $HOME/feel
+rsync -avz <remote simulation server>:/home/<login>/feel/hifimagnet .
+----
