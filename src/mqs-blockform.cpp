@@ -25,7 +25,7 @@ int main(int argc, char**argv )
 				_email="feelpp-devel@feelpp.org"));
 
   // Dirichlet for Magnetic potential
-  auto Ad = expr(soption(_name="functions.Ad"));
+  auto Ad = expr<3,1>(soption(_name="functions.Ad"));
   Feel::cout << "Ad=" << Ad << std::endl;
 
   // Dirichlet for electric potential
@@ -66,7 +66,7 @@ int main(int argc, char**argv )
   auto psi = Vh->element();
   
   auto Zh = product(Ah,Vh);
-  auto U = Zh->element();
+  auto U = Zh.element();
 #if 1
   auto cAh = Zh.functionSpace(0_c);
   auto cVh = Zh.functionSpace(1_c);
@@ -96,10 +96,10 @@ int main(int argc, char**argv )
 
     // Current conservation
     lhs(1_c, 0_c) += integrate( _range=elements(cond_mesh),
-			       _expr = sigma * inner(idt(A), grad(psi)) );
+			       _expr = sigma * inner(idt(A), trans(grad(psi))) );
       
-    lhs(1_c, 1_c) = integrate( _range=elements(cond_mesh),
-			       _expr = sigma * dt * inner(idt(V), grad(psi)) );
+    lhs(1_c, 1_c) += integrate( _range=elements(cond_mesh),
+			       _expr = sigma * dt * inner(idt(V), trans(grad(psi))) );
 
     /* Add Boundary conditions */
     lhs(0_c, 0_c) += on(_range=markedfaces(mesh,"Infty"), _rhs=rhs(0_c), _element=phi, _expr= Ad);
@@ -107,7 +107,7 @@ int main(int argc, char**argv )
 #if 1
     /* 1/4th of a torus + Air */
     lhs(0_c, 0_c) += on(_range=markedfaces(mesh,"V0"), _rhs=rhs(0_c), _element=phi, _expr= Ad);
-    lhs(0_c, 0_c) += on(_range=markedfaces(mesh,"V1"), _rhs=, _element=phi, _expr= Ad);
+    lhs(0_c, 0_c) += on(_range=markedfaces(mesh,"V1"), _rhs=rhs(0_c), _element=phi, _expr= Ad);
 #endif
       
     lhs(1_c, 1_c) += on(_range=markedfaces(cond_mesh,"VO"), _rhs=rhs(1_c), _element=psi, _expr= v0);
