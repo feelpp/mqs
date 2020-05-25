@@ -33,14 +33,14 @@ int main(int argc, char**argv )
 				_email="feelpp-devel@feelpp.org"));
 
   // Dirichlet for Magnetic potential
-  auto Ad = expr<3,1>(soption(_name="functions.Ad"));
+  auto Ad = expr<3,1>(soption(_name="Ad"));
   Feel::cout << "Ad=" << Ad << std::endl;
 
   // Dirichlet for electric potential
-  auto v1 = expr(soption(_name="functions.v1"));
+  auto v1 = expr(soption(_name="v1"));
   Feel::cout << "v1=" << v1 << std::endl;
 
-  auto v0 = expr(soption(_name="functions.v0"));
+  auto v0 = expr(soption(_name="v0"));
   Feel::cout << "vO=" << v0 << std::endl;
 
   //Recuperer time frame
@@ -52,27 +52,27 @@ int main(int argc, char**argv )
   std::cout << "time-final=" << tmax << std::endl;
 
   // Init solution for Magnetic Potential
-  auto A0 = expr<3,1>(soption(_name="functions.A0"));
+  auto A0 = expr<3,1>(soption(_name="A0"));
   Feel::cout << "A0=" << A0 << std::endl;
 
   // Init solution for Potential
-  auto V0 = expr(soption(_name="functions.V0"));
+  auto V0 = expr(soption(_name="V0"));
   Feel::cout << "V0=" << V0 << std::endl;
  
   // Define sigma and mu
-  auto sigma = doption(_name = "sigma");
-  auto mur = doption(_name = "mu_mag");
+  double sigma = doption(_name = "sigma");
+  double mur = doption(_name = "mu_mag");
 
-  auto Aexact_g = expr<3, 1>(soption(_name = "functions.Aexact"));
+  auto Aexact_g = expr<3, 1>(soption(_name = "Aexact"));
   Feel::cout << "Aexact=" << Aexact_g << std::endl;
 
-  auto Vexact_g = expr(soption(_name = "functions.Vexact"));
+  auto Vexact_g = expr(soption(_name = "Vexact"));
   Feel::cout << "Vexact=" << Vexact_g << std::endl;
 
   // Load Mesh and define Product space
   
   auto mesh = loadMesh(_mesh=new Mesh<Simplex<3>>);
-  auto cond_mesh = createSubmesh(mesh,markedelements(mesh,"Omega_c"));
+  auto cond_mesh = createSubmesh(mesh,markedelements(mesh,"Omega_C"));
 
   auto Ah = Pchv<1>( mesh );
   auto Vh = Pch<1>( cond_mesh );
@@ -156,16 +156,20 @@ int main(int argc, char**argv )
                         _expr = sigma * inner(trans(grad(psi)) , idv(A)));
 
     /* Add Boundary conditions */
+#if 0
     lhs(0_c, 0_c) += on(_range=markedfaces(mesh,"Infty"), _rhs=rhs(0_c), _element=phi, _expr= Ad);
+#endif
 
 #if 1
     /* 1/4th of a torus + Air */
     lhs(0_c, 0_c) += on(_range=markedfaces(mesh,"V0"), _rhs=rhs(0_c), _element=phi, _expr= Ad);
     lhs(0_c, 0_c) += on(_range=markedfaces(mesh,"V1"), _rhs=rhs(0_c), _element=phi, _expr= Ad);
+    lhs(0_c, 0_c) += on(_range=markedfaces(mesh,"Gamma_C"), _rhs=rhs(0_c), _element=phi, _expr= Ad);
 #endif
       
     lhs(1_c, 1_c) += on(_range=markedfaces(cond_mesh,"V0"), _rhs=rhs(1_c), _element=psi, _expr= v0);
     lhs(1_c, 1_c) += on(_range=markedfaces(cond_mesh,"V1"), _rhs=rhs(1_c), _element=psi, _expr= v1);
+    //lhs(1_c, 1_c) += on(_range=markedfaces(cond_mesh,"Gamma_C"), _rhs=rhs(1_c), _element=psi, _expr= Vexact_g);
     toc("assembling", true);
 
     /* Solve */
