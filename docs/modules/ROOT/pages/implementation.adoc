@@ -172,7 +172,7 @@ stem:[t=0.9]
 |stem:[H^1] error          |0.0286545  |0.0160523  |0.00861033
 |================================================================
 
-image:test1/t09.png[geometry,50%]
+image:test1/p09.png[geometry,50%]
 
 Here is a comparison under paraview between the exact solution and the calculated solution, at different time :
 
