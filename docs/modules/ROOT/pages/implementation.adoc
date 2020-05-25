@@ -23,10 +23,97 @@ By slightly transforming the first equation, we obtain :
 \end{equation}
 ++++ 
 
-We will implement this equation under feelpp, using the function stem:[V = -\frac{1}{\mu*\sigma}z] 
-Note that the exact solution stem:[A] for this stem:[V] is stem:[A = (xz,0,0)].
+We will now implement this equation under feelpp.
+First, we define the stem[\Omega], the domain, as well as the stem:[\Omega_C], the sub-domain of the conductor.
+[source,cpp]
+----
+auto mesh = loadMesh(_mesh = new Mesh<Simplex<3>>);
+auto cond_mesh = createSubmesh(mesh, markedelements(mesh, "Omega_C"));
+----
 
-This is the code:
+Remember that stem:[A \in H_{A_D}^{curl}], so we have to take a correct function space for stem:[A^n] :
+[source,cpp]
+----
+auto Ah = Pchv<1>(mesh);
+----
+
+We now define all of our elements :
+[source,cpp]
+----
+auto A = Ah->element(A0);
+auto phi = Ah->element();
+auto Aexact = Ah->element();
+----
+
+Where stem:[Aexact] is the exact solution of a given problem, and where A is initialized with stem:[A0].
+
+Then we create thee first and second member of the weak formulation, the exporter and the time variable.
+[source,cpp]
+----
+auto l1 = form1(_test = Ah);
+auto a1 = form2(_trial = Ah, _test = Ah);
+double t = 0;
+auto e = exporter(_mesh = mesh);
+----
+
+We define result at time 0,the stem:[H^1] and stem:[L^2] errors.
+[source,cpp]
+----
+Vexact_g.setParameterValues({{"t", t}});
+Vexact = project(_space = Vh, _expr = Vexact_g);
+
+dA.setParameterValues({{"t", t}});
+e->step(t)->add("V", V0);
+e->step(t)->add("Vexact", Vexact);
+e->save();
+    
+double L2Vexact = normL2(_range = elements(mesh), _expr = Vexact_g);
+double H1error = 0;
+double L2error = 0;
+----
+
+We then begin the time loop, were we write the first and second member at time t :
+
+[source,cpp]
+----
+Aexact_g.setParameterValues({{"t", t}});
+Aexact = project(_space = Ah, _expr = Aexact_g);
+gradV.setParameterValues({{"t", t}});
+gO.setParameterValues({{"t", t}});
+gI.setParameterValues({{"t", t}});
+Ad.setParameterValues({{"t", t}});
+
+l1.zero();
+a1.zero();
+l1 = integrate(_range = elements(cond_mesh),
+                _expr = sigma * inner(id(phi), idv(A) - dt * gradV));
+a1 = integrate(_range = elements(mesh),
+                _expr = (dt / mu) * inner(curl(phi), curlt(A)));
+a1 += integrate(_range = elements(cond_mesh),
+                _expr = sigma * inner(id(phi), idt(A)));
+a1 += on(_range = markedfaces(mesh, "Gamma_I"), _rhs = l1, _element = phi,
+         _expr = gI);
+a1 += on(_range = markedfaces(mesh, "Gamma_O"), _rhs = l1, _element = phi,
+         _expr = gO);
+a1 += on(_range = markedfaces(mesh, "Gamma_C"), _rhs = l1, _element = phi,
+         _expr = Ad);
+----
+
+Finally, we finish by solving the equation at time t, exporting the result, and error calculations.
+[source,cpp]
+----
+a1.solve(_rhs = l1, _solution = A);
+
+e->step(t)->add("A", A);
+e->step(t)->add("Aexact", Aexact_g);
+e->save();
+
+L2Aexact = normL2(_range = elements(mesh), _expr = Aexact_g);
+L2error = normL2(elements(mesh), (idv(A) - idv(Aexact)));
+H1error = normH1(elements(mesh), _expr = (idv(A) - idv(Aexact)), _grad_expr = (gradv(A) - gradv(Aexact)));
+----
+
+This is the complete code:
 
 [source,cpp]
 ----
@@ -37,10 +124,66 @@ and the config file :
 
 [source,cfg]
 ----
-include::https://raw.githubusercontent.com/feelpp/mqs/master/src/test1.cfg
+include::https://raw.githubusercontent.com/feelpp/mqs/master/src/cases/test1/test1.cfg
 ----
 
-(here will be the results and analysis of error)
+Now, we will test this program using the function stem:[V = (-xz,0,-\frac{t}{\sigma})] with stem:[\sigma = 58000] and stem:[\mu = 1].
+Note that the exact solution stem:[A] for this stem:[V] is stem:[A = (xzt,0,0)].
+
+We will also take the time stem:[t \in \[0,1\]], with a step time stem:[dt=0.025].
+
+We'll run the simulation on a bar, representing the conductor.
+
+image:test1/geo.png[geometry,50%]
+
+Below are the errors we get at different times.
+
+stem:[t=0.1]
+
+[width="50%"]
+|==============================================================
+|h                         |0.2        |0.1        |O.05
+|stem:[L^2] error          |0.000198386|5.29439e-05|1.40537e-05
+|stem:[L^2] relative error |0.000532326|0.000142063|3.77101e-05
+|stem:[H^1] error          |0.00318232 |0.00178333 |0.000950294
+===============================================================
+
+image:test1/p01.png[geometry,50%]
+
+stem:[t=0.5]
+
+[width="50%"]
+|==============================================================
+|h                         |0.2        |0.1        |O.05
+|stem:[L^2] error          |0.000992004|0.000264656|7.02804e-05
+|stem:[L^2] relative error |0.000532365|0.000142029|3.77164e-05
+|stem:[H^1] error          |0.0159153  |0.00891686 |0.00476399
+===============================================================
+
+image:test1/p05.png[geometry,50%]
+
+stem:[t=0.9]
+
+[width="50%"]
+|==============================================================
+|h                         |0.2        |0.1        |O.05
+|stem:[L^2] error          |0.00178574 |0.000476291|0.000126614
+|stem:[L^2] relative error |0.000532405|0.000142003|3.77491e-05
+|stem:[H^1] error          |0.0286545  |0.0160523  |0.00861033
+===============================================================
+
+image:test1/t09.png[geometry,50%]
+
+Here is a comparison under paraview between the exact solution and the calculated solution, at different time :
+
+image:test1/t01.png[geometry,50%]
+
+image:test1/t05.png[geometry,50%]
+
+image:test1/t09.png[geometry,50%]
+
+We conclude that at every time, the stem:[L^2] error slope is close to 2, which is what we expect to have,
+and the stem:[H^1] error slope is also close to 1. The différence can be explain by the fact we took only 3 hsize, and the result could be better with lower hsize (but the running time can become very long).
 
 == Second equation
 
