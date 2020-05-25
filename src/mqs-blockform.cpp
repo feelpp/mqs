@@ -28,7 +28,7 @@ int main(int argc, char**argv )
     ( "v1", po::value<std::string>()->default_value( "0" ), "v1" );
 
   Environment env( _argc=argc, _argv=argv,_desc=options,
-		   _about=about(_name="Maxwell Quasi-Static",
+		   _about=about(_name="mqs",
 				_author="Feel++ Consortium",
 				_email="feelpp-devel@feelpp.org"));
 
