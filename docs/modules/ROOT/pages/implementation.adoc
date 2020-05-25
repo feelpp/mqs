@@ -146,7 +146,7 @@ stem:[t=0.1]
 |stem:[L^2] error          |0.000198386|5.29439e-05|1.40537e-05
 |stem:[L^2] relative error |0.000532326|0.000142063|3.77101e-05
 |stem:[H^1] error          |0.00318232 |0.00178333 |0.000950294
-================================================================
+|================================================================
 
 image:test1/p01.png[geometry,50%]
 
@@ -158,7 +158,7 @@ stem:[t=0.5]
 |stem:[L^2] error          |0.000992004|0.000264656|7.02804e-05
 |stem:[L^2] relative error |0.000532365|0.000142029|3.77164e-05
 |stem:[H^1] error          |0.0159153  |0.00891686 |0.00476399
-================================================================
+|================================================================
 
 image:test1/p05.png[geometry,50%]
 
@@ -170,7 +170,7 @@ stem:[t=0.9]
 |stem:[L^2] error          |0.00178574 |0.000476291|0.000126614
 |stem:[L^2] relative error |0.000532405|0.000142003|3.77491e-05
 |stem:[H^1] error          |0.0286545  |0.0160523  |0.00861033
-================================================================
+|================================================================
 
 image:test1/t09.png[geometry,50%]
 
@@ -183,7 +183,7 @@ image:test1/t05.png[geometry,50%]
 image:test1/t09.png[geometry,50%]
 
 We conclude that at every time, the stem:[L^2] error slope is close to 2, which is what we expect to have,
-and the stem:[H^1] error slope is also close to 1. The différence can be explain by the fact we took only 3 hsize, and the result could be better with lower hsize (but the running time can become very long).
+and the stem:[H^1] error slope is also close to 1. The difference can be explain by the fact we took only 3 different hsize, and the result could be better with lower hsize (but the running time can become very long).
 
 == Second equation
 
