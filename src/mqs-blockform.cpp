@@ -67,9 +67,9 @@ int main(int argc, char**argv )
   
   auto Zh = product(Ah,Vh);
   auto U = Zh.element();
-#if 1
-  auto cAh = Zh.functionSpace(0_c);
-  auto cVh = Zh.functionSpace(1_c);
+#if 0
+  auto cAh = Zh[0_c];
+  auto cVh = Zh[1_c];
 #endif  
   
 
@@ -83,8 +83,12 @@ int main(int argc, char**argv )
   auto mu0 = 4.e-7 * M_PI ; // SI Unit : H/m = m.kg/s2/A2
 
   while(t < tmax){
+    v0.setParameterValues({{"t", t}});
+    v1.setParameterValues({{"t", t}});
+    Ad.setParameterValues({{"t", t}});
 
-#if 1
+    lhs.zero();
+    
     tic();
     // Ampere law
     lhs(0_c, 0_c) += integrate( _range=elements(mesh),
@@ -99,7 +103,7 @@ int main(int argc, char**argv )
 			       _expr = sigma * inner(idt(A), trans(grad(psi))) );
       
     lhs(1_c, 1_c) += integrate( _range=elements(cond_mesh),
-			       _expr = sigma * dt * inner(idt(V), trans(grad(psi))) );
+			       _expr = sigma * dt * inner(gradt(V), grad(psi)) );
 
     /* Add Boundary conditions */
     lhs(0_c, 0_c) += on(_range=markedfaces(mesh,"Infty"), _rhs=rhs(0_c), _element=phi, _expr= Ad);
@@ -124,7 +128,7 @@ int main(int argc, char**argv )
     e->step(t)->add( "V", U(1_c));
     e->save();
     toc("export", true);
-#endif
+
     t += dt;
   }
 }
