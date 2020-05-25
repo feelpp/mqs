@@ -18,7 +18,15 @@ int main(int argc, char**argv )
   po::options_description options( "MQS options" );
   options.add_options()
     ( "sigma", po::value<std::string>()->default_value( "1" ), "electrical conductivity" )
-    ( "mu_mag", po::value<std::string>()->default_value( "1" ), "relative magnetic permeability" );
+    ( "mu_mag", po::value<std::string>()->default_value( "1" ), "relative magnetic permeability" )
+    ( "A0", po::value<std::string>()->default_value( "{0,0,0}" ), "initial A" )
+    ( "V0", po::value<std::string>()->default_value( "0" ), "initial V" )
+    ( "Aexact", po::value<std::string>()->default_value( "{0,0,0}" ), "exact A" )
+    ( "Vexact", po::value<std::string>()->default_value( "0" ), "exact V" )
+    ( "Ad", po::value<std::string>()->default_value( "{0,0,0}" ), "Ad" )
+    ( "v0", po::value<std::string>()->default_value( "0" ), "v0" )
+    ( "v1", po::value<std::string>()->default_value( "0" ), "v1" );
+
   Environment env( _argc=argc, _argv=argv,_desc=options,
 		   _about=about(_name="Maxwell Quasi-Static",
 				_author="Feel++ Consortium",
@@ -32,7 +40,7 @@ int main(int argc, char**argv )
   auto v1 = expr(soption(_name="functions.v1"));
   Feel::cout << "v1=" << v1 << std::endl;
 
-  auto v0 = expr(soption(_name="functions.vO"));
+  auto v0 = expr(soption(_name="functions.v0"));
   Feel::cout << "vO=" << v0 << std::endl;
 
   //Recuperer time frame
@@ -46,10 +54,20 @@ int main(int argc, char**argv )
   // Init solution for Magnetic Potential
   auto A0 = expr<3,1>(soption(_name="functions.A0"));
   Feel::cout << "A0=" << A0 << std::endl;
-     
+
+  // Init solution for Potential
+  auto V0 = expr(soption(_name="functions.V0"));
+  Feel::cout << "V0=" << V0 << std::endl;
+ 
   // Define sigma and mu
   auto sigma = doption(_name = "sigma");
   auto mur = doption(_name = "mu_mag");
+
+  auto Aexact_g = expr<3, 1>(soption(_name = "functions.Aexact"));
+  Feel::cout << "Aexact=" << Aexact_g << std::endl;
+
+  auto Vexact_g = expr(soption(_name = "functions.Vexact"));
+  Feel::cout << "Vexact=" << Vexact_g << std::endl;
 
   // Load Mesh and define Product space
   
@@ -60,7 +78,10 @@ int main(int argc, char**argv )
   auto Vh = Pch<1>( cond_mesh );
 
   auto A = Ah->element(A0); // how to init A to A0?;
-  auto V = Vh->element();
+  auto V = Vh->element(V0);
+
+  auto Aexact = Ah->element();
+  auto Vexact = Vh->element();
 
   auto phi = Ah->element();
   auto psi = Vh->element();
@@ -76,19 +97,42 @@ int main(int argc, char**argv )
   auto rhs = blockform1( Zh );
   auto lhs = blockform2( Zh );
 
-  double t = dt;
+  double t = 0;
 
   auto e = exporter( _mesh=mesh );
 
+  Aexact_g.setParameterValues({{"t", t}});
+  Aexact = project(_space = Ah, _expr = Aexact_g);
+  
+  Vexact_g.setParameterValues({{"t", t}});
+  Vexact = project(_space = Vh, _expr = Vexact_g);
+  
+  e->step(t)->add("A", A0);
+  e->step(t)->add("Aexact", Aexact);
+  e->step(t)->add("V", V0);
+  e->step(t)->add("Vexact", Vexact);
+  e->save();
+
+  double L2Aexact = normL2(_range = elements(mesh), _expr = Aexact_g);
+  double H1Aerror = 0;
+  double L2Aerror = 0;
+  double L2Vexact = normL2(_range = elements(mesh), _expr = Vexact_g);
+  double H1Verror = 0;
+  double L2Verror = 0;
+    
   auto mu0 = 4.e-7 * M_PI ; // SI Unit : H/m = m.kg/s2/A2
 
-  while(t < tmax){
+  for (t = dt; t < tmax; t += dt){
+    Aexact_g.setParameterValues({{"t", t}});
+    Aexact = project(_space = Ah, _expr = Aexact_g);
+    Vexact_g.setParameterValues({{"t", t}});
+    Vexact = project(_space = Vh, _expr = Vexact_g);
     v0.setParameterValues({{"t", t}});
     v1.setParameterValues({{"t", t}});
     Ad.setParameterValues({{"t", t}});
 
     lhs.zero();
-    
+    rhs.zero();
     tic();
     // Ampere law
     lhs(0_c, 0_c) += integrate( _range=elements(mesh),
@@ -98,12 +142,18 @@ int main(int argc, char**argv )
 
     lhs(0_c, 1_c) += integrate(_range=elements(cond_mesh),_expr = dt * mu0 * mur * sigma*inner(trans(grad(V)),id(phi)));
 
+    rhs(0_c) += integrate(_range=elements(cond_mesh),
+                        _expr = sigma * inner(id(phi) , idv(A)));
+
     // Current conservation
     lhs(1_c, 0_c) += integrate( _range=elements(cond_mesh),
 			       _expr = sigma * inner(idt(A), trans(grad(psi))) );
       
     lhs(1_c, 1_c) += integrate( _range=elements(cond_mesh),
 			       _expr = sigma * dt * inner(gradt(V), grad(psi)) );
+
+    rhs(1_c) += integrate(_range=elements(cond_mesh),
+                        _expr = sigma * inner(trans(grad(psi)) , idv(A)));
 
     /* Add Boundary conditions */
     lhs(0_c, 0_c) += on(_range=markedfaces(mesh,"Infty"), _rhs=rhs(0_c), _element=phi, _expr= Ad);
@@ -114,7 +164,7 @@ int main(int argc, char**argv )
     lhs(0_c, 0_c) += on(_range=markedfaces(mesh,"V1"), _rhs=rhs(0_c), _element=phi, _expr= Ad);
 #endif
       
-    lhs(1_c, 1_c) += on(_range=markedfaces(cond_mesh,"VO"), _rhs=rhs(1_c), _element=psi, _expr= v0);
+    lhs(1_c, 1_c) += on(_range=markedfaces(cond_mesh,"V0"), _rhs=rhs(1_c), _element=psi, _expr= v0);
     lhs(1_c, 1_c) += on(_range=markedfaces(cond_mesh,"V1"), _rhs=rhs(1_c), _element=psi, _expr= v1);
     toc("assembling", true);
 
@@ -126,9 +176,22 @@ int main(int argc, char**argv )
     tic();
     e->step(t)->add( "A", U(0_c));
     e->step(t)->add( "V", U(1_c));
+    e->step(t)->add( "Aexact", Aexact);
+    e->step(t)->add( "Vexact", Vexact);
     e->save();
     toc("export", true);
 
-    t += dt;
+    L2Aexact = normL2(_range = elements(mesh), _expr = Aexact_g);
+    L2Aerror = normL2(elements(mesh), (idv(U(0_c)) - idv(Aexact)));
+    H1Aerror = normH1(elements(mesh), _expr = (idv(U(0_c)) - idv(Aexact)), _grad_expr = (gradv(U(0_c)) - gradv(Aexact)));
+
+    Feel::cout << "A error: " << "t="<< t << " " << L2Aerror << " " << L2Aerror / L2Aexact << " " << H1Aerror << std::endl;
+
+    L2Vexact = normL2(_range = elements(mesh), _expr = Vexact_g);
+    L2Verror = normL2(elements(mesh), (idv(U(1_c)) - idv(Vexact)));
+    H1Verror = normH1(elements(mesh), _expr = (idv(U(1_c)) - idv(Vexact)), _grad_expr = (gradv(U(1_c)) - gradv(Vexact)));
+
+    Feel::cout << "V error: " << "t="<< t << " " << L2Verror << " " << L2Verror / L2Vexact << " " << H1Verror << std::endl;
+
   }
 }
