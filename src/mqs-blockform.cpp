@@ -44,7 +44,7 @@ int main(int argc, char**argv )
   std::cout << "time-final=" << tmax << std::endl;
 
   // Init solution for Magnetic Potential
-  auto A0 = expr(soption(_name="functions.A0"));
+  auto A0 = expr<3,1>(soption(_name="functions.A0"));
   Feel::cout << "A0=" << A0 << std::endl;
      
   // Define sigma and mu
@@ -59,17 +59,17 @@ int main(int argc, char**argv )
   auto Ah = Pchv<1>( mesh );
   auto Vh = Pch<1>( cond_mesh );
 
-  auto A = Ah->element(); // how to init A to A0?;
+  auto A = Ah->element(A0); // how to init A to A0?;
   auto V = Vh->element();
 
   auto phi = Ah->element();
   auto psi = Vh->element();
   
   auto Zh = product(Ah,Vh);
-  auto U = Zh.element();
-#if 0
-  auto cAh = Zh->functionSpace(0_c);
-  auto cVh = Zh->functionSpace(1_c);
+  auto U = Zh->element();
+#if 1
+  auto cAh = Zh.functionSpace(0_c);
+  auto cVh = Zh.functionSpace(1_c);
 #endif  
   
 
@@ -84,7 +84,7 @@ int main(int argc, char**argv )
 
   while(t < tmax){
 
-#if 0
+#if 1
     tic();
     // Ampere law
     lhs(0_c, 0_c) += integrate( _range=elements(mesh),
@@ -92,7 +92,7 @@ int main(int argc, char**argv )
     lhs(0_c, 0_c) += integrate( _range=elements(cond_mesh),
 		     _expr = mur * mu0 * sigma * inner(id(phi) , idt(A) ));
 
-    lhs(0_c, 1_c) += integrate(_range=elements(cond_mesh),_expr = dt * mu0 * mur * sigma*grad(V)*id(phi));
+    lhs(0_c, 1_c) += integrate(_range=elements(cond_mesh),_expr = dt * mu0 * mur * sigma*inner(trans(grad(V)),id(phi)));
 
     // Current conservation
     lhs(1_c, 0_c) += integrate( _range=elements(cond_mesh),
@@ -104,7 +104,7 @@ int main(int argc, char**argv )
     /* Add Boundary conditions */
     lhs(0_c, 0_c) += on(_range=markedfaces(mesh,"Infty"), _rhs=rhs(0_c), _element=phi, _expr= Ad);
 
-#if 0
+#if 1
     /* 1/4th of a torus + Air */
     lhs(0_c, 0_c) += on(_range=markedfaces(mesh,"V0"), _rhs=rhs(0_c), _element=phi, _expr= Ad);
     lhs(0_c, 0_c) += on(_range=markedfaces(mesh,"V1"), _rhs=, _element=phi, _expr= Ad);
@@ -117,13 +117,13 @@ int main(int argc, char**argv )
     /* Solve */
     tic();
     lhs.solve(_rhs=rhs,_solution=U);
-    toc("solve", true");
+    toc("solve", true);
 
     tic();
     e->step(t)->add( "A", U(0_c));
     e->step(t)->add( "V", U(1_c));
     e->save();
-    toc("export", true");
+    toc("export", true);
 #endif
     t += dt;
   }
