@@ -60,8 +60,11 @@ int main(int argc, char**argv )
   Feel::cout << "V0=" << V0 << std::endl;
  
   // Define sigma and mu
-  double sigma = doption(_name = "sigma");
-  double mur = doption(_name = "mu_mag");
+  auto sigma = expr(soption(_name = "sigma"));
+  Feel::cout << "sigma=" << sigma << std::endl;
+
+  auto mur = expr(soption(_name = "mu_mag"));
+  Feel::cout << "mur=" << mur << std::endl;
 
   auto Aexact_g = expr<3, 1>(soption(_name = "Aexact"));
   Feel::cout << "Aexact=" << Aexact_g << std::endl;
