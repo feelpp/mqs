@@ -50,17 +50,14 @@ int main(int argc, char**argv )
     auto Vh = Pch<1>( cond_mesh );
 
     auto V = Vh->element(V0);
-
     auto psi = Vh->element();
-
     auto Vexact = Vh->element();
 
-    auto l2 = form1( _test=Vh );
-
-    double t = 0;
-
-    auto e = exporter( _mesh=mesh );
     auto a2 = form2( _trial=Vh, _test=Vh);
+    auto l2 = form1( _test=Vh );
+    auto e = exporter( _mesh=mesh );
+    
+    double t = 0;
 
     Vexact_g.setParameterValues({{"t", t}});
     Vexact = project(_space = Vh, _expr = Vexact_g);
