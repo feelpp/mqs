@@ -139,7 +139,7 @@ int main(int argc, char**argv )
     tic();
     // Ampere law
     lhs(0_c, 0_c) = integrate( _range=elements(mesh),
-		   _expr = dt * inner(curl(phi) , curlt(A)) );
+		     _expr = dt * inner(curl(phi) , curlt(A)) );
     lhs(0_c, 0_c) += integrate( _range=elements(cond_mesh),
 		     _expr = mur * mu0 * sigma * inner(id(phi) , idt(A) ));
 
