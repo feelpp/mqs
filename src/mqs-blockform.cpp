@@ -116,16 +116,15 @@ int main(int argc, char**argv )
   e->step(t)->add("Vexact", Vexact);
   e->save();
 
-  double L2Aexact = normL2(_range = elements(mesh), _expr = Aexact_g);
+
   double H1Aerror = 0;
   double L2Aerror = 0;
-  double L2Vexact = normL2(_range = elements(mesh), _expr = Vexact_g);
   double H1Verror = 0;
   double L2Verror = 0;
     
   auto mu0 = 4.e-7 * M_PI ; // SI Unit : H/m = m.kg/s2/A2
 
-  for (t = dt; t < tmax; t += dt){
+  for (t = dt; t <= tmax; t += dt){
     Aexact_g.setParameterValues({{"t", t}});
     Aexact = project(_space = Ah, _expr = Aexact_g);
     Vexact_g.setParameterValues({{"t", t}});
@@ -133,7 +132,9 @@ int main(int argc, char**argv )
     v0.setParameterValues({{"t", t}});
     v1.setParameterValues({{"t", t}});
     Ad.setParameterValues({{"t", t}});
-
+    // be careful the expression are being update in time, so recompute the norms
+    double L2Aexact = normL2(_range = elements(mesh), _expr = Aexact_g);
+    double L2Vexact = normL2(_range = elements(mesh), _expr = Vexact_g);
     lhs.zero();
     rhs.zero();
     tic();
@@ -143,20 +144,20 @@ int main(int argc, char**argv )
     lhs(0_c, 0_c) += integrate( _range=elements(cond_mesh),
 		     _expr = mur * mu0 * sigma * inner(id(phi) , idt(A) ));
 
-    lhs(0_c, 1_c) = integrate(_range=elements(cond_mesh),
+    lhs(0_c, 1_c) += integrate(_range=elements(cond_mesh),
          _expr = dt * mu0 * mur * sigma*inner(id(phi),trans(gradt(V))) );
 
-    rhs(0_c) = integrate(_range=elements(cond_mesh),
+    rhs(0_c) += integrate(_range=elements(cond_mesh),
                         _expr = mu0 * mur * sigma * inner(id(phi) , idv(A)));
 
     // Current conservation
-    lhs(1_c, 0_c) = integrate( _range=elements(cond_mesh),
+    lhs(1_c, 0_c) += integrate( _range=elements(cond_mesh),
 			       _expr = sigma * inner(idt(A), trans(grad(psi))) );
       
-    lhs(1_c, 1_c) = integrate( _range=elements(cond_mesh),
+    lhs(1_c, 1_c) += integrate( _range=elements(cond_mesh),
 			       _expr = sigma * dt * inner(gradt(V), grad(psi)) );
 
-    rhs(1_c) = integrate(_range=elements(cond_mesh),
+    rhs(1_c) += integrate(_range=elements(cond_mesh),
                         _expr = sigma * inner(idv(A), trans(grad(psi))) );
 
     /* Add Boundary conditions */
@@ -190,16 +191,20 @@ int main(int argc, char**argv )
     toc("export", true);
 
     L2Aexact = normL2(_range = elements(mesh), _expr = Aexact_g);
-    L2Aerror = normL2(elements(mesh), (idv(U(0_c)) - idv(Aexact)));
-    H1Aerror = normH1(elements(mesh), _expr = (idv(U(0_c)) - idv(Aexact)), _grad_expr = (gradv(U(0_c)) - gradv(Aexact)));
+    L2Aerror = normL2(_range=elements(mesh), _expr=(idv(U(0_c)) - idv(Aexact)));
+    H1Aerror = normH1(_range=elements(mesh), _expr = (idv(U(0_c)) - idv(Aexact)), _grad_expr = (gradv(U(0_c)) - gradv(Aexact)));
 
-    Feel::cout << "A error: " << "t="<< t << " " << L2Aerror << " " << L2Aerror / L2Aexact << " " << H1Aerror << std::endl;
+    Feel::cout << "A error: " << "t="<< t << " " 
+               << L2Aexact << " " 
+               << L2Aerror << " " << L2Aerror / L2Aexact << " " << H1Aerror << std::endl;
 
     L2Vexact = normL2(_range = elements(mesh), _expr = Vexact_g);
-    L2Verror = normL2(elements(mesh), (idv(U(1_c)) - idv(Vexact)));
-    H1Verror = normH1(elements(mesh), _expr = (idv(U(1_c)) - idv(Vexact)), _grad_expr = (gradv(U(1_c)) - gradv(Vexact)));
+    L2Verror = normL2(_range=elements(mesh), _expr=(idv(U(1_c)) - idv(Vexact)));
+    H1Verror = normH1(_range=elements(mesh), _expr = (idv(U(1_c)) - idv(Vexact)), _grad_expr = (gradv(U(1_c)) - gradv(Vexact)));
 
-    Feel::cout << "V error: " << "t="<< t << " " << L2Verror << " " << L2Verror / L2Vexact << " " << H1Verror << std::endl;
+    Feel::cout << "V error: " << "t="<< t << " " 
+               << L2Vexact << " " 
+               << L2Verror << " " << L2Verror / L2Vexact << " " << H1Verror << std::endl;
 
   }
 }
