@@ -138,25 +138,26 @@ int main(int argc, char**argv )
     rhs.zero();
     tic();
     // Ampere law
-    lhs(0_c, 0_c) += integrate( _range=elements(mesh),
+    lhs(0_c, 0_c) = integrate( _range=elements(mesh),
 		   _expr = dt * inner(curl(phi) , curlt(A)) );
     lhs(0_c, 0_c) += integrate( _range=elements(cond_mesh),
 		     _expr = mur * mu0 * sigma * inner(id(phi) , idt(A) ));
 
-    lhs(0_c, 1_c) += integrate(_range=elements(cond_mesh),_expr = dt * mu0 * mur * sigma*inner(trans(grad(V)),id(phi)));
+    lhs(0_c, 1_c) = integrate(_range=elements(cond_mesh),
+         _expr = dt * mu0 * mur * sigma*inner(id(phi),trans(gradt(V))) );
 
-    rhs(0_c) += integrate(_range=elements(cond_mesh),
-                        _expr = sigma * inner(id(phi) , idv(A)));
+    rhs(0_c) = integrate(_range=elements(cond_mesh),
+                        _expr = mu0 * mur * sigma * inner(id(phi) , idv(A)));
 
     // Current conservation
-    lhs(1_c, 0_c) += integrate( _range=elements(cond_mesh),
+    lhs(1_c, 0_c) = integrate( _range=elements(cond_mesh),
 			       _expr = sigma * inner(idt(A), trans(grad(psi))) );
       
-    lhs(1_c, 1_c) += integrate( _range=elements(cond_mesh),
+    lhs(1_c, 1_c) = integrate( _range=elements(cond_mesh),
 			       _expr = sigma * dt * inner(gradt(V), grad(psi)) );
 
-    rhs(1_c) += integrate(_range=elements(cond_mesh),
-                        _expr = sigma * inner(trans(grad(psi)) , idv(A)));
+    rhs(1_c) = integrate(_range=elements(cond_mesh),
+                        _expr = sigma * inner(idv(A), trans(grad(psi))) );
 
     /* Add Boundary conditions */
 #if 0
@@ -172,7 +173,7 @@ int main(int argc, char**argv )
       
     lhs(1_c, 1_c) += on(_range=markedfaces(cond_mesh,"V0"), _rhs=rhs(1_c), _element=psi, _expr= v0);
     lhs(1_c, 1_c) += on(_range=markedfaces(cond_mesh,"V1"), _rhs=rhs(1_c), _element=psi, _expr= v1);
-    //lhs(1_c, 1_c) += on(_range=markedfaces(cond_mesh,"Gamma_C"), _rhs=rhs(1_c), _element=psi, _expr= Vexact_g);
+    lhs(1_c, 1_c) += on(_range=markedfaces(cond_mesh,"Gamma_C"), _rhs=rhs(1_c), _element=psi, _expr= Vexact_g);
     toc("assembling", true);
 
     /* Solve */
