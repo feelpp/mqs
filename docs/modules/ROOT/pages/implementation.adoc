@@ -31,7 +31,7 @@ auto mesh = loadMesh(_mesh = new Mesh<Simplex<3>>);
 auto cond_mesh = createSubmesh(mesh, markedelements(mesh, "Omega_C"));
 ----
 
-Remember that stem:[A \in H_{A_D}^{curl}], so we have to take a correct function space for stem:[A^n] :
+Remember that stem:[A \in H_{A_D}^{curl}], but here, to siplify, we will concider that stem:[A \in H^{1}], so we have to take a correct function space for stem:[A^n] :
 [source,cpp]
 ----
 auto Ah = Pchv<1>(mesh);
@@ -112,7 +112,7 @@ L2Aexact = normL2(_range = elements(mesh), _expr = Aexact_g);
 L2error = normL2(elements(mesh), (idv(A) - idv(Aexact)));
 H1error = normH1(elements(mesh), _expr = (idv(A) - idv(Aexact)), _grad_expr = (gradv(A) - gradv(Aexact)));
 ----
-And we start the loop again, which end when stem:[t geq tmax].
+And we start the loop again, which end when stem:[t \geq tmax].
 
 This is the complete code:
 
@@ -330,8 +330,172 @@ image:test1/t05.png[geometry,75%]
 
 image:test1/t09.png[geometry,75%]
 
+This is the config file of the simulation :
+
+[source,cfg]
+----
+include::https://raw.githubusercontent.com/feelpp/mqs/master/src/cases/test2/test22.cfg
+----
+
 We can conclude that the stem:[L^2] and stem:[H^1] errors are what expected, for the same reason as first equation.
 
 == Coupled system
 
-...
+Now we take back our system :
+
+[stem]
+++++
+\begin{equation}
+\int_{\Omega} \frac{\Delta t}{\mu} \, (\nabla \times \phi) \cdot (\nabla \times A^n) - \int_{\Gamma_D} \frac{1}{\mu} A_D \cdot (\nabla \times A^n) + \int_{\Omega_C} \sigma \phi \cdot (A^n + \Delta t \nabla V) =  \int_{\Omega_C} \sigma \phi \cdot A^{n-1}
+\end{equation}
+\begin{equation}
+ \int_{\Omega_C} \sigma (A^n + \Delta t\nabla V) \cdot \nabla \psi =  \int_{\Omega_C} \sigma A^{n-1} \cdot \nabla \psi
+\end{equation} 
+++++
+
+Which can be rewrite :
+
+[stem]
+++++
+\begin{equation}
+\int_{\Omega} \frac{\Delta t}{\mu} \, (\nabla \times \phi) \cdot (\nabla \times A^n) + \int_{\Omega_C} \sigma \phi \cdot A^n - \int_{\Gamma_D} \frac{1}{\mu} A_D \cdot (\nabla \times A^n) + \int_{\Omega_C} \sigma \phi \cdot \Delta t \nabla V =  \int_{\Omega_C} \sigma \phi \cdot A^{n-1}
+\end{equation}
+\begin{equation}
+ \int_{\Omega_C} \sigma A^n \cdot \nabla \psi +  \int_{\Omega_C} \sigma \Delta t\nabla V \cdot \nabla \psi =  \int_{\Omega_C} \sigma A^{n-1} \cdot \nabla \psi
+\end{equation} 
+++++
+
+To implement it under feelpp, we have to use blockform and product space, because stem:[(A,V) \in H^1(\Omega) \times H^1(\Omega_C)].
+
+So first, after we define the mesh as same way as before, we create our elements :
+
+[source,cpp]
+----
+auto Ah = Pchv<1>( mesh );
+auto Vh = Pch<1>( cond_mesh );
+
+auto A = Ah->element(A0); // how to init A to A0?;
+auto V = Vh->element(V0);
+
+auto Aexact = Ah->element();
+auto Vexact = Vh->element();
+
+auto phi = Ah->element();
+auto psi = Vh->element();
+----
+
+Then we define the produt space, and create our element on this product space :
+
+[source,cpp]
+----
+auto Zh = product(Ah,Vh);
+auto U = Zh.element();
+----
+
+We have to create the blockforms for the right and left side of our system :
+
+[source,cpp]
+----
+auto rhs = blockform1( Zh );
+auto lhs = blockform2( Zh );
+----
+
+Then we create the exporter, and export the solution for A and V at time stem:[t=0].
+
+[source,cpp]
+----
+double t = 0;
+
+auto e = exporter( _mesh=mesh );
+
+Aexact_g.setParameterValues({{"t", t}});
+Aexact = project(_space = Ah, _expr = Aexact_g);
+  
+Vexact_g.setParameterValues({{"t", t}});
+Vexact = project(_space = Vh, _expr = Vexact_g);
+  
+e->step(t)->add("A", A0);
+e->step(t)->add("Aexact", Aexact);
+e->step(t)->add("V", V0);
+e->step(t)->add("Vexact", Vexact);
+e->save();
+
+double L2Aexact = normL2(_range = elements(mesh), _expr = Aexact_g);
+double H1Aerror = 0;
+double L2Aerror = 0;
+double L2Vexact = normL2(_range = elements(mesh), _expr = Vexact_g);
+double H1Verror = 0;
+double L2Verror = 0;
+----
+
+Now we begin the temporal loop, so we have to set our variables at the correct time :
+
+[source,cpp]
+----
+Aexact_g.setParameterValues({{"t", t}});
+Aexact = project(_space = Ah, _expr = Aexact_g);
+Vexact_g.setParameterValues({{"t", t}});
+Vexact = project(_space = Vh, _expr = Vexact_g);
+v0.setParameterValues({{"t", t}});
+v1.setParameterValues({{"t", t}});
+Ad.setParameterValues({{"t", t}});
+----
+
+And we can write both equation inside the blockforms:
+
+[source,cpp]
+----
+lhs.zero();
+rhs.zero();
+// Ampere law: sigma dA/dt + rot(1/(mu-r*mu_0) rotA) + sigma grad(V) = Js
+lhs(0_c, 0_c) = integrate( _range=elements(mesh),_expr = dt * inner(curl(phi) , curlt(A)) );
+lhs(0_c, 0_c) += integrate( _range=elements(cond_mesh),_expr = mur * mu0 * sigma * inner(id(phi) , idt(A) ));
+lhs(0_c, 1_c) = integrate(_range=elements(cond_mesh),_expr = dt * mu0 * mur * sigma*inner(id(phi),trans(gradt(V))) );
+rhs(0_c) = integrate(_range=elements(cond_mesh),_expr = mu0 * mur * sigma * inner(id(phi) , idv(A)));
+
+// Current conservation: div( -sigma grad(V) -sigma*dA/dt) = Qs
+lhs(1_c, 0_c) = integrate( _range=elements(cond_mesh),_expr = sigma * inner(idt(A), trans(grad(psi))) );    
+lhs(1_c, 1_c) = integrate( _range=elements(cond_mesh),_expr = sigma * dt * inner(gradt(V), grad(psi)) );
+rhs(1_c) = integrate(_range=elements(cond_mesh),_expr = sigma * inner(idv(A), trans(grad(psi))) );
+----
+
+The last step before solving is to set the boundary counditions. This is how we did it :
+
+[source,cpp]
+----
+lhs(0_c, 0_c) += on(_range=markedfaces(mesh,"V0"), _rhs=rhs(0_c), _element=phi, _expr= Ad);
+lhs(0_c, 0_c) += on(_range=markedfaces(mesh,"V1"), _rhs=rhs(0_c), _element=phi, _expr= Ad);
+lhs(0_c, 0_c) += on(_range=markedfaces(mesh,"Gamma_C"), _rhs=rhs(0_c), _element=phi, _expr= Ad);
+
+lhs(1_c, 1_c) += on(_range=markedfaces(cond_mesh,"V0"), _rhs=rhs(1_c), _element=psi, _expr= v0);
+lhs(1_c, 1_c) += on(_range=markedfaces(cond_mesh,"V1"), _rhs=rhs(1_c), _element=psi, _expr= v1);
+lhs(1_c, 1_c) += on(_range=markedfaces(cond_mesh,"Gamma_C"), _rhs=rhs(1_c), _element=psi, _expr= Vexact_g);
+----
+
+But, this is probably not the good way to do it.
+Reason is, when we solve (and export) the system with :
+
+[source,cpp]
+----
+lhs.solve(_rhs=rhs,_solution=U);
+
+e->step(t)->add( "A", U(0_c));
+e->step(t)->add( "V", U(1_c));
+e->step(t)->add( "Aexact", Aexact);
+e->step(t)->add( "Vexact", Vexact);
+e->save();
+----
+
+we dont have good results. For exemple, at the time stem:[t=dt], the solution we obtain is not close to the exact one, and the error bad.
+The visualization tends to prove that our boundary counditions are not set properly. The boundary should be the same as the exact solution, 
+because we define boundary with the exact solution, but they are differents.
+So the way we set boundary condition in the code seems to be not correct.
+
+The consequence is that we haven't been able to visualize correct results for a resolution yet. 
+
+Here is the complete code :
+
+[source,cpp]
+----
+include::https://raw.githubusercontent.com/feelpp/mqs/master/src/mqs-blockform.cpp
+----
