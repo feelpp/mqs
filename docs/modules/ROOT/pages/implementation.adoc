@@ -202,28 +202,134 @@ By slightly transforming this equation, we obtain :
 [stem]
 ++++
 \begin{equation}
- \int_{\Omega_C} \sigma \Delta t\nabla V \cdot \nabla \psi = - \int_{\Omega_C} \frac{\partial A}{\partial t} \cdot \nabla \psi
+ \int_{\Omega_C} \sigma \nabla V \cdot \nabla \psi = - \int_{\Omega_C} \frac{\partial A}{\partial t} \cdot \nabla \psi
 \end{equation} 
 ++++
 
-We will implement this equation under feelpp, using the function stem:[\frac{\partial A}{\partial t} = (0,0,1)]
-It's one solution when we take stem:[V = z].
+The code is almost the same as before, with a few modifications :
 
-This is the code:
+First, we change our function space :
+
+[source,cpp]
+----
+auto Vh = Pch<1>( cond_mesh );
+----
+
+and we define our elements :
+
+[source,cpp]
+----
+auto V = Vh->element(V0);
+auto psi = Vh->element();
+auto Vexact = Vh->element();
+----
+
+Then we define our two forms :
+
+[source,cpp]
+----
+auto a2 = form2( _trial=Vh, _test=Vh);
+auto l2 = form1( _test=Vh );
+auto e = exporter( _mesh=mesh );
+----
+
+The last change is inside the loop, were we define the second equation :
+
+[source,cpp]
+----
+l2 = integrate(_range=elements(cond_mesh),_expr = sigma * inner( -dA, trans(grad(psi)) ));
+        
+a2 = integrate(_range=elements(cond_mesh),_expr = sigma * inner(gradt(V), grad(psi) ));
+
+a2 += on(_range=markedfaces(cond_mesh,"Gamma_I"), _rhs=l2, _element=psi, _expr= gI );
+a2 += on(_range=markedfaces(cond_mesh,"Gamma_O"), _rhs=l2, _element=psi, _expr= gO );
+a2 += on(_range=markedfaces(cond_mesh,"Gamma_C"), _rhs=l2, _element=psi, _expr= Ad );
+----
+
+Then we solve, and we compute the errors, here is the complete code :
 
 [source,cpp]
 ----
 include::https://raw.githubusercontent.com/feelpp/mqs/master/src/test2.cpp
 ----
 
-and the config file :
+Now we will test this program with two different set of function :
+First will be with the function stem:[A = (-t,0,0)], so stem:[\frac{\partial A}{\partial t} = (-1,0,0)].
+Note that the exact solution is stem:[V = zt].
+
+We will run the simulation on the same geometry as before, with same time and step time.
+
+This are the errors we get with hsize = 0.1 :
+
+[width="75%"]
+|===============================================================
+|t                         |0.1        |0.5        |O.9
+|stem:[L^2] error          |1.40624e-15|3.01653e-15|7.75481e-15
+|stem:[L^2] relative error |2.17853e-15|9.34637e-16|1.33486e-15
+|stem:[H^1] error          |4.47471e-15|2.05823e-14|3.85823e-14
+|===============================================================
+
+The error is 0 at epsilon machine, which is what is expected because the function is linear in space. 
+
+This is the config file for this simulation :
 
 [source,cfg]
 ----
-include::https://raw.githubusercontent.com/feelpp/mqs/master/src/test2.cfg
+include::https://raw.githubusercontent.com/feelpp/mqs/master/src/cases/test2/test2.cfg
 ----
 
-(here will be the results and analysis of error)
+Now we will use the function stem:[A = (-xt,0,zt)], so stem:[\frac{\partial A}{\partial t} = (-x,0,z)].
+Note that the exact solution is stem:[V = zxt].
+
+We will run the simulation on the same geometry as before, with same time and step time.
+
+Below are the errors we get at different times.
+
+stem:[t=0.1]
+
+[width="75%"]
+|================================================================
+|h                         |0.2        |0.1        |O.05
+|stem:[L^2] error          |0.000318572|8.66208e-05|2.23948e-05
+|stem:[L^2] relative error |0.00085482 |0.000232428|6.00916e-05
+|stem:[H^1] error          |0.00537588 |0.00303521 |0.00161933
+|================================================================
+
+image:test2/p01.png[geometry,50%]
+
+stem:[t=0.5]
+
+[width="75%"]
+|================================================================
+|h                         |0.2       |0.1        |O.05
+|stem:[L^2] error          |0.00159286|0.000433104|0.000111974
+|stem:[L^2] relative error |0.00085482|0.000232428|6.00916e-05
+|stem:[H^1] error          |0.0268794 |0.0151761  |0.00809665
+|================================================================
+
+image:test2/p05.png[geometry,50%]
+
+stem:[t=0.9]
+
+[width="75%"]
+|================================================================
+|h                         |0.2       |0.1        |O.05
+|stem:[L^2] error          |0.00286715|0.000779587|0.000201553
+|stem:[L^2] relative error |0.00085482|0.000232428|6.00916e-05
+|stem:[H^1] error          |0.0483829 |0.0273169  |0.014574
+|================================================================
+
+image:test2/p09.png[geometry,50%]
+
+Here is a comparison under paraview between the exact solution and the calculated solution, at different time:
+
+image:test1/t01.png[geometry,75%]
+
+image:test1/t05.png[geometry,75%]
+
+image:test1/t09.png[geometry,75%]
+
+We can conclude that the stem:[L^2] and stem:[H^1] errors are what expected, for the same reason as first equation.
 
 == Coupled system
 
