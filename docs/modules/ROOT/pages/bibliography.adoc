@@ -1,2 +1,4 @@
+= Bibliography
+
 * Potential formulations in magnetics applying the finite element method, Miklos Kuczmann, 2009.
 * docs.feelpp.org
