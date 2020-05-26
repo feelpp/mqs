@@ -24,7 +24,7 @@ By slightly transforming the first equation, we obtain :
 ++++ 
 
 We will now implement this equation under feelpp.
-First, we define the stem[\Omega], the domain, as well as the stem:[\Omega_C], the sub-domain of the conductor.
+First, we define the stem:[\Omega], the domain, as well as the stem:[\Omega_C], the sub-domain of the conductor.
 [source,cpp]
 ----
 auto mesh = loadMesh(_mesh = new Mesh<Simplex<3>>);
@@ -56,7 +56,7 @@ double t = 0;
 auto e = exporter(_mesh = mesh);
 ----
 
-We define result at time 0,the stem:[H^1] and stem:[L^2] errors.
+We define result at time 0, the stem:[H^1] and stem:[L^2] errors.
 [source,cpp]
 ----
 Vexact_g.setParameterValues({{"t", t}});
@@ -112,19 +112,13 @@ L2Aexact = normL2(_range = elements(mesh), _expr = Aexact_g);
 L2error = normL2(elements(mesh), (idv(A) - idv(Aexact)));
 H1error = normH1(elements(mesh), _expr = (idv(A) - idv(Aexact)), _grad_expr = (gradv(A) - gradv(Aexact)));
 ----
+And we start the loop again, which end when stem:[t geq tmax].
 
 This is the complete code:
 
 [source,cpp]
 ----
 include::https://raw.githubusercontent.com/feelpp/mqs/master/src/test1.cpp
-----
-
-and the config file :
-
-[source,cfg]
-----
-include::https://raw.githubusercontent.com/feelpp/mqs/master/src/cases/test1/test1.cfg
 ----
 
 Now, we will test this program using the function stem:[V = (-xz,0,-\frac{t}{\sigma})] with stem:[\sigma = 58000] and stem:[\mu = 1].
@@ -136,9 +130,16 @@ We'll run the simulation on a bar, representing the conductor.
 
 image:test1/geo.png[geometry,50%]
 
-Below are the errors we get at different times.
+This is the config file of the simulation :
 
-stem:[t=0.1]
+[source,cfg]
+----
+include::https://raw.githubusercontent.com/feelpp/mqs/master/src/cases/test1/test1.cfg
+----
+
+Below are the errors we get at different times, with the associated graph in log scale.
+
+stem:[t=0.1]:
 
 [width="75%"]
 |================================================================
@@ -150,7 +151,7 @@ stem:[t=0.1]
 
 image:test1/p01.png[geometry,50%]
 
-stem:[t=0.5]
+stem:[t=0.5]:
 
 [width="75%"]
 |================================================================
@@ -162,7 +163,7 @@ stem:[t=0.5]
 
 image:test1/p05.png[geometry,50%]
 
-stem:[t=0.9]
+stem:[t=0.9]:
 
 [width="75%"]
 |================================================================
@@ -246,7 +247,7 @@ a2 += on(_range=markedfaces(cond_mesh,"Gamma_O"), _rhs=l2, _element=psi, _expr= 
 a2 += on(_range=markedfaces(cond_mesh,"Gamma_C"), _rhs=l2, _element=psi, _expr= Ad );
 ----
 
-Then we solve, and we compute the errors, here is the complete code :
+Then we solve, and we compute the errors. here is the complete code :
 
 [source,cpp]
 ----
@@ -283,9 +284,9 @@ Note that the exact solution is stem:[V = zxt].
 
 We will run the simulation on the same geometry as before, with same time and step time.
 
-Below are the errors we get at different times.
+Below are the errors we get at different times, with the associated graph in log scale.
 
-stem:[t=0.1]
+stem:[t=0.1]:
 
 [width="75%"]
 |================================================================
@@ -297,7 +298,7 @@ stem:[t=0.1]
 
 image:test2/p01.png[geometry,50%]
 
-stem:[t=0.5]
+stem:[t=0.5]:
 
 [width="75%"]
 |================================================================
