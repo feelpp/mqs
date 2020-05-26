@@ -348,8 +348,12 @@ Now we take back our system :
 \begin{equation}
 \int_{\Omega} \frac{\Delta t}{\mu} \, (\nabla \times \phi) \cdot (\nabla \times A^n) - \int_{\Gamma_D} \frac{1}{\mu} A_D \cdot (\nabla \times A^n) + \int_{\Omega_C} \sigma \phi \cdot (A^n + \Delta t \nabla V) =  \int_{\Omega_C} \sigma \phi \cdot A^{n-1}
 \end{equation}
+++++
+
+[stem]
+++++
 \begin{equation}
- \int_{\Omega_C} \sigma (A^n + \Delta t\nabla V) \cdot \nabla \psi =  \int_{\Omega_C} \sigma A^{n-1} \cdot \nabla \psi
+\int_{\Omega_C} \sigma (A^n + \Delta t\nabla V) \cdot \nabla \psi =  \int_{\Omega_C} \sigma A^{n-1} \cdot \nabla \psi
 \end{equation} 
 ++++
 
@@ -360,6 +364,10 @@ Which can be rewrite :
 \begin{equation}
 \int_{\Omega} \frac{\Delta t}{\mu} \, (\nabla \times \phi) \cdot (\nabla \times A^n) + \int_{\Omega_C} \sigma \phi \cdot A^n - \int_{\Gamma_D} \frac{1}{\mu} A_D \cdot (\nabla \times A^n) + \int_{\Omega_C} \sigma \phi \cdot \Delta t \nabla V =  \int_{\Omega_C} \sigma \phi \cdot A^{n-1}
 \end{equation}
+++++
+
+[stem]
+++++
 \begin{equation}
  \int_{\Omega_C} \sigma A^n \cdot \nabla \psi +  \int_{\Omega_C} \sigma \Delta t\nabla V \cdot \nabla \psi =  \int_{\Omega_C} \sigma A^{n-1} \cdot \nabla \psi
 \end{equation} 
@@ -374,7 +382,7 @@ So first, after we define the mesh as same way as before, we create our elements
 auto Ah = Pchv<1>( mesh );
 auto Vh = Pch<1>( cond_mesh );
 
-auto A = Ah->element(A0); // how to init A to A0?;
+auto A = Ah->element(A0); 
 auto V = Vh->element(V0);
 
 auto Aexact = Ah->element();
