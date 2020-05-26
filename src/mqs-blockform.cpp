@@ -66,6 +66,7 @@ int main(int argc, char**argv )
   auto mur = expr(soption(_name = "mu_mag"));
   Feel::cout << "mur=" << mur << std::endl;
 
+  // Enforce a solution
   auto Aexact_g = expr<3, 1>(soption(_name = "Aexact"));
   Feel::cout << "Aexact=" << Aexact_g << std::endl;
 
@@ -137,7 +138,7 @@ int main(int argc, char**argv )
     lhs.zero();
     rhs.zero();
     tic();
-    // Ampere law
+    // Ampere law: sigma dA/dt + rot(1/(mu-r*mu_0) rotA) + sigma grad(V) = Js
     lhs(0_c, 0_c) = integrate( _range=elements(mesh),
 		     _expr = dt * inner(curl(phi) , curlt(A)) );
     lhs(0_c, 0_c) += integrate( _range=elements(cond_mesh),
@@ -149,7 +150,7 @@ int main(int argc, char**argv )
     rhs(0_c) = integrate(_range=elements(cond_mesh),
                         _expr = mu0 * mur * sigma * inner(id(phi) , idv(A)));
 
-    // Current conservation
+    // Current conservation: div( -sigma grad(V) -sigma*dA/dt) = Qs
     lhs(1_c, 0_c) = integrate( _range=elements(cond_mesh),
 			       _expr = sigma * inner(idt(A), trans(grad(psi))) );
       
@@ -201,5 +202,9 @@ int main(int argc, char**argv )
 
     Feel::cout << "V error: " << "t="<< t << " " << L2Verror << " " << L2Verror / L2Vexact << " " << H1Verror << std::endl;
 
+    #if 0
+    A = U(0_c); 
+    V = U(1_c);
+    #endif
   }
 }
