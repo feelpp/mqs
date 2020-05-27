@@ -114,12 +114,7 @@ H1error = normH1(elements(mesh), _expr = (idv(A) - idv(Aexact)), _grad_expr = (g
 ----
 And we start the loop again, which end when stem:[t \geq tmax].
 
-This is the complete code:
-
-[source,cpp]
-----
-include::https://raw.githubusercontent.com/feelpp/mqs/master/src/test1.cpp
-----
+Complete code is available in the code section.
 
 Now, we will test this program using the function stem:[V = (-xz,0,-\frac{t}{\sigma})] with stem:[\sigma = 58000] and stem:[\mu = 1].
 Note that the exact solution stem:[A] for this stem:[V] is stem:[A = (xzt,0,0)].
@@ -134,7 +129,25 @@ This is the config file of the simulation :
 
 [source,cfg]
 ----
-include::https://raw.githubusercontent.com/feelpp/mqs/master/src/cases/test1/test1.cfg
+directory=hifimagnet/mqs/test1
+
+[gmsh]
+hsize=0.1
+filename=$cfgdir/test1.geo
+
+[functions]
+a={0,0,0}
+i={x*z*t,0,0}:x:y:z:t
+o={x*z*t,0,0}:x:y:z:t
+d={x*z*t,0,0}:x:y:z:t
+v={-x*z,0,-t/58000}:x:y:z:t
+m=1
+s=58000
+e={x*z*t,0,0}:x:y:z:t
+
+[ts]
+time-step = 0.025
+time-final = 1
 ----
 
 Below are the errors we get at different times, with the associated graph in log scale.
@@ -247,12 +260,9 @@ a2 += on(_range=markedfaces(cond_mesh,"Gamma_O"), _rhs=l2, _element=psi, _expr= 
 a2 += on(_range=markedfaces(cond_mesh,"Gamma_C"), _rhs=l2, _element=psi, _expr= Ad );
 ----
 
-Then we solve, and we compute the errors. here is the complete code :
+Then we solve, and we compute the errors.
 
-[source,cpp]
-----
-include::https://raw.githubusercontent.com/feelpp/mqs/master/src/test2.cpp
-----
+Complete code is available in the code section.
 
 Now we will test this program with two different set of function :
 First will be with the function stem:[A = (-t,0,0)], so stem:[\frac{\partial A}{\partial t} = (-1,0,0)].
@@ -276,7 +286,24 @@ This is the config file for this simulation :
 
 [source,cfg]
 ----
-include::https://raw.githubusercontent.com/feelpp/mqs/master/src/cases/test2/test2.cfg
+directory=hifimagnet/mqs/test2
+
+[gmsh]
+hsize=0.1
+filename=$cfgdir/test2.geo
+
+[functions]
+v=0
+a={-t,0,0}:x:y:z:t
+i=z*t:x:y:z:t
+o=z*t:x:y:z:t
+d=z*t:x:y:z:t
+s=58000
+e=z*t:x:y:z:t
+
+[ts]
+time-step = 0.025
+time-final = 1
 ----
 
 Now we will use the function stem:[A = (-xt,0,zt)], so stem:[\frac{\partial A}{\partial t} = (-x,0,z)].
@@ -334,7 +361,24 @@ This is the config file of the simulation :
 
 [source,cfg]
 ----
-include::https://raw.githubusercontent.com/feelpp/mqs/master/src/cases/test2/test22.cfg
+directory=hifimagnet/mqs/test22
+
+[gmsh]
+hsize=0.1
+filename=$cfgdir/test2.geo
+
+[functions]
+v=0
+a={-x*t,0,z*t}:x:y:z:t
+i=x*z*t:x:y:z:t
+o=x*z*t:x:y:z:t
+d=x*z*t:x:y:z:t
+s=58000
+e=x*z*t:x:y:z:t
+
+[ts]
+time-step = 0.025
+time-final = 1
 ----
 
 We can conclude that the stem:[L^2] and stem:[H^1] errors are what expected, for the same reason as first equation.
@@ -501,9 +545,28 @@ So the way we set boundary condition in the code seems to be not correct.
 
 The consequence is that we haven't been able to visualize correct results for a resolution yet. 
 
-Here is the complete code :
+Complete code is available in the code section.
 
-[source,cpp]
+Config file use for simulation :
+
+[source,cfg]
 ----
-include::https://raw.githubusercontent.com/feelpp/mqs/master/src/mqs-blockform.cpp
+directory=hifimagnet/mqs/mqs-blockform/conductor/const
+A0={0,0,0}:x:y:z
+V0=z:x:y:z
+v0=z:x:y:z:t
+v1=z:x:y:z:t
+Ad={0,0,-t}:x:y:z:t
+mu_mag=1
+sigma=1
+Aexact={0,0,-t}:x:y:z:t
+Vexact=z:x:y:z:t
+
+[gmsh]
+hsize=0.1
+filename=$cfgdir/conductor.geo
+
+[ts]
+time-step=0.025
+time-final=1
 ----
