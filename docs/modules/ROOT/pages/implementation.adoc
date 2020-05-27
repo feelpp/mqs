@@ -47,7 +47,7 @@ auto Aexact = Ah->element();
 
 Where stem:[Aexact] is the exact solution of a given problem, and where A is initialized with stem:[A0].
 
-Then we create thee first and second member of the weak formulation, the exporter and the time variable.
+Then we create the first and second member of the weak formulation, the exporter and the time variable.
 [source,cpp]
 ----
 auto l1 = form1(_test = Ah);
