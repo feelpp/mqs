@@ -45,4 +45,5 @@ Christophe PRUD'HOMME & Christophe TROPHIME
 .. 2 solenoidal magnets
 . Conclusion
 . Acknowledgments
+. Code
 . Bibliography
