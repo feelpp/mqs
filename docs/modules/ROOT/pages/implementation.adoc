@@ -31,7 +31,7 @@ auto mesh = loadMesh(_mesh = new Mesh<Simplex<3>>);
 auto cond_mesh = createSubmesh(mesh, markedelements(mesh, "Omega_C"));
 ----
 
-Remember that stem:[A \in H_{A_D}^{curl}], but here, to siplify, we will concider that stem:[A \in H^{1}], so we have to take a correct function space for stem:[A^n] :
+Remember that stem:[A \in H_{A_D}^{curl}], but here, to simplify, we will consider that stem:[A \in H^{1}], so we have to take a correct function space for stem:[A^n] :
 [source,cpp]
 ----
 auto Ah = Pchv<1>(mesh);
@@ -47,7 +47,7 @@ auto Aexact = Ah->element();
 
 Where stem:[Aexact] is the exact solution of a given problem, and where A is initialized with stem:[A0].
 
-Then we create thee first and second member of the weak formulation, the exporter and the time variable.
+Then we create the first and second member of the weak formulation, the exporter and the time variable.
 [source,cpp]
 ----
 auto l1 = form1(_test = Ah);
