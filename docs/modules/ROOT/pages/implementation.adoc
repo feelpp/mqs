@@ -62,7 +62,7 @@ We define result at time 0, the stem:[H^1] and stem:[L^2] errors.
 Vexact_g.setParameterValues({{"t", t}});
 Vexact = project(_space = Vh, _expr = Vexact_g);
 
-dA.setParameterValues({{"t", t}});
+gradV.setParameterValues({{"t", t}});
 e->step(t)->add("V", V0);
 e->step(t)->add("Vexact", Vexact);
 e->save();
@@ -524,8 +524,7 @@ lhs(1_c, 1_c) += on(_range=markedfaces(cond_mesh,"V1"), _rhs=rhs(1_c), _element=
 lhs(1_c, 1_c) += on(_range=markedfaces(cond_mesh,"Gamma_C"), _rhs=rhs(1_c), _element=psi, _expr= Vexact_g);
 ----
 
-But, this is probably not the good way to do it.
-Reason is, when we solve (and export) the system with :
+And then, we solve and export :
 
 [source,cpp]
 ----
@@ -538,7 +537,8 @@ e->step(t)->add( "Vexact", Vexact);
 e->save();
 ----
 
-we dont have good results. For exemple, at the time stem:[t=dt], the solution we obtain is not close to the exact one, and the error bad.
+But, this is probably not the good way to do it.
+Reason is, when we solve (and export) the system we dont have good results. For exemple, at the time stem:[t=dt], the solution we obtain is not close to the exact one, and the error bad.
 The visualization tends to prove that our boundary counditions are not set properly. The boundary should be the same as the exact solution, 
 because we define boundary with the exact solution, but they are differents.
 So the way we set boundary condition in the code seems to be not correct.
