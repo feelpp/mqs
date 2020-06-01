@@ -1,21 +1,26 @@
 [.text-center]
-Modeling the transient behavior of high field magnets
+= Modeling the transient behavior of high field magnets
+
 
 [.text-center]
 Master 1 CSMI
+
 
 [.text-center]
 UFR de Mathématique et d'Informatique
 [.text-center]
 Université de Strasbourg
 
+
 [.text-center]
 ANKI Lucas
+
 
 [.text-center]
 supervised by
 [.text-center]
 Christophe PRUD'HOMME & Christophe TROPHIME
+
 
 [.text-center]
 2019-2020
@@ -40,4 +45,5 @@ Christophe PRUD'HOMME & Christophe TROPHIME
 .. 2 solenoidal magnets
 . Conclusion
 . Acknowledgments
+. Code
 . Bibliography

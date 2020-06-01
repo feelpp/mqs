@@ -122,7 +122,7 @@ int main(int argc, char**argv )
   double L2Aerror = 0;
   double H1Verror = 0;
   double L2Verror = 0;
-    
+  
   auto mu0 = 4.e-7 * M_PI ; // SI Unit : H/m = m.kg/s2/A2
 
   for (t = dt; t <= tmax; t += dt){
@@ -133,9 +133,7 @@ int main(int argc, char**argv )
     v0.setParameterValues({{"t", t}});
     v1.setParameterValues({{"t", t}});
     Ad.setParameterValues({{"t", t}});
-    // be careful the expression are being update in time, so recompute the norms
-    double L2Aexact = normL2(_range = elements(mesh), _expr = Aexact_g);
-    double L2Vexact = normL2(_range = elements(mesh), _expr = Vexact_g);
+    
     lhs.zero();
     rhs.zero();
     tic();
@@ -167,6 +165,18 @@ int main(int argc, char**argv )
 #endif
 
 #if 1
+    lhs(0_c, 0_c) += integrate( _range=boundaryfaces(mesh),
+                       		     _expr = dt * inner(cross(id(phi),N()) , curlt(A)) );
+    lhs(0_c, 0_c) += integrate( _range=boundaryfaces(mesh),
+                       		     _expr = dt * inner(cross(idt(phi),N()) , curl(A)) );
+    lhs(0_c, 0_c) += integrate( _range=boundaryfaces(mesh),
+                       		     _expr = inner(cross(id(phi),N()) , cross(idt(A),N()))/hFace() );  
+    rhs(0_c) += integrate(_range=boundaryfaces(mesh),
+                        _expr = dt * inner(cross(idt(phi),N()) , curl(A)) );                                    
+    rhs(0_c) += integrate(_range=boundaryfaces(mesh),
+                        _expr = inner(cross(id(phi),N()) , cross(Ad,N()))/hFace());                                                                                              
+#else
+#if 1
     /* 1/4th of a torus + Air */
     lhs(0_c, 0_c) += on(_range=markedfaces(mesh,"V0"), _rhs=rhs(0_c), _element=phi, _expr= Ad);
     lhs(0_c, 0_c) += on(_range=markedfaces(mesh,"V1"), _rhs=rhs(0_c), _element=phi, _expr= Ad);
@@ -176,6 +186,7 @@ int main(int argc, char**argv )
     lhs(1_c, 1_c) += on(_range=markedfaces(cond_mesh,"V0"), _rhs=rhs(1_c), _element=psi, _expr= v0);
     lhs(1_c, 1_c) += on(_range=markedfaces(cond_mesh,"V1"), _rhs=rhs(1_c), _element=psi, _expr= v1);
     lhs(1_c, 1_c) += on(_range=markedfaces(cond_mesh,"Gamma_C"), _rhs=rhs(1_c), _element=psi, _expr= Vexact_g);
+#endif    
     toc("assembling", true);
 
     /* Solve */
@@ -191,7 +202,7 @@ int main(int argc, char**argv )
     e->save();
     toc("export", true);
 
-    L2Aexact = normL2(_range = elements(mesh), _expr = Aexact_g);
+    double L2Aexact = normL2(_range = elements(mesh), _expr = Aexact_g);
     L2Aerror = normL2(_range=elements(mesh), _expr=(idv(U(0_c)) - idv(Aexact)));
     H1Aerror = normH1(_range=elements(mesh), _expr = (idv(U(0_c)) - idv(Aexact)), _grad_expr = (gradv(U(0_c)) - gradv(Aexact)));
 
@@ -199,7 +210,7 @@ int main(int argc, char**argv )
                << L2Aexact << " " 
                << L2Aerror << " " << L2Aerror / L2Aexact << " " << H1Aerror << std::endl;
 
-    L2Vexact = normL2(_range = elements(mesh), _expr = Vexact_g);
+    double L2Vexact = normL2(_range = elements(mesh), _expr = Vexact_g);
     L2Verror = normL2(_range=elements(mesh), _expr=(idv(U(1_c)) - idv(Vexact)));
     H1Verror = normH1(_range=elements(mesh), _expr = (idv(U(1_c)) - idv(Vexact)), _grad_expr = (gradv(U(1_c)) - gradv(Vexact)));
 

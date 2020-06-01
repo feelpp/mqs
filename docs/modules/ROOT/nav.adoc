@@ -7,7 +7,8 @@
 ** xref:implementation.adoc[Implementation]
 ** xref:validation.adoc[Validations]
 ** xref:conclusion.adoc[Conclusion]
-** xref:acknowledgment.adoc[Acknowledgment]
+** xref:acknowledgments.adoc[Acknowledgments]
+** xref:code.adoc[Code]
 ** xref:bibliography.adoc[Bibliography]
 ** xref:appendix.adoc[Appendix]
 * Roadmap
