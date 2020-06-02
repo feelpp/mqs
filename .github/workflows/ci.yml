@@ -27,10 +27,11 @@ jobs:
         make install
     - name: Check build
       run: |
+        pwd
         mkdir check && cd check
         ls -lrth ../
-	find .. -name feelpp_mqs_form
-	mpirun --bind-to core --mca btl vader,self -np 4 ../bin/feelpp_mqs_form --config-file ../qs/src/cases/mqs-blockform/const.cf 
+        find .. -name feelpp_mqs_form
+        mpirun --bind-to core --mca btl vader,self -np 4 ../bin/feelpp_mqs_form --config-file ../qs/src/cases/mqs-blockform/const.cf 
       working-directory: build/install
     - name: Package
       run: |
