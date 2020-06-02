@@ -74,6 +74,13 @@ if [ ! -d ${SRCDIR} ]; then
    exit 1
 fi
 
+if [ -z ${BUILDDIR} ]; then
+   BUILDDIR=${SRCDIR}/../build
+fi
+if [ -z ${INSTALLDIR} ]; then
+   INSTALLDIR=${SRCDIR}/../install
+fi
+
 # check if NJOBS is 
 if [ ${NJOBS} -ge ${NP_MAX} ]; then
    echo "NJOBS=${NJOBS} is invalid - should be less than or equal to ${NP_MAX}"

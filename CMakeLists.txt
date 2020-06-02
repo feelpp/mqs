@@ -11,7 +11,12 @@ else()
   include_directories(${CMAKE_SOURCE_DIR}/toolboxes ${CMAKE_BINARY_DIR}/toolboxes)
 endif()
 
-enable_testing()
+#
+# Enable testing
+#
+INCLUDE(CTest)
+ENABLE_TESTING()
+set(CTEST_TIMEOUT "120")
 
 if ( NOT TARGET check )
   add_custom_target(check)
@@ -20,6 +25,7 @@ endif()
 
 add_subdirectory( src )
 add_subdirectory( docs )
+
 
 # extra ignored files
 list(APPEND CPACK_SOURCE_IGNORE_FILES
