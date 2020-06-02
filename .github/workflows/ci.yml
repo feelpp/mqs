@@ -28,7 +28,9 @@ jobs:
     - name: Check build
       run: |
         mkdir check && cd check
-        mpirun --bind-to core --mca btl vader,self -np 4 ../bin/feelpp_mqs_form --config-file ../qs/src/cases/mqs-blockform/const.cf 
+        ls -lrth ../
+	find .. -name feelpp_mqs_form
+	mpirun --bind-to core --mca btl vader,self -np 4 ../bin/feelpp_mqs_form --config-file ../qs/src/cases/mqs-blockform/const.cf 
       working-directory: build/install
     - name: Package
       run: |
