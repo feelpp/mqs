@@ -147,7 +147,7 @@ int main(int argc, char**argv )
          _expr = dt * mu0 * mur * sigma*inner(id(phi),trans(gradt(V))) );
 
     rhs(0_c) += integrate(_range=elements(cond_mesh),
-                        _expr = mu0 * mur * sigma * inner(id(phi) , idv(A)));
+                        _expr = mu0 * mur * sigma * inner(id(phi) , Ad ) );//idv(A)));
 
     // Current conservation
     lhs(1_c, 0_c) += integrate( _range=elements(cond_mesh),
@@ -168,13 +168,13 @@ int main(int argc, char**argv )
     lhs(0_c, 0_c) += integrate( _range=boundaryfaces(mesh),
                        		     _expr = dt * inner(cross(id(phi),N()) , curlt(A)) );
     lhs(0_c, 0_c) += integrate( _range=boundaryfaces(mesh),
-                       		     _expr = dt * inner(cross(idt(phi),N()) , curl(A)) );
+                       		     _expr = dt * inner(cross(idt(A),N()) , curl(phi)) );
     lhs(0_c, 0_c) += integrate( _range=boundaryfaces(mesh),
                        		     _expr = inner(cross(id(phi),N()) , cross(idt(A),N()))/hFace() );  
     rhs(0_c) += integrate(_range=boundaryfaces(mesh),
-                        _expr = dt * inner(cross(idt(phi),N()) , curl(A)) );                                    
+                        _expr = dt * inner(Ad , curl(phi)));
     rhs(0_c) += integrate(_range=boundaryfaces(mesh),
-                        _expr = inner(cross(id(phi),N()) , cross(Ad,N()))/hFace());                                                                                              
+                        _expr = inner(cross(id(phi),N()) , Ad)/hFace());                                                                                              
 #else
 #if 1
     /* 1/4th of a torus + Air */
@@ -182,11 +182,11 @@ int main(int argc, char**argv )
     lhs(0_c, 0_c) += on(_range=markedfaces(mesh,"V1"), _rhs=rhs(0_c), _element=phi, _expr= Ad);
     lhs(0_c, 0_c) += on(_range=markedfaces(mesh,"Gamma_C"), _rhs=rhs(0_c), _element=phi, _expr= Ad);
 #endif
-      
+#endif          
     lhs(1_c, 1_c) += on(_range=markedfaces(cond_mesh,"V0"), _rhs=rhs(1_c), _element=psi, _expr= v0);
     lhs(1_c, 1_c) += on(_range=markedfaces(cond_mesh,"V1"), _rhs=rhs(1_c), _element=psi, _expr= v1);
     lhs(1_c, 1_c) += on(_range=markedfaces(cond_mesh,"Gamma_C"), _rhs=rhs(1_c), _element=psi, _expr= Vexact_g);
-#endif    
+
     toc("assembling", true);
 
     /* Solve */
@@ -218,7 +218,7 @@ int main(int argc, char**argv )
                << L2Vexact << " " 
                << L2Verror << " " << L2Verror / L2Vexact << " " << H1Verror << std::endl;
 
-    #if 0
+    #if 1
     A = U(0_c); 
     V = U(1_c);
     #endif
