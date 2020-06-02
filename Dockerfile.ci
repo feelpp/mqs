@@ -63,4 +63,4 @@ RUN mkdir build && cd build; \
     make -j3;\
     make install; \
     mkdir check && cd check; \
-    mpirun --bind-to core --mca btl vader,self -np 4 ../bin/feelpp_p_myapp ; 
+    mpirun --bind-to core --mca btl vader,self -np 4 ../bin/feelpp_mqs_form --config-file ../qs/src/cases/mqs-blockform/const.cf ; 
