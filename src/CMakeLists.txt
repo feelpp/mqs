@@ -1,5 +1,5 @@
 
-feelpp_add_application(mqs-blockform SRCS mqs-blockform.cpp )
-feelpp_add_application(mqs-form SRCS mqs-form.cpp )
+feelpp_add_application(blockform SRCS mqs-blockform.cpp )
+feelpp_add_application(form SRCS mqs-blockform.cpp )
 
-feelpp_add_testcase(cases)
+feelpp_add_testcase( cases PREFIX mqs CATEGORY mqs )

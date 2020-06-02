@@ -1,0 +1,1 @@
+form --config-file ${CMAKE_CURRENT_SOURCE_DIR}/cases/mqs-blockforms/const.cfg

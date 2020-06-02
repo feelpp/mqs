@@ -19,6 +19,7 @@ int main(int argc, char**argv )
   po::options_description options( "MQS options" );
   options.add_options()
     ("model-file", Feel::po::value<std::string>()->default_value( "" ), "file describing model properties")
+    ( "weakdir", po::value<bool>()->default_value( "false" ), "use Dirichlet weak formulation" )
     ( "A0", po::value<std::string>()->default_value( "{0,0,0}" ), "initial A" )
     ( "V0", po::value<std::string>()->default_value( "0" ), "initial V" )
     ( "Aexact", po::value<std::string>()->default_value( "" ), "exact A" )
@@ -291,13 +292,7 @@ int main(int argc, char**argv )
 
 	  e->step(t)->add( "Aexact", Aexact);
 	  e->step(t)->add( "Vexact", Vexact);
-	}
-      e->save();
-      toc("export", true);
 
-      // Compute error
-      if ( Uexact )
-	{
 	  L2Aexact = normL2(_range = elements(mesh), _expr = Aexact_g);
 	  L2Aerror = normL2(elements(mesh), (idv(U(0_c)) - idv(Aexact)));
 	  H1Aerror = normH1(elements(mesh), _expr = (idv(U(0_c)) - idv(Aexact)), _grad_expr = (gradv(U(0_c)) - gradv(Aexact)));
@@ -310,9 +305,71 @@ int main(int argc, char**argv )
 
 	  Feel::cout << "V error: " << "t="<< t << " " << L2Verror << " " << L2Verror / L2Vexact << " " << H1Verror << std::endl;
 	}
-    
+      e->save();
+      toc("export", true);
+
+#if 1
+      A = U(0_c); 
+      V = U(1_c);
+#endif
+      
       /* reinit  */
       lhs.zero();
       rhs.zero();
     }
+
+#if 0
+    lhs(0_c, 0_c) += integrate( _range=boundaryfaces(mesh),
+                       		     _expr = dt * inner(cross(id(phi),N()) , curlt(A)) );
+    lhs(0_c, 0_c) += integrate( _range=boundaryfaces(mesh),
+                       		     _expr = dt * inner(cross(idt(A),N()) , curl(phi)) );
+    lhs(0_c, 0_c) += integrate( _range=boundaryfaces(mesh),
+                       		     _expr = inner(cross(id(phi),N()) , cross(idt(A),N()))/hFace() );  
+    rhs(0_c) += integrate(_range=boundaryfaces(mesh),
+                        _expr = dt * inner(Ad , curl(phi)));
+    rhs(0_c) += integrate(_range=boundaryfaces(mesh),
+                        _expr = inner(cross(id(phi),N()) , Ad)/hFace());                                                                                              
+
+#endif          
+    lhs(1_c, 1_c) += on(_range=markedfaces(cond_mesh,"V0"), _rhs=rhs(1_c), _element=psi, _expr= v0);
+    lhs(1_c, 1_c) += on(_range=markedfaces(cond_mesh,"V1"), _rhs=rhs(1_c), _element=psi, _expr= v1);
+    lhs(1_c, 1_c) += on(_range=markedfaces(cond_mesh,"Gamma_C"), _rhs=rhs(1_c), _element=psi, _expr= Vexact_g);
+
+    toc("assembling", true);
+
+    /* Solve */
+    tic();
+    lhs.solve(_rhs=rhs,_solution=U);
+    toc("solve", true);
+
+    tic();
+    e->step(t)->add( "A", U(0_c));
+    e->step(t)->add( "V", U(1_c));
+    e->step(t)->add( "Aexact", Aexact);
+    e->step(t)->add( "Vexact", Vexact);
+    e->save();
+    toc("export", true);
+
+    double L2Aexact = normL2(_range = elements(mesh), _expr = Aexact_g);
+    L2Aerror = normL2(_range=elements(mesh), _expr=(idv(U(0_c)) - idv(Aexact)));
+    H1Aerror = normH1(_range=elements(mesh), _expr = (idv(U(0_c)) - idv(Aexact)), _grad_expr = (gradv(U(0_c)) - gradv(Aexact)));
+
+    Feel::cout << "A error: " << "t="<< t << " " 
+               << L2Aexact << " " 
+               << L2Aerror << " " << L2Aerror / L2Aexact << " " << H1Aerror << std::endl;
+
+    double L2Vexact = normL2(_range = elements(mesh), _expr = Vexact_g);
+    L2Verror = normL2(_range=elements(mesh), _expr=(idv(U(1_c)) - idv(Vexact)));
+    H1Verror = normH1(_range=elements(mesh), _expr = (idv(U(1_c)) - idv(Vexact)), _grad_expr = (gradv(U(1_c)) - gradv(Vexact)));
+
+    Feel::cout << "V error: " << "t="<< t << " " 
+               << L2Vexact << " " 
+               << L2Verror << " " << L2Verror / L2Vexact << " " << H1Verror << std::endl;
+
+    #if 1
+    A = U(0_c); 
+    V = U(1_c);
+    #endif
+  }
+>>>>>>> 7f9ace0b91fa7794a69450148093db773ff3fa15
 }
