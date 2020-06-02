@@ -173,7 +173,7 @@ int main(int argc, char**argv )
       L2Verror = 0;
     }
   
-  auto mu0 = 1; // 4.e-7 * M_PI ; // SI Unit : H/m = m.kg/s2/A2
+  auto mu0 = 4.e-7 * M_PI ; // SI Unit : H/m = m.kg/s2/A2
 
   
   for (t = dt; t < tmax; t += dt)
