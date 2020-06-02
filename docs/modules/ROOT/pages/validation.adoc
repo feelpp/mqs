@@ -52,7 +52,7 @@ The applied source electrical potential has the following form:
 
 [options="header"]
 |===
-| stem:[V_D]     | electrical potential          | stem:[1*t/\tau]        | stem:[V] | stem:[0 <= t < 0.1\,\tau]
+| stem:[V_D]     | electrical potential          | stem:[1*t/(0.1*\tau)]        | stem:[V] | stem:[0 <= t < 0.1\,\tau]
 | stem:[V_D]     | electrical potential          | 1        | stem:[V] | stem:[ 0.1 \, \tau <= t <= 0.5\,\tau]
 | stem:[V_D]     | electrical potential          | 0        | stem:[V] | stem:[t>\tau]
 |===
