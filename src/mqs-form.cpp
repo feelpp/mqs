@@ -19,6 +19,7 @@ int main(int argc, char**argv )
   po::options_description options( "MQS options" );
   options.add_options()
     ("model-file", Feel::po::value<std::string>()->default_value( "" ), "file describing model properties")
+    ( "units", po::value<std::string>()->default_value( "m" ), "units for mesh (default is m for meter)" )
     ( "A0", po::value<std::string>()->default_value( "{0,0,0}" ), "initial A" )
     ( "V0", po::value<std::string>()->default_value( "0" ), "initial V" )
     ( "Aexact", po::value<std::string>()->default_value( "" ), "exact A" )
@@ -174,7 +175,11 @@ int main(int argc, char**argv )
     }
   
   auto mu0 = 4.e-7 * M_PI ; // SI Unit : H/m = m.kg/s2/A2
-
+  if( soption(_name="units") == "mm" )
+    {
+      Feel::cout << "Units: mm -> change permeability\n" << std::flush;
+      mu0 *= 1000;
+       
   
   for (t = dt; t < tmax; t += dt)
     {

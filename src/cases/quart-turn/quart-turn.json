@@ -25,7 +25,7 @@
         {
             "markers":"coil",
 	    "physics":["heat","electric","solid","maxwell"],
-            "sigma":"58.e+6",
+            "sigma":"58.e+3",
             "mu_mag": "1"
         },
         "air":
