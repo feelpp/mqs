@@ -2,9 +2,8 @@
 Mesh.OptimizeNetgen=0; // otherwise it crashes when IsFull=1
 
 IsFull=0;
-IsAir=1;
 Unit=1.e-3;
-h = 1;
+h = 5;
 h_inf = 10*h;
 h_ext = 10*h;
 
@@ -12,8 +11,8 @@ r1=75.;
 r2=100.2;
 L=50/2.;
 
-r_inf=5*r2;
-r_ext=1.2*r_inf;
+r_ext=5*r2;
+r_inf=1.2*r_ext;
 
 // Define torus section
 P0= newp; Point(P0) = {0,0,0, h};
@@ -79,21 +78,16 @@ EndIf
 
 If ( IsFull != 0 )
   Physical Volume("coil") = {1, 4, 7, 10}; // Tore
-  Physical Surface("Rint") = {39, 117, 195, 273};
-  Physical Surface("Rext") = {31, 109, 187, 265};
-  Physical Surface("BP") = {35, 113, 191, 269};
-  Physical Surface("HP") = {27, 105, 183, 261};
+  Physical Volume("air") = {2, 5, 8, 11, 3, 6, 9, 12}; // Infini
 
-  If ( IsAir != 0 )
-    Physical Volume("air") = {2, 5, 8, 11, 3, 6, 9, 12}; // Infini
-    Physical Surface("Border") = {85, 88, 163, 166, 222, 225, 241, 244, 300, 303 };  // Inf
-  EndIf
-
-  Physical Line("Oz") = {13, 7, 10, 16};
-
+  Physical Surface("Border") = {85, 88, 163, 166, 222, 225, 241, 244, 300, 303 };  // Inf
+  Physical Line("OZ") = {13, 7, 10, 16};  // Axis
 EndIf
 If ( IsFull == 0 )
   Physical Volume("coil") = {1}; // Tore
+  Physical Volume("air") = {2, 3}; // Infini
+
+  Physical Surface("Border") = {85, 88};  // Inf
   Physical Surface("V0") = {6};   // V0
   Physical Surface("V1") = {40};  // V1
   Physical Surface("Rext") = {31};   
@@ -101,12 +95,9 @@ If ( IsFull == 0 )
   Physical Surface("HP") = {27};   
   Physical Surface("BP") = {35};  
 
-  If ( IsAir != 0 )
-    Physical Volume("air") = {2, 3}; // Infini
-    Physical Surface("Border") = {85, 88};  // Inf
-    Physical Surface("OXOZ") = {12, 18};  // Sym
-    Physical Surface("OYOZ") = {74, 96};  // Sym
-  EndIf
+  Physical Surface("OXOZ") = {12, 18};  // Sym
+  Physical Surface("OYOZ") = {74, 96};  // Sym
 
-  Physical Line("Oz") = {13, 7, 10, 16};
+  Physical Line("OZ") = {13, 7, 10, 16};  // Axis
 EndIf
+
