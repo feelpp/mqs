@@ -32,7 +32,8 @@ jobs:
         ls -lrth ../
         find .. -name feelpp_mqs_form
         find .. -name const.cfg
-        mpirun --bind-to core --mca btl vader,self -np 4 ../bin/feelpp_mqs_form --config-file ../mqs/src/cases/mqs-blockform/const.cfg 
+        find .. -name conductor.geo
+        mpirun --bind-to core --mca btl vader,self -np 4 ../bin/feelpp_mqs_form --config-file ../share/feelpp/data/testcases/mqs/cases/mqs-blockform/const.cfg
       working-directory: build/install
     - name: Package
       run: |
