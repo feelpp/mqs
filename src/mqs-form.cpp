@@ -18,8 +18,10 @@ int main(int argc, char**argv )
   using namespace Feel;
   po::options_description options( "MQS options" );
   options.add_options()
-    ("model-file", Feel::po::value<std::string>()->default_value( "" ), "file describing model properties")
-    ( "units", po::value<std::string>()->default_value( "m" ), "units for mesh (default is m for meter)" )
+    ( "model-file", Feel::po::value<std::string>()->default_value( "" ), "file describing model properties")
+    ( "verbosity", po::value<int>()->default_value( 0 ), "set verbosisity level" )
+    ( "weakdir", po::value<bool>()->default_value( "false" ), "use Dirichlet weak formulation" )
+    ( "penalty-coeff", po::value<double>()->default_value( 1.e+3 ), "penalty coefficient for weak Dirichlet" )
     ( "A0", po::value<std::string>()->default_value( "{0,0,0}" ), "initial A" )
     ( "V0", po::value<std::string>()->default_value( "0" ), "initial V" )
     ( "Aexact", po::value<std::string>()->default_value( "" ), "exact A" )
@@ -30,28 +32,24 @@ int main(int argc, char**argv )
 				_author="Feel++ Consortium",
 				_email="feelpp-devel@feelpp.org"));
 
+  int M_verbose = ioption(_name="verbosity");
+  
   //Recuperer time frame
   double dt = doption(_name = "ts.time-step");
-  std::cout << "time-step=" << dt << std::endl;
+  Feel::cout << "time-step=" << dt << std::endl;
 
   double tmax = doption(_name = "ts.time-final");
-  std::cout << "time-final=" << tmax << std::endl;
+  Feel::cout << "time-final=" << tmax << std::endl;
 
   // Eventually get a solution
   bool Uexact = false;
-  auto Aexact_g = expr<3, 1>("{0,0,0}");
-  auto Vexact_g = expr("0");
 
   std::string Aexact_s = soption(_name = "Aexact");
-  Feel::cout << "Aexact=" << Aexact_s << std::endl;
   std::string Vexact_s = soption(_name = "Vexact");
-  Feel::cout << "Vexact=" << Vexact_s << std::endl;
 
-  if ( !Aexact_s.empty() )
+  if ( !Aexact_s.empty() && !Vexact_s.empty() )
     {
       Uexact = true;
-      Aexact_g = expr<3, 1>(Aexact_s);
-      Vexact_g = expr(Vexact_s);
       Feel::cout << "* Aexact=" << Aexact_s << std::endl;
       Feel::cout << "* Vexact=" << Vexact_s << std::endl;
     }
@@ -76,6 +74,7 @@ int main(int argc, char**argv )
   Feel::cout << "Electric Materials markers: " << range << std::endl;
   
   // Define SpaceFunctions
+  tic();
   auto Ah = Pchv<1>( mesh );
   auto Vh = Pch<1>( mesh, markedelements(mesh, range) );
 
@@ -88,9 +87,23 @@ int main(int argc, char**argv )
       std::cout << "Vh->nDof() "<<Vh->nDof() << std::endl;
     }
 
+  auto Jh = Pchv<1>( cond_mesh );
+
   auto A = Ah->elementPtr(); //Ah->element(A0); // how to init A to A0?;
   auto V = Vh->elementPtr(); //Vh->element(V0);
+  toc("define space functions", (M_verbose > 0));
 
+  // init solutions
+  tic();
+  auto A0 = expr<3, 1>(soption(_name="A0"));
+  auto V0 = expr(soption(_name="V0"));
+  (*A) = project(_space = Ah, _expr = A0);
+  (*V) = project(_space = Vh, _expr = V0);
+
+  auto Aold = (*A);
+  auto Vold = (*V);
+  toc("init solutions", (M_verbose > 0));
+    
   // Vincent way
   tic();
   BlocksBaseGraphCSR myblockGraph(2,2);
@@ -109,82 +122,106 @@ int main(int argc, char**argv )
   myblockVecSol(0,0) = A;
   myblockVecSol(1,0) = V;
   auto U = backend()->newBlockVector(_block=myblockVecSol, _copy_values=false);
-  toc("create blockforms", true);
+  toc("create Algebric blockforms", (M_verbose > 0));
 
   auto mybackend = backend(_name="mqs");
 
   double t = 0;
 
-  auto e = exporter( _mesh=mesh );
+  double L2Aexact, H1Aerror, L2Aerror;
+  double L2Vexact, H1Verror, L2Verror;
 
-  tic();
   auto Aexact = Ah->element();
   auto Vexact = Vh->element();
 
+  auto Aexact_g = expr<3, 1>("{0,0,0}");
+  auto Vexact_g = expr("0");
   if ( Uexact )
     {
+      tic();
+      Aexact_g = expr<3, 1>(Aexact_s);
       Aexact_g.setParameterValues({{"t", t}});
       Aexact = project(_space = Ah, _expr = Aexact_g);
       Feel::cout << "Define Aexact" << std::endl;
-
+      (*A) = Aexact;
+      
+      Vexact_g = expr(Vexact_s);
       Vexact_g.setParameterValues({{"t", t}});
       Vexact = project(_space = Vh, _expr = Vexact_g);
       Feel::cout << "Define Vexact" << std::endl;
-  
-      (*A) = Aexact;
       (*V) = Vexact;
-    }
-  toc("init exact solution", true);
 
-  
-#if 1
-  node_type pt(3);
-  pt[0] = 0.5; pt[1] = 0.5; pt[2] = 2.5;
-  auto val = (*A)(pt);
-  auto Ax = val(0,0,0); // evaluation de Ay
-  auto Ay = val(1,0,0); // evaluation de Az
-  auto Az = val(2,0,0); // evaluation de Az
-  auto Vval = (*V)(pt);
-  Feel::cout << "t=" << t << ", ";
-  Feel::cout << "A(" << pt[0] << "," << pt[1] << "," << pt[2] << ") = {" << Ax << "," << Ay << "," << Az << "}, ";
-  Feel::cout << "V(" << pt[0] << "," << pt[1] << "," << pt[2] << ")=" << Vval(0,0,0) << std::endl;
-#endif
-
-  tic();
-  e->step(t)->add("A", A);
-  e->step(t)->add("V", V);
-  if ( Uexact )
-    {
-      e->step(t)->add("Aexact", Aexact);
-      e->step(t)->add("Vexact", Vexact);
-    }
-  e->save();
-  toc("export init solution", true);
-  
-  double L2Aexact, H1Aerror, L2Aerror;
-  double L2Vexact, H1Verror, L2Verror;
-  
-  if ( Uexact )
-    {
       L2Aexact = normL2(_range = elements(mesh), _expr = Aexact_g);
       H1Aerror = 0;
       L2Aerror = 0;
       L2Vexact = normL2(_range = elements(cond_mesh), _expr = Vexact_g);
       H1Verror = 0;
       L2Verror = 0;
+      toc("init exact solution", (M_verbose > 0));
     }
   
-  auto mu0 = 4.e-7 * M_PI ; // SI Unit : H/m = m.kg/s2/A2
-  if( soption(_name="units") == "mm" )
+  
+#if 1
+  node_type pt(3);
+  pt[0] = 0.; pt[1] = 0.; pt[2] = 0.;
+  auto M_B = vf::project(_space=Ah, _range=elements(mesh), _expr=curlv(A));
+  auto val = M_B(pt);
+  auto Bx = val(0,0,0); // evaluation de Bx
+  auto By = val(1,0,0); // evaluation de By
+  auto Bz = val(2,0,0); // evaluation de Bz
+
+  node_type vpt(3);
+  vpt[0] = 0.; vpt[1] = 87.5e-3; vpt[2] = 0.;
+  auto Vval = (*V)(vpt);
+  Feel::cout << "t=" << t << ", ";
+  Feel::cout << "B(" << pt[0] << "," << pt[1] << "," << pt[2] << ") = {" << Bx << "," << By << "," << Bz << "}, ";
+  Feel::cout << "V(" << pt[0] << "," << pt[1] << "," << pt[2] << ")=" << Vval(0,0,0);
+  Feel::cout << std::endl;
+#endif
+
+  tic();
+  auto e = exporter( _mesh=mesh );
+
+  e->step(t)->add("A", A);
+  e->step(t)->add("V", V);
+  e->step(t)->add("B", curlv(A));
+  e->step(t)->add("E", gradv(V));
+  if ( Uexact )
     {
-      Feel::cout << "Units: mm -> change permeability" << std::endl;
-      mu0 *= 1000;
+      e->step(t)->add("Aexact", Aexact);
+      e->step(t)->add("Vexact", Vexact);
     }
+#if 1
+      Aold = (*A);
+      Vold = (*V);
+
+      auto J_cond = Jh->element();
+      auto J_induct = Jh->element();
+      for( auto const& pairMat : M_materials )
+	{
+	  auto name = pairMat.first;
+	  auto material = pairMat.second;
+
+	  auto sigma = material.getScalar("sigma");
+	  J_cond += vf::project( _space=Jh, _range=markedelements(cond_mesh, material.meshMarkers()),
+				 _expr=-sigma * trans(gradv(V)) );
+	  J_induct += vf::project( _space=Jh, _range=markedelements(cond_mesh, material.meshMarkers()),
+			                  _expr=-sigma * (idv(A)-idv(Aold))/dt );
+	}
+      e->step(t)->add( "Jcond", J_cond );
+      e->step(t)->add( "Jinduct", J_induct );
+      e->step(t)->add( "J", idv(J_cond)+idv(J_induct) );
+#endif
+  e->save();
+  toc("export init solution", (M_verbose > 0));
+  
+  auto mu0 = 4.e-7 * M_PI ; // SI Unit : H/m = m.kg/s2/A2
   
   for (t = dt; t < tmax; t += dt)
     {
 
       tic();
+      auto M00 = form2( _trial=Ah, _test=Ah ,_matrix=M, _rowstart=0, _colstart=0 ); 
       for( auto const& pairMat : M_modelProps->materials() )
 	{
 	  auto name = pairMat.first;
@@ -193,13 +230,22 @@ int main(int argc, char**argv )
 	  auto mur = material.getScalar("mu_mag");
 
 	  // Ampere law: sigma dA/dt + rot(1/(mu_r*mu_0) rotA) + sigma grad(V) = Js
-	  form2( _trial=Ah, _test=Ah ,_matrix=M )
-	    += integrate( _range=markedelements(mesh, material.meshMarkers()),
-			  _expr = dt * 1/mur * inner(curl(A) , curlt(A)) );
-	  Feel::cout << "create lhs(0,0)" << std::endl;
+	  // M00 += integrate( _range=markedelements(mesh, material.meshMarkers()),
+	  // 		  _expr = dt * 1/mur * inner(curl(A) , curlt(A)) );
+	  
+	  M00 += integrate( _range=markedelements(mesh, material.meshMarkers()),
+			  _expr = dt * 1/mur * trace(trans(gradt(A))*grad(A)) );
+	  //Feel::cout << "create lhs(0,0):" << material.meshMarkers() << std::endl;
 
 	}
 
+      auto M01 = form2( _trial=Vh, _test=Ah ,_matrix=M, _rowstart=0, _colstart=1 );
+      auto F0 = form1( _test=Ah, _vector=F, _rowstart=0 );
+
+      auto M11 = form2( _trial=Vh, _test=Vh ,_matrix=M, _rowstart=1, _colstart=1 );
+      auto M10 = form2( _trial=Ah, _test=Vh ,_matrix=M, _rowstart=1, _colstart=0 );
+      auto F1 = form1( _test=Vh ,_vector=F, _rowstart=1 );
+      
       for( auto const& pairMat : M_materials )
 	{
 	  auto name = pairMat.first;
@@ -208,54 +254,47 @@ int main(int argc, char**argv )
 	  auto sigma = material.getScalar("sigma");
 
 	  // Ampere law: sigma dA/dt + rot(1/(mu_r*mu_0) rotA) + sigma grad(V) = Js
-	  form2( _trial=Ah, _test=Ah ,_matrix=M )
-	    += integrate( _range=markedelements(cond_mesh, material.meshMarkers()),
+	  M00 += integrate( _range=markedelements(mesh, material.meshMarkers()),
 			  _expr = mu0 * sigma * inner(id(A) , idt(A) ));
-	  Feel::cout << "create lhs(0,0)" << std::endl;
+	  //Feel::cout << "create lhs(0,0):" << material.meshMarkers() << std::endl;
 
-	  form2( _trial=Vh, _test=Ah ,_matrix=M, _rowstart=0, _colstart=1 )
-	    += integrate(_range=markedelements(cond_mesh, material.meshMarkers()),
+	  M01  += integrate(_range=markedelements(mesh, material.meshMarkers()),
 			 _expr = dt * mu0 * sigma * inner(id(A),trans(gradt(V))) );
-	  Feel::cout << "create lhs(0,1)" << std::endl;
+	  //Feel::cout << "create lhs(0,1)" << std::endl;
 
-	  form1( _test=Ah, _vector=F )
-	    += integrate(_range=markedelements(cond_mesh, material.meshMarkers()),
-			 _expr = mu0 * sigma * inner(id(A) , idv(A)));
-	  Feel::cout << "create rhs(0)" << std::endl;
+	  F0 += integrate(_range=markedelements(mesh, material.meshMarkers()),
+			 _expr = mu0 * sigma * inner(id(A) , idv(Aold)));
+	  //Feel::cout << "create rhs(0)" << std::endl;
 
 	  // auto Js = ;
-	  // form1( _test=Ah, _vector=F )
-	  //   += integrate(_range=markedelements(cond_mesh, material.meshMarkers()),
+	  // F0 += integrate(_range=markedelements(cond_mesh, material.meshMarkers()),
 	  // 		 _expr = dt * mu0 * inner(id(A) , Js));
 	  // Feel::cout << "create rhs(0)" << std::endl;
 
 	  // Current conservation: div( -sigma grad(V) -sigma*dA/dt) = Qs
-	  form2( _trial=Vh, _test=Vh ,_matrix=M, _rowstart=1, _colstart=1 )
-	    += integrate( _range=markedelements(cond_mesh, material.meshMarkers()),
-			  _expr = sigma * dt * inner(gradt(V), grad(V)) );
-	  Feel::cout << "create lhs(1,1)" << std::endl;
+	  
+	  M11  += integrate( _range=markedelements(cond_mesh, material.meshMarkers()),
+			  _expr = mu0 * sigma * dt * inner(gradt(V), grad(V)) );
+	  //Feel::cout << "create lhs(1,1)" << std::endl;
 
-	  form2( _trial=Ah, _test=Vh ,_matrix=M, _rowstart=1, _colstart=0 )
-	    += integrate( _range=markedelements(cond_mesh, material.meshMarkers()),
-			  _expr = sigma * inner(idt(A), trans(grad(V))) );
-	  Feel::cout << "create lhs(1,0)" << std::endl;
+	  
+	  M10  += integrate( _range=markedelements(cond_mesh, material.meshMarkers()),
+	  		  _expr = mu0 * sigma * inner(idt(A), trans(grad(V))) );
+	  //Feel::cout << "create lhs(1,0)" << std::endl;
 
-	  form1( _test=Vh ,_vector=F, _rowstart=1 )
-	    += integrate( _range=markedelements(cond_mesh, material.meshMarkers()),
-			  _expr = sigma * inner(idt(A), trans(grad(V))) );
-	  Feel::cout << "create rhs(1)" << std::endl;
+	  F1 += integrate( _range=markedelements(cond_mesh, material.meshMarkers()),
+	  		  _expr = mu0 * sigma * inner(idv(Aold), trans(grad(V))) );
+	  //Feel::cout << "create rhs(1)" << std::endl;
 
 	  // auto Qs = ...;
-	  // form1( _test=Vh, _vector=F, _rowstart=1 )
-	  //   += integrate(_range=markedelements(cond_mesh, material.meshMarkers()),
+	  // F1 += integrate(_range=markedelements(cond_mesh, material.meshMarkers()),
 	  // 		 _expr = dt * Qs * id(V);
 	  // Feel::cout << "create row(1)" << std::endl;
 	}
-      toc("assembling", true);
+      toc("assembling", (M_verbose > 0));
      
       tic();
       // Implement Dirichlet fort
-      // TODO: define M_weakdir
       auto itField = M_modelProps->boundaryConditions().find( "magnetic-potential");
       if ( itField != M_modelProps->boundaryConditions().end() )
 	{
@@ -268,9 +307,44 @@ int main(int argc, char**argv )
 		  std::string marker = exAtMarker.marker();
 		  auto g = expr<3,1>(exAtMarker.expression());
 		  g.setParameterValues({{"t", t}});
-		  Feel::cout << "A Dirichlet[" << marker << "] : " << exAtMarker.expression() << ", g=" << g << std::endl;
-		  form2( _trial=Ah, _test=Ah ,_matrix=M, _rowstart=0, _colstart=0 )
-		    += on(_range=markedfaces(mesh,marker), _rhs=F, _element=*A, _expr= g);
+		  //Feel::cout << "A Dirichlet[" << marker << "] : " << exAtMarker.expression() << ", g=" << g << std::endl;
+		  M00 += on(_range=markedfaces(mesh,marker), _rhs=F, _element=*A, _expr= g);
+		}
+	    }
+	  itType = mapField.find( "DirichletX" );
+	  if ( itType != mapField.end() )
+	    {
+	      for ( auto const& exAtMarker : (*itType).second )
+		{
+		  std::string marker = exAtMarker.marker();
+		  auto g = expr(exAtMarker.expression());
+		  g.setParameterValues({{"t", t}});
+		  //Feel::cout << "A DirichletX[" << marker << "] : " << exAtMarker.expression() << ", g=" << g << std::endl;
+		  M00 += on(_range=markedfaces(mesh,marker), _rhs=F, _element=(*A)[Component::X], _expr= g);
+		}
+	    }
+	  itType = mapField.find( "DirichletY" );
+	  if ( itType != mapField.end() )
+	    {
+	      for ( auto const& exAtMarker : (*itType).second )
+		{
+		  std::string marker = exAtMarker.marker();
+		  auto g = expr(exAtMarker.expression());
+		  g.setParameterValues({{"t", t}});
+		  //Feel::cout << "A DirichletY[" << marker << "] : " << exAtMarker.expression() << ", g=" << g << std::endl;
+		  M00 += on(_range=markedfaces(mesh,marker), _rhs=F, _element=(*A)[Component::Y], _expr= g);
+		}
+	    }
+	  itType = mapField.find( "DirichletZ" );
+	  if ( itType != mapField.end() )
+	    {
+	      for ( auto const& exAtMarker : (*itType).second )
+		{
+		  std::string marker = exAtMarker.marker();
+		  auto g = expr(exAtMarker.expression());
+		  g.setParameterValues({{"t", t}});
+		  //Feel::cout << "A DirichletZ[" << marker << "] : " << exAtMarker.expression() << ", g=" << g << std::endl;
+		  M00 += on(_range=markedfaces(mesh,marker), _rhs=F, _element=(*A)[Component::Z], _expr= g);
 		}
 	    }
 	  // 	ItType = mapField.find( "Neumann" );
@@ -299,35 +373,82 @@ int main(int argc, char**argv )
 		  std::string marker = exAtMarker.marker();
 		  auto g = expr(exAtMarker.expression());
 		  g.setParameterValues({{"t", t}});
-		  Feel::cout << "V Dirichlet[" << marker << "] : " << exAtMarker.expression() << ", g=" << g << std::endl;
-		  form2( _trial=Vh, _test=Vh ,_matrix=M, _rowstart=1, _colstart=1 )
-		    += on(_range=markedfaces(cond_mesh,marker), _rhs=F, _element=*V, _expr= g);
+		  //Feel::cout << "V Dirichlet[" << marker << "] : " << exAtMarker.expression() << ", g=" << g << std::endl;
+		  M11 += on(_range=markedfaces(cond_mesh,marker), _rhs=F, _element=*V, _expr= g);
 		}
 	    }
 	}       
-      toc("boundary conditions", true);
+      toc("boundary conditions", (M_verbose > 0));
     
       /* Solve */
       tic();
-      auto result = mybackend->solve( _matrix=M, _rhs=F, _solution=U);
-      toc("solve", true);
+      auto result = mybackend->solve( _matrix=M, _rhs=F, _solution=U, _rebuild=true);
+      std::string msg = (boost::format("[MQS %2%] t=%1% NbIter=%3% Residual=%4%") % t
+			 % soption("mqs.pc-type")
+			 % result.nIterations()
+			 % result.residual()).str();
+      if (result.isConverged())
+	{
+	  Feel::cout << tc::green << msg << tc::reset << std::endl;
+	}
+      else
+	{
+	  std::string errmsg = msg + " Failed to converge";
+	  throw std::logic_error( errmsg );
+	}
+      
+      toc("solve", (M_verbose > 0));
 
+      // update A and V pointers from U
       myblockVecSol.localize(U);
+
 #if 1
-      val = (*A)(pt);
-      Ax = val(0,0,0); // evaluation de Ay
-      Ay = val(1,0,0); // evaluation de Az
-      Az = val(2,0,0); // evaluation de Az
-      Vval = (*V)(pt);
+      M_B = vf::project(_space=Ah, _range=elements(mesh), _expr=curlv(A));
+      val = M_B(pt);
+      Bx = val(0,0,0); // evaluation de Bx
+      By = val(1,0,0); // evaluation de By
+      Bz = val(2,0,0); // evaluation de Bz
+
+      Vval = (*V)(vpt);
       Feel::cout << "t=" << t << ", ";
-      Feel::cout << "A(" << pt[0] << "," << pt[1] << "," << pt[2] << ") = {" << Ax << "," << Ay << "," << Az << "}, ";
-      Feel::cout << "V(" << pt[0] << "," << pt[1] << "," << pt[2] << ")=" << Vval(0,0,0) << std::endl;
+      Feel::cout << "B(" << pt[0] << "," << pt[1] << "," << pt[2] << ") = {" << Bx << "," << By << "," << Bz << "}, ";
+      Feel::cout << "V(" << pt[0] << "," << pt[1] << "," << pt[2] << ")=" << Vval(0,0,0);
+      Feel::cout << std::endl;
 #endif
 
       tic();
       e->step(t)->add( "A", A);
       e->step(t)->add( "V", V);
-    
+      
+      e->step(t)->add( "B", curlv(A) );
+      e->step(t)->add( "E", gradv(V) );
+
+#if 1
+
+      // howto init
+      J_cond = vf::project(_space=Jh, _range=elements(cond_mesh), _expr=expr<3, 1>("{0,0,0}")); //Jh->element();
+      J_induct = vf::project(_space=Jh, _range=elements(cond_mesh), _expr=expr<3, 1>("{0,0,0}")); //Jh->element();
+      for( auto const& pairMat : M_materials )
+	{
+	  auto name = pairMat.first;
+	  auto material = pairMat.second;
+
+	  auto sigma = material.getScalar("sigma");
+	  J_cond += vf::project( _space=Jh, _range=markedelements(cond_mesh, material.meshMarkers()),
+				 _expr=-sigma * trans(gradv(V)) );
+	  J_induct += vf::project( _space=Jh, _range=markedelements(cond_mesh, material.meshMarkers()),
+			                  _expr=-sigma * (idv(A)-idv(Aold))/dt );
+	}
+      e->step(t)->add( "Jcond", J_cond );
+      e->step(t)->add( "Jinduct", J_induct );
+      e->step(t)->add( "J", idv(J_cond)+idv(J_induct) );
+
+      double I0 = integrate( markedfaces( cond_mesh, "V0" ), inner(idv(J_induct),N()) + inner(idv(J_cond),N()) ).evaluate()(0,0);
+      double I1 = integrate( markedfaces( cond_mesh, "V1" ), inner(idv(J_induct),N()) + inner(idv(J_cond),N()) ).evaluate()(0,0);
+      double error = (I0+I1)/(fabs(I0-I1)/2.)*100;
+      Feel::cout << "t=" << t << ", I0=" << I0 <<", I1=" << I1 << ", DI/I=" << error << std::endl;
+#endif
+      
       if ( Uexact )
 	{
 	  Aexact_g.setParameterValues({{"t", t}});
@@ -339,7 +460,7 @@ int main(int argc, char**argv )
 	  e->step(t)->add( "Vexact", Vexact);
 	}
       e->save();
-      toc("export", true);
+      toc("export", (M_verbose > 0));
 
       // Compute error
       if ( Uexact )
@@ -347,29 +468,20 @@ int main(int argc, char**argv )
 	  L2Aexact = normL2(_range = elements(mesh), _expr = Aexact_g);
 	  L2Aerror = normL2(elements(mesh), (idv(A) - idv(Aexact)));
 	  H1Aerror = normH1(elements(mesh), _expr = (idv(A) - idv(Aexact)), _grad_expr = (gradv(A) - gradv(Aexact)));
-#if 0
-	  L2Aerror = normL2(elements(mesh), (idv(U(0_c)) - idv(Aexact)));
-	  H1Aerror = normH1(elements(mesh), _expr = (idv(U(0_c)) - idv(Aexact)), _grad_expr = (gradv(U(0_c)) - gradv(Aexact)));
-#endif
 	  Feel::cout << "error: " << "t="<< t;
 	  Feel::cout << " A: " << L2Aerror << " " << L2Aerror / L2Aexact << " " << H1Aerror << " ";
 
 	  L2Vexact = normL2(_range = elements(cond_mesh), _expr = Vexact_g);
 	  L2Verror = normL2(elements(cond_mesh), (idv(V) - idv(Vexact)));
 	  H1Verror = normH1(elements(cond_mesh), _expr = (idv(V) - idv(Vexact)), _grad_expr = (gradv(V) - gradv(Vexact)));
-#if 0
-	  L2Verror = normL2(elements(cond_mesh), (idv(U(1_c)) - idv(Vexact)));
-	  H1Verror = normH1(elements(cond_mesh), _expr = (idv(U(1_c)) - idv(Vexact)), _grad_expr = (gradv(U(1_c)) - gradv(Vexact)));
-#endif
 	  Feel::cout << " V: " << L2Verror << " " << L2Verror / L2Vexact << " " << H1Verror << std::endl;
 	}
     
       /* reinit  */
       M->zero();
       F->zero();
-#if 0
-      lhs.zero();
-      rhs.zero();
-#endif
+
+      Aold = (*A);
+      Vold = (*V);
     }
 }

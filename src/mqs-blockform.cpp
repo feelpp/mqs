@@ -207,7 +207,7 @@ int main(int argc, char**argv )
 	  Feel::cout << "create lhs(1,0)" << std::endl;
 
 	  rhs(1_c) += integrate( _range=markedelements(cond_mesh, material.meshMarkers()),
-				 _expr = sigma * inner(idt(A), trans(grad(psi))) );
+				 _expr = sigma * inner(idv(A), trans(grad(psi))) );
 	  Feel::cout << "create rhs(1)" << std::endl;
 
 	}

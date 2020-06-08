@@ -25,7 +25,7 @@
         {
             "markers":"coil",
 	    "physics":["heat","electric","solid","maxwell"],
-            "sigma":"58.e+3",
+            "sigma":"58.e+6",
             "mu_mag": "1"
         },
         "air":
@@ -43,11 +43,11 @@
             {
                 "V0":
                 {
-                    "expr":"V0:V0" 
+                    "expr":"0" 
                 },
                 "V1":
                 {
-                    "expr":"V1*t/(0.1*Tau) * (t<0.1*Tau) + V1*(t>0.1*Tau) * (t<0.5*Tau) + 0 * (t>0.5*Tau):t:Tau:V1"
+                    "expr":"1/4.*t/(0.1)*(t<0.1)+(1/4.*(t<0.5)+0*(t>0.5))*(t>0.1):t"
 		}
             }
         },
@@ -55,38 +55,59 @@
         {
             "Dirichlet":
             {
-                "V0":
-                {
-                    "expr":"{0,0,0}"
-                },
-                "V1":
-                {
-                    "expr":"{0,0,0}"
-                },
-                "OXOZ":
-                {
-                    "expr":"{0,0,0}"
-                },
-                "OYOZ":
-                {
-                    "expr":"{0,0,0}"
-                },
                 "Border":
                 {
                     "expr":"{0,0,0}"
+                }
+            },
+            "DirichletX":
+            {
+                "V0":
+                {
+                    "expr":"0"
+                },
+		"OXOZ":
+                {
+                    "expr":"0"
+                }
+            },
+            "DirichletY":
+            {
+                "V1":
+                {
+                    "expr":"0"
+                },
+		"OYOZ":
+                {
+                    "expr":"0"
+                }
+            },
+            "DirichletZ":
+            {
+                "V0":
+                {
+                    "expr":"0"
+                },
+		"OXOZ":
+                {
+                    "expr":"0"
+                },
+                "V1":
+                {
+                    "expr":"0"
+                },
+		"OYOZ":
+                {
+                    "expr":"0"
                 }
             }
         }
     },
     "PostProcess":
     {
-        "use-model-name":1,
-	    "maxwell":
-	    {
-	        "Exports":
-	        {
-		        "fields":["magneticPotential","magneticField"]
-	        }
-	    }
+	"Exports":
+	{
+	    "fields":["magneticPotential","magneticField"]
+	}
     }
 }
