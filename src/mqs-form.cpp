@@ -195,6 +195,7 @@ int main(int argc, char**argv )
       Aold = (*A);
       Vold = (*V);
 
+      Feel::cout << "Compute Current density" << std::endl;
       auto J_cond = Jh->element();
       auto J_induct = Jh->element();
       for( auto const& pairMat : M_materials )
@@ -203,10 +204,15 @@ int main(int argc, char**argv )
 	  auto material = pairMat.second;
 
 	  auto sigma = material.getScalar("sigma");
+	  Feel::cout << "Material:" << material.meshMarkers() << std::endl;
+	  
 	  J_cond += vf::project( _space=Jh, _range=markedelements(cond_mesh, material.meshMarkers()),
 				 _expr=-sigma * trans(gradv(V)) );
+	  Feel::cout << "J_cond:" << material.meshMarkers() << std::endl;
+	  
 	  J_induct += vf::project( _space=Jh, _range=markedelements(cond_mesh, material.meshMarkers()),
 			                  _expr=-sigma * (idv(A)-idv(Aold))/dt );
+	  Feel::cout << "J_induct:" << material.meshMarkers() << std::endl;
 	}
       e->step(t)->add( "Jcond", J_cond );
       e->step(t)->add( "Jinduct", J_induct );
@@ -443,10 +449,32 @@ int main(int argc, char**argv )
       e->step(t)->add( "Jinduct", J_induct );
       e->step(t)->add( "J", idv(J_cond)+idv(J_induct) );
 
-      double I0 = integrate( markedfaces( cond_mesh, "V0" ), inner(idv(J_induct),N()) + inner(idv(J_cond),N()) ).evaluate()(0,0);
-      double I1 = integrate( markedfaces( cond_mesh, "V1" ), inner(idv(J_induct),N()) + inner(idv(J_cond),N()) ).evaluate()(0,0);
-      double error = (I0+I1)/(fabs(I0-I1)/2.)*100;
-      Feel::cout << "t=" << t << ", I0=" << I0 <<", I1=" << I1 << ", DI/I=" << error << std::endl;
+      Feel::cout << "t=" << t << ", ";
+      itField = M_modelProps->boundaryConditions().find( "electric-potential");
+      if ( itField != M_modelProps->boundaryConditions().end() )
+	{
+	  auto mapField = (*itField).second;
+	  auto itType = mapField.find( "Dirichlet" );
+	  if ( itType != mapField.end() )
+	    {
+	      for ( auto const& exAtMarker : (*itType).second )
+		{
+		  std::string marker = exAtMarker.marker();
+		  double I = integrate( markedfaces( cond_mesh, marker ), inner(idv(J_induct),N()) + inner(idv(J_cond),N()) ).evaluate()(0,0);
+		  Feel::cout << "I[" << marker << "]=" << I << ", ";
+		}
+	    }
+	}
+      Feel::cout << std::endl;
+      // double I0 = integrate( markedfaces( cond_mesh, "V0_0" ), inner(idv(J_induct),N()) + inner(idv(J_cond),N()) ).evaluate()(0,0);
+      // double I1 = integrate( markedfaces( cond_mesh, "V1_0" ), inner(idv(J_induct),N()) + inner(idv(J_cond),N()) ).evaluate()(0,0);
+      // double error0 = (I0+I1)/(fabs(I0-I1)/2.)*100;
+      // Feel::cout << "t=" << t << ", I0_0=" << I0 <<", I1_0=" << I1 << ", DI/I=" << error0 << std::endl;
+
+      // double I0_1 = integrate( markedfaces( cond_mesh, "V0_1" ), inner(idv(J_induct),N()) + inner(idv(J_cond),N()) ).evaluate()(0,0);
+      // double I1_1 = integrate( markedfaces( cond_mesh, "V1_1" ), inner(idv(J_induct),N()) + inner(idv(J_cond),N()) ).evaluate()(0,0);
+      // double error1 = (I0_1+I1_1)/(fabs(I0_1-I1_1)/2.)*100;
+      //  Feel::cout << ", I0_1=" << I0_1 <<", I1_1=" << I1_1 << ", DI/I=" << error1 << std::endl;
 #endif
       
       if ( Uexact )

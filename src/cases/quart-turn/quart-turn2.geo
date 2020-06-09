@@ -50,10 +50,11 @@ Return
 
 Nturn=2;
 eps=1*Unit;
-z0=0;
+z0=-(3*(2*L)+2*eps)/2.;
+dz=2*z0;
 For t In {0:Nturn-1}
   Call turn;
-  z0+=2*L+eps;
+  z0+=dz;
 EndFor
 
 // Define ext section
@@ -114,7 +115,8 @@ Physical Surface("OYOZ") = {out0[0], out1[0]};
 
 n=0;
 BorderIds[]={};
-For id In {2 : #out1[]-1}
+// For id In {2 : out1[]-1}
+For id In {2 : 3} 
     BorderIds[n]=out1[id];
     Printf("Border[%g]=%g", n, out1[id]);
     n++;
