@@ -51,7 +51,7 @@ Return
 Nturn=2;
 eps=1*Unit;
 z0=-(3*(2*L)+2*eps)/2.;
-dz=2*z0;
+dz=2*Fabs(z0);
 For t In {0:Nturn-1}
   Call turn;
   z0+=dz;
