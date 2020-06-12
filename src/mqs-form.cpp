@@ -184,21 +184,25 @@ int main(int argc, char**argv )
 
   e->step(t)->add("A", A);
   e->step(t)->add("V", V);
-  e->step(t)->add("B", curlv(A));
-  e->step(t)->add("E", gradv(V));
+  e->step(t)->add("B", M_B);
+  
+  auto M_gradV = Jh->element(); 
+  M_gradV = vf::project(_space=Jh, _range=elements(cond_mesh), _expr=trans(gradv(V)));
+  e->step(t)->add("E", M_gradV);
+
   if ( Uexact )
     {
       e->step(t)->add("Aexact", Aexact);
       e->step(t)->add("Vexact", Vexact);
     }
-#if 1
-      Aold = (*A);
-      Vold = (*V);
 
-      Feel::cout << "Compute Current density" << std::endl;
-      auto J_cond = Jh->element();
-      auto J_induct = Jh->element();
-      for( auto const& pairMat : M_materials )
+  Aold = (*A);
+  Vold = (*V);
+
+  Feel::cout << "Compute Current density" << std::endl;
+  auto J_cond = Jh->element();
+  auto J_induct = Jh->element();
+  for( auto const& pairMat : M_materials )
 	{
 	  auto name = pairMat.first;
 	  auto material = pairMat.second;
@@ -214,10 +218,10 @@ int main(int argc, char**argv )
 			                  _expr=-sigma * (idv(A)-idv(Aold))/dt );
 	  Feel::cout << "J_induct:" << material.meshMarkers() << std::endl;
 	}
-      e->step(t)->add( "Jcond", J_cond );
-      e->step(t)->add( "Jinduct", J_induct );
-      e->step(t)->add( "J", idv(J_cond)+idv(J_induct) );
-#endif
+  e->step(t)->add( "Jcond", J_cond );
+  e->step(t)->add( "Jinduct", J_induct );
+  e->step(t)->add( "J", idv(J_cond)+idv(J_induct) );
+
   e->save();
   toc("export init solution", (M_verbose > 0));
   
@@ -426,10 +430,9 @@ int main(int argc, char**argv )
       e->step(t)->add( "A", A);
       e->step(t)->add( "V", V);
       
-      e->step(t)->add( "B", curlv(A) );
-      e->step(t)->add( "E", gradv(V) );
-
-#if 1
+      e->step(t)->add( "B", M_B );
+      M_gradV = vf::project(_space=Jh, _range=elements(cond_mesh), _expr=trans(gradv(V)));
+      e->step(t)->add( "E", M_gradV );
 
       // howto init
       J_cond = vf::project(_space=Jh, _range=elements(cond_mesh), _expr=expr<3, 1>("{0,0,0}")); //Jh->element();
@@ -466,16 +469,6 @@ int main(int argc, char**argv )
 	    }
 	}
       Feel::cout << std::endl;
-      // double I0 = integrate( markedfaces( cond_mesh, "V0_0" ), inner(idv(J_induct),N()) + inner(idv(J_cond),N()) ).evaluate()(0,0);
-      // double I1 = integrate( markedfaces( cond_mesh, "V1_0" ), inner(idv(J_induct),N()) + inner(idv(J_cond),N()) ).evaluate()(0,0);
-      // double error0 = (I0+I1)/(fabs(I0-I1)/2.)*100;
-      // Feel::cout << "t=" << t << ", I0_0=" << I0 <<", I1_0=" << I1 << ", DI/I=" << error0 << std::endl;
-
-      // double I0_1 = integrate( markedfaces( cond_mesh, "V0_1" ), inner(idv(J_induct),N()) + inner(idv(J_cond),N()) ).evaluate()(0,0);
-      // double I1_1 = integrate( markedfaces( cond_mesh, "V1_1" ), inner(idv(J_induct),N()) + inner(idv(J_cond),N()) ).evaluate()(0,0);
-      // double error1 = (I0_1+I1_1)/(fabs(I0_1-I1_1)/2.)*100;
-      //  Feel::cout << ", I0_1=" << I0_1 <<", I1_1=" << I1_1 << ", DI/I=" << error1 << std::endl;
-#endif
       
       if ( Uexact )
 	{
