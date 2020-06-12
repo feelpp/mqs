@@ -203,21 +203,21 @@ int main(int argc, char**argv )
   auto J_cond = Jh->element();
   auto J_induct = Jh->element();
   for( auto const& pairMat : M_materials )
-	{
-	  auto name = pairMat.first;
-	  auto material = pairMat.second;
+    {
+      auto name = pairMat.first;
+      auto material = pairMat.second;
 
-	  auto sigma = material.getScalar("sigma");
-	  Feel::cout << "Material:" << material.meshMarkers() << std::endl;
+      auto sigma = material.getScalar("sigma");
+      Feel::cout << "Material:" << material.meshMarkers() << std::endl;
 	  
-	  J_cond += vf::project( _space=Jh, _range=markedelements(cond_mesh, material.meshMarkers()),
-				 _expr=-sigma * trans(gradv(V)) );
-	  Feel::cout << "J_cond:" << material.meshMarkers() << std::endl;
+      J_cond += vf::project( _space=Jh, _range=markedelements(cond_mesh, material.meshMarkers()),
+			     _expr=-sigma * trans(gradv(V)) );
+      Feel::cout << "J_cond:" << material.meshMarkers() << std::endl;
 	  
-	  J_induct += vf::project( _space=Jh, _range=markedelements(cond_mesh, material.meshMarkers()),
-			                  _expr=-sigma * (idv(A)-idv(Aold))/dt );
-	  Feel::cout << "J_induct:" << material.meshMarkers() << std::endl;
-	}
+      J_induct += vf::project( _space=Jh, _range=markedelements(cond_mesh, material.meshMarkers()),
+			       _expr=-sigma * (idv(A)-idv(Aold))/dt );
+      Feel::cout << "J_induct:" << material.meshMarkers() << std::endl;
+    }
   e->step(t)->add( "Jcond", J_cond );
   e->step(t)->add( "Jinduct", J_induct );
   e->step(t)->add( "J", idv(J_cond)+idv(J_induct) );
@@ -244,7 +244,7 @@ int main(int argc, char**argv )
 	  // 		  _expr = dt * 1/mur * inner(curl(A) , curlt(A)) );
 	  
 	  M00 += integrate( _range=markedelements(mesh, material.meshMarkers()),
-			  _expr = dt * 1/mur * trace(trans(gradt(A))*grad(A)) );
+			    _expr = dt * 1/mur * trace(trans(gradt(A))*grad(A)) );
 	  //Feel::cout << "create lhs(0,0):" << material.meshMarkers() << std::endl;
 
 	}
@@ -265,15 +265,15 @@ int main(int argc, char**argv )
 
 	  // Ampere law: sigma dA/dt + rot(1/(mu_r*mu_0) rotA) + sigma grad(V) = Js
 	  M00 += integrate( _range=markedelements(mesh, material.meshMarkers()),
-			  _expr = mu0 * sigma * inner(id(A) , idt(A) ));
+			    _expr = mu0 * sigma * inner(id(A) , idt(A) ));
 	  //Feel::cout << "create lhs(0,0):" << material.meshMarkers() << std::endl;
 
 	  M01  += integrate(_range=markedelements(mesh, material.meshMarkers()),
-			 _expr = dt * mu0 * sigma * inner(id(A),trans(gradt(V))) );
+			    _expr = dt * mu0 * sigma * inner(id(A),trans(gradt(V))) );
 	  //Feel::cout << "create lhs(0,1)" << std::endl;
 
 	  F0 += integrate(_range=markedelements(mesh, material.meshMarkers()),
-			 _expr = mu0 * sigma * inner(id(A) , idv(Aold)));
+			  _expr = mu0 * sigma * inner(id(A) , idv(Aold)));
 	  //Feel::cout << "create rhs(0)" << std::endl;
 
 	  // auto Js = ;
@@ -284,16 +284,16 @@ int main(int argc, char**argv )
 	  // Current conservation: div( -sigma grad(V) -sigma*dA/dt) = Qs
 	  
 	  M11  += integrate( _range=markedelements(cond_mesh, material.meshMarkers()),
-			  _expr = mu0 * sigma * dt * inner(gradt(V), grad(V)) );
+			     _expr = mu0 * sigma * dt * inner(gradt(V), grad(V)) );
 	  //Feel::cout << "create lhs(1,1)" << std::endl;
 
 	  
 	  M10  += integrate( _range=markedelements(cond_mesh, material.meshMarkers()),
-	  		  _expr = mu0 * sigma * inner(idt(A), trans(grad(V))) );
+			     _expr = mu0 * sigma * inner(idt(A), trans(grad(V))) );
 	  //Feel::cout << "create lhs(1,0)" << std::endl;
 
 	  F1 += integrate( _range=markedelements(cond_mesh, material.meshMarkers()),
-	  		  _expr = mu0 * sigma * inner(idv(Aold), trans(grad(V))) );
+			   _expr = mu0 * sigma * inner(idv(Aold), trans(grad(V))) );
 	  //Feel::cout << "create rhs(1)" << std::endl;
 
 	  // auto Qs = ...;
@@ -446,7 +446,7 @@ int main(int argc, char**argv )
 	  J_cond += vf::project( _space=Jh, _range=markedelements(cond_mesh, material.meshMarkers()),
 				 _expr=-sigma * trans(gradv(V)) );
 	  J_induct += vf::project( _space=Jh, _range=markedelements(cond_mesh, material.meshMarkers()),
-			                  _expr=-sigma * (idv(A)-idv(Aold))/dt );
+				   _expr=-sigma * (idv(A)-idv(Aold))/dt );
 	}
       e->step(t)->add( "Jcond", J_cond );
       e->step(t)->add( "Jinduct", J_induct );
