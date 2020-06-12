@@ -47,7 +47,7 @@ RUN apt-get update \
     && useradd -s /bin/bash --uid $USER_UID --gid $USER_GID -m $USERNAME \
     # [Optional] Add sudo support for the non-root user
     && apt-get install -y sudo lsb-release \
-    && if [ "$(lsb_release -cs)" = "focal" ]; echo "Set disable_coredump false" > /etc/sudo.conf \
+    && if [ "$(lsb_release -cs)" = "focal" ]; then echo "Set disable_coredump false" > /etc/sudo.conf; fi \
     && echo $USERNAME ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/$USERNAME\
     && chmod 0440 /etc/sudoers.d/$USERNAME \
     #
@@ -58,12 +58,22 @@ RUN apt-get update \
 
 # Switch back to dialog for any ad-hoc use of apt-get
 ENV DEBIAN_FRONTEND=dialog
+
+# Setup demo environment variables
+ENV LANG=en_US.UTF-8 \
+    LANGUAGE=en_US.UTF-8 \
+    LC_ALL=C.UTF-8 \
     OMPI_MCA_btl_vader_single_copy_mechanism=none
 
-RUN mkdir build && cd build; \
-    cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=clang++-9 ..; \
+USER vscode
+ENV HOME /home/vscode
+WORKDIR $HOME
+
+RUN cd $HOME; pwd; git clone https://github.com/feelpp/mqs.git; \
+    mkdir build && cd build; \
+    cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=clang++-9 ../mqs; \
     make -j3;\
-    make install; \
-    mkdir check && cd check; \
-    mpirun --bind-to core --mca btl vader,self -np 4 feelpp_mqs_form --config-file /usr/local/share/feelpp/cases/mqs-blockform/const.cf ; \
+    sudo make install; \
+    echo "mkdir check && cd check"; \
+    echo "mpirun --bind-to core --mca btl vader,self -np 4 feelpp_mqs_form --config-file /usr/local/share/feelpp/data/testcases/mqs/cases" ; \
     make clean;
