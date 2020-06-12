@@ -21,9 +21,16 @@
     },
     "Materials":
     {
-        "copper":
+        "copper0":
         {
             "markers":"coil0",
+	    "physics":["heat","electric","solid","maxwell"],
+            "sigma":"58.e+6",
+            "mu_mag": "1"
+        },
+        "copper1":
+        {
+            "markers":"coil1",
 	    "physics":["heat","electric","solid","maxwell"],
             "sigma":"58.e+6",
             "mu_mag": "1"
@@ -48,7 +55,16 @@
                 "V1_0":
                 {
                     "expr":"1.*t/(0.1)*(t<0.1)+(1.*(t<0.5)+0*(t>0.5))*(t>0.1):t"
-		}
+                    "V0_0":
+                },
+                "V0_1":
+                {
+                    "expr":"0" 
+                },
+                "V1_1":
+                {
+                    "expr":"1.*t/(0.1)*(t<0.1)+(1.*(t<0.5)+0*(t>0.5))*(t>0.1):t"
+                }
             }
         },
         "magnetic-potential":
