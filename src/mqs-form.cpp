@@ -170,12 +170,12 @@ int main(int argc, char**argv )
   auto By = val(1,0,0); // evaluation de By
   auto Bz = val(2,0,0); // evaluation de Bz
 
-  node_type vpt(3);
-  vpt[0] = 0.; vpt[1] = 87.5e-3; vpt[2] = 0.;
-  auto Vval = (*V)(vpt);
+  // node_type vpt(3);
+  // vpt[0] = 0.; vpt[1] = 87.5e-3; vpt[2] = 0.;
+  // auto Vval = (*V)(vpt);
   Feel::cout << "t=" << t << ", ";
   Feel::cout << "B(" << pt[0] << "," << pt[1] << "," << pt[2] << ") = {" << Bx << "," << By << "," << Bz << "}, ";
-  Feel::cout << "V(" << pt[0] << "," << pt[1] << "," << pt[2] << ")=" << Vval(0,0,0);
+  // Feel::cout << "V(" << pt[0] << "," << pt[1] << "," << pt[2] << ")=" << Vval(0,0,0);
   Feel::cout << std::endl;
 #endif
 
@@ -419,10 +419,10 @@ int main(int argc, char**argv )
       By = val(1,0,0); // evaluation de By
       Bz = val(2,0,0); // evaluation de Bz
 
-      Vval = (*V)(vpt);
+      // Vval = (*V)(vpt);
       Feel::cout << "t=" << t << ", ";
       Feel::cout << "B(" << pt[0] << "," << pt[1] << "," << pt[2] << ") = {" << Bx << "," << By << "," << Bz << "}, ";
-      Feel::cout << "V(" << pt[0] << "," << pt[1] << "," << pt[2] << ")=" << Vval(0,0,0);
+      // Feel::cout << "V(" << pt[0] << "," << pt[1] << "," << pt[2] << ")=" << Vval(0,0,0);
       Feel::cout << std::endl;
 #endif
 

@@ -1,12 +1,12 @@
 // Define Main params
 Unit=1.e-3;
 
-h = 0.1*Unit;
+h = 5*Unit;
 
 r1=75.*Unit;
 r2=100.2*Unit;
 he=50/2.*Unit;
-eps=1.e-3*Unit;
+eps=1*Unit;
 theta1=Asin( eps/(2*r1) );
 theta2=Asin( eps/(2*r2) );
 
