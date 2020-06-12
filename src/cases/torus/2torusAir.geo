@@ -55,7 +55,7 @@ Macro torus
   Physical Surface(Sprintf("V0_%g", t)) = {out[6]};
   Physical Surface(Sprintf("V1_%g", t)) = {out[11]};
 
-  Bord[t]=newl; Surface Loop(Bord[t]) = {out[0], S, out[2], out[3], out[4], out[5],
+  Bord[t]=news; Surface Loop(Bord[t]) = {out[0], S, out[2], out[3], out[4], out[5],
                                             out[7], out[8], out[9], out[10],
                                             out[6], out[11]};
 Return
