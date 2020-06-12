@@ -10,8 +10,8 @@ eps=1*Unit;
 theta1=Asin( eps/(2*r1) );
 theta2=Asin( eps/(2*r2) );
 
-r_inf = 4*r2; // need to be adapted to NbTurns and z0
-h_inf = 6*h;
+r_inf = 1.2*5*r2; // need to be adapted to NbTurns and z0
+h_inf = 10*h;
 IsAir=1;
 
 // Define Torus with a slit
