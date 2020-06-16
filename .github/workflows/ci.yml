@@ -21,8 +21,9 @@ jobs:
         lfs: true
     - name: Build MQS
       run: |
-        mkdir build && cd build
-        cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=clang++-9 -DCMAKE_INSTALL_PREFIX=./install ..
+        which clang++-9
+	mkdir build && cd build
+        cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=/usr/bin/clang++-9 -DCMAKE_INSTALL_PREFIX=./install ..
         make -j3
         make install
     - name: Check build
