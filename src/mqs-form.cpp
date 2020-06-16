@@ -234,6 +234,7 @@ int main(int argc, char**argv )
   
   for (t = dt; t < tmax; t += dt)
     {
+      Feel::cout << "t=" << t << ", ";
 
       tic();
       auto M00 = form2( _trial=Ah, _test=Ah ,_matrix=M, _rowstart=0, _colstart=0 ); 
@@ -388,7 +389,7 @@ int main(int argc, char**argv )
 		  std::string marker = exAtMarker.marker();
 		  auto g = expr(exAtMarker.expression());
 		  g.setParameterValues({{"t", t}});
-		  //Feel::cout << "V Dirichlet[" << marker << "] : " << exAtMarker.expression() << ", g=" << g << std::endl;
+		  Feel::cout << "V[" marker << "]=" << g.evaluate()(0,0) << ", ";
 		  M11 += on(_range=markedfaces(cond_mesh,marker), _rhs=F, _element=*V, _expr= g);
 		}
 	    }
@@ -425,10 +426,9 @@ int main(int argc, char**argv )
       Bz = val(2,0,0); // evaluation de Bz
 
       // Vval = (*V)(vpt);
-      Feel::cout << "t=" << t << ", ";
       Feel::cout << "B(" << pt[0] << "," << pt[1] << "," << pt[2] << ") = {" << Bx << "," << By << "," << Bz << "}, ";
       // Feel::cout << "V(" << pt[0] << "," << pt[1] << "," << pt[2] << ")=" << Vval(0,0,0);
-      Feel::cout << std::endl;
+      // Feel::cout << std::endl;
 
       tic();
       e->step(t)->add( "A", A);
@@ -456,7 +456,6 @@ int main(int argc, char**argv )
       e->step(t)->add( "Jinduct", J_induct );
       e->step(t)->add( "J", idv(J_cond)+idv(J_induct) );
 
-      Feel::cout << "t=" << t << ", ";
       itField = M_modelProps->boundaryConditions().find( "electric-potential");
       if ( itField != M_modelProps->boundaryConditions().end() )
 	{
