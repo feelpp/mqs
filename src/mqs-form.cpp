@@ -3,6 +3,8 @@
 #include <feel/feelcore/checker.hpp>
 
 #include <feel/feeldiscr/pch.hpp>
+#include <feel/feeldiscr/pchv.hpp>
+#include <feel/feeldiscr/pdhv.hpp>
 #include <feel/feelfilters/loadmesh.hpp>
 #include <feel/feelfilters/exporter.hpp>
 #include <feel/feelvf/vf.hpp>
@@ -87,7 +89,8 @@ int main(int argc, char**argv )
       std::cout << "Vh->nDof() "<<Vh->nDof() << std::endl;
     }
 
-  auto Jh = Pchv<1>( cond_mesh );
+  auto Jh = Pdhv<0>( cond_mesh );
+  auto Bh = Pdhv<0>( mesh );
 
   auto A = Ah->elementPtr(); //Ah->element(A0); // how to init A to A0?;
   auto V = Vh->elementPtr(); //Vh->element(V0);
@@ -160,11 +163,12 @@ int main(int argc, char**argv )
       toc("init exact solution", (M_verbose > 0));
     }
   
-  
-#if 1
+  // Compute Magnetic Field
+  tic();
   node_type pt(3);
   pt[0] = 0.; pt[1] = 0.; pt[2] = 0.;
-  auto M_B = vf::project(_space=Ah, _range=elements(mesh), _expr=curlv(A));
+  auto M_B = Bh->element();
+  M_B = vf::project(_space=Bh, _range=elements(mesh), _expr=curlv(A));
   auto val = M_B(pt);
   auto Bx = val(0,0,0); // evaluation de Bx
   auto By = val(1,0,0); // evaluation de By
@@ -177,8 +181,8 @@ int main(int argc, char**argv )
   Feel::cout << "B(" << pt[0] << "," << pt[1] << "," << pt[2] << ") = {" << Bx << "," << By << "," << Bz << "}, ";
   // Feel::cout << "V(" << pt[0] << "," << pt[1] << "," << pt[2] << ")=" << Vval(0,0,0);
   Feel::cout << std::endl;
-#endif
-
+  toc("compute induction field", (M_verbose > 0));
+  
   tic();
   auto e = exporter( _mesh=mesh );
 
@@ -186,9 +190,10 @@ int main(int argc, char**argv )
   e->step(t)->add("V", V);
   e->step(t)->add("B", M_B);
   
-  auto M_gradV = Jh->element(); 
-  M_gradV = vf::project(_space=Jh, _range=elements(cond_mesh), _expr=trans(gradv(V)));
-  e->step(t)->add("E", M_gradV);
+  // Feel::cout << "Compute Electric Field" << std::endl;
+  // auto M_gradV = Jh->element(); 
+  // M_gradV = vf::project(_space=Jh, _range=elements(cond_mesh), _expr=trans(gradv(V))); // breaks in // why?
+  // e->step(t)->add("E", M_gradV);
 
   if ( Uexact )
     {
@@ -211,11 +216,11 @@ int main(int argc, char**argv )
       Feel::cout << "Material:" << material.meshMarkers() << std::endl;
 	  
       J_cond += vf::project( _space=Jh, _range=markedelements(cond_mesh, material.meshMarkers()),
-			     _expr=-sigma * trans(gradv(V)) );
+  			     _expr=-sigma * trans(gradv(V)) );
       Feel::cout << "J_cond:" << material.meshMarkers() << std::endl;
 	  
       J_induct += vf::project( _space=Jh, _range=markedelements(cond_mesh, material.meshMarkers()),
-			       _expr=-sigma * (idv(A)-idv(Aold))/dt );
+  			       _expr=-sigma * (idv(A)-idv(Aold))/dt );
       Feel::cout << "J_induct:" << material.meshMarkers() << std::endl;
     }
   e->step(t)->add( "Jcond", J_cond );
@@ -412,8 +417,8 @@ int main(int argc, char**argv )
       // update A and V pointers from U
       myblockVecSol.localize(U);
 
-#if 1
-      M_B = vf::project(_space=Ah, _range=elements(mesh), _expr=curlv(A));
+      // Display MAgnetic Field
+      M_B = vf::project(_space=Bh, _range=elements(mesh), _expr=curlv(A));
       val = M_B(pt);
       Bx = val(0,0,0); // evaluation de Bx
       By = val(1,0,0); // evaluation de By
@@ -424,17 +429,16 @@ int main(int argc, char**argv )
       Feel::cout << "B(" << pt[0] << "," << pt[1] << "," << pt[2] << ") = {" << Bx << "," << By << "," << Bz << "}, ";
       // Feel::cout << "V(" << pt[0] << "," << pt[1] << "," << pt[2] << ")=" << Vval(0,0,0);
       Feel::cout << std::endl;
-#endif
 
       tic();
       e->step(t)->add( "A", A);
       e->step(t)->add( "V", V);
       
       e->step(t)->add( "B", M_B );
-      M_gradV = vf::project(_space=Jh, _range=elements(cond_mesh), _expr=trans(gradv(V)));
-      e->step(t)->add( "E", M_gradV );
+      // M_gradV = vf::project(_space=Jh, _range=elements(cond_mesh), _expr=trans(gradv(V))); // breaks in // why?
+      // e->step(t)->add( "E", M_gradV );
 
-      // howto init
+      // Update current densities
       J_cond = vf::project(_space=Jh, _range=elements(cond_mesh), _expr=expr<3, 1>("{0,0,0}")); //Jh->element();
       J_induct = vf::project(_space=Jh, _range=elements(cond_mesh), _expr=expr<3, 1>("{0,0,0}")); //Jh->element();
       for( auto const& pairMat : M_materials )
