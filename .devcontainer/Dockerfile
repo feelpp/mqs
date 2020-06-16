@@ -1,4 +1,5 @@
-FROM feelpp/feelpp-toolboxes:latest
+FROM feelpp/feelpp-toolboxes:stable
+#FROM feelpp/feelpp-toolboxes:latest
 
 USER root
 
@@ -29,6 +30,7 @@ RUN apt-get update \
     && useradd -s /bin/bash --uid $USER_UID --gid $USER_GID -m $USERNAME \
     # [Optional] Add sudo support for the non-root user
     && apt-get install -y sudo \
+    && if [ "$(lsb_release -cs)" = "focal" ]; then echo "Set disable_coredump false" > /etc/sudo.conf; fi \
     && echo $USERNAME ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/$USERNAME\
     && chmod 0440 /etc/sudoers.d/$USERNAME \
     # add github ssh key
@@ -43,6 +45,12 @@ RUN apt-get update \
 
 # Switch back to dialog for any ad-hoc use of apt-get
 ENV DEBIAN_FRONTEND=dialog
+
+# Setup demo environment variables
+ENV LANG=en_US.UTF-8 \
+    LANGUAGE=en_US.UTF-8 \
+    LC_ALL=C.UTF-8 \
+    OMPI_MCA_btl_vader_single_copy_mechanism=none
 
 RUN npm i -g @antora/cli@2.2 @antora/site-generator-default@2.2;
 RUN npm i -g asciidoctor.js asciidoctor-plantuml;
