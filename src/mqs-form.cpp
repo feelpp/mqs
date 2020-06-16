@@ -389,7 +389,7 @@ int main(int argc, char**argv )
 		  std::string marker = exAtMarker.marker();
 		  auto g = expr(exAtMarker.expression());
 		  g.setParameterValues({{"t", t}});
-		  Feel::cout << "V[" marker << "]=" << g.evaluate()(0,0) << ", ";
+		  Feel::cout << "V[" << marker << "]=" << g.evaluate()(0,0) << ", ";
 		  M11 += on(_range=markedfaces(cond_mesh,marker), _rhs=F, _element=*V, _expr= g);
 		}
 	    }
