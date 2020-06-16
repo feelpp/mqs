@@ -1,4 +1,6 @@
-FROM feelpp/feelpp:latest
+ARG FEELPP_BRANCH=stable
+
+FROM feelpp/feelpp:${FEELPP_BRANCH}
 
 USER root
 
