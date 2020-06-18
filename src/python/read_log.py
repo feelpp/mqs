@@ -28,12 +28,12 @@ while( ligne.split(":")[0] != "[env] Time "):
     ligne=fichier.readline().rstrip("\n\r")
 fichier.close()
 
-minB = min(Bz0)
-max0 = max(IV0)
+minB = max(-min(Bz0),max(Bz0))
+max0 = max(-min(IV0),max(IV0))
 #max1 = min(IV1)
 
-Bz0 = [i/minB for i in Bz0]
-IV0 = [i/max0 for i in IV0]
+Bz0 = [abs(i)/minB for i in Bz0]
+IV0 = [abs(i)/max0 for i in IV0]
 #IV1 = [i/max1 for i in IV1]
 
 plt.plot(t,Bz0,'.',label="Bz(t)")
