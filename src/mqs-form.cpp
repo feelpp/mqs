@@ -89,7 +89,7 @@ int main(int argc, char**argv )
       std::cout << "Vh->nDof() "<<Vh->nDof() << std::endl;
     }
 
-  auto Jh = Pdhv<0>( cond_mesh );
+  auto Jh = Pdhv<0>( mesh, markedelements(mesh, range) );
   auto Bh = Pdhv<0>( mesh );
 
   auto A = Ah->elementPtr(); //Ah->element(A0); // how to init A to A0?;
@@ -204,7 +204,7 @@ int main(int argc, char**argv )
   Aold = (*A);
   Vold = (*V);
 
-  Feel::cout << "Compute Current density" << std::endl;
+  // Feel::cout << "Compute Current density" << std::endl;
   auto J_cond = Jh->element();
   auto J_induct = Jh->element();
   for( auto const& pairMat : M_materials )
@@ -213,15 +213,15 @@ int main(int argc, char**argv )
       auto material = pairMat.second;
 
       auto sigma = material.getScalar("sigma");
-      Feel::cout << "Material:" << material.meshMarkers() << std::endl;
+      // Feel::cout << "Material:" << material.meshMarkers() << " ";
 	  
       J_cond += vf::project( _space=Jh, _range=markedelements(cond_mesh, material.meshMarkers()),
   			     _expr=-sigma * trans(gradv(V)) );
-      Feel::cout << "J_cond:" << material.meshMarkers() << std::endl;
+      // Feel::cout << "J_cond:" << material.meshMarkers() << " ";
 	  
       J_induct += vf::project( _space=Jh, _range=markedelements(cond_mesh, material.meshMarkers()),
   			       _expr=-sigma * (idv(A)-idv(Aold))/dt );
-      Feel::cout << "J_induct:" << material.meshMarkers() << std::endl;
+      // Feel::cout << "J_induct:" << material.meshMarkers() << std::endl;
     }
   e->step(t)->add( "Jcond", J_cond );
   e->step(t)->add( "Jinduct", J_induct );
@@ -234,8 +234,6 @@ int main(int argc, char**argv )
   
   for (t = dt; t < tmax; t += dt)
     {
-      Feel::cout << "t=" << t << ", ";
-
       tic();
       auto M00 = form2( _trial=Ah, _test=Ah ,_matrix=M, _rowstart=0, _colstart=0 ); 
       for( auto const& pairMat : M_modelProps->materials() )
@@ -389,7 +387,7 @@ int main(int argc, char**argv )
 		  std::string marker = exAtMarker.marker();
 		  auto g = expr(exAtMarker.expression());
 		  g.setParameterValues({{"t", t}});
-		  Feel::cout << "V[" << marker << "]=" << g.evaluate()(0,0) << ", ";
+		  // Feel::cout << "V[" << marker << "]=" << g.evaluate()(0,0) << ", ";
 		  M11 += on(_range=markedfaces(cond_mesh,marker), _rhs=F, _element=*V, _expr= g);
 		}
 	    }
@@ -405,7 +403,7 @@ int main(int argc, char**argv )
 			 % result.residual()).str();
       if (result.isConverged())
 	{
-	  Feel::cout << tc::green << msg << tc::reset << std::endl;
+	  Feel::cout << tc::green << msg << tc::reset << " "; // << std::endl;
 	}
       else
 	{
@@ -418,7 +416,7 @@ int main(int argc, char**argv )
       // update A and V pointers from U
       myblockVecSol.localize(U);
 
-      // Display MAgnetic Field
+      // Display Magnetic Field
       M_B = vf::project(_space=Bh, _range=elements(mesh), _expr=curlv(A));
       val = M_B(pt);
       Bx = val(0,0,0); // evaluation de Bx
@@ -426,7 +424,6 @@ int main(int argc, char**argv )
       Bz = val(2,0,0); // evaluation de Bz
 
       // Vval = (*V)(vpt);
-      Feel::cout << "B(" << pt[0] << "," << pt[1] << "," << pt[2] << ") = {" << Bx << "," << By << "," << Bz << "}, ";
       // Feel::cout << "V(" << pt[0] << "," << pt[1] << "," << pt[2] << ")=" << Vval(0,0,0);
       // Feel::cout << std::endl;
 
@@ -466,11 +463,17 @@ int main(int argc, char**argv )
 	      for ( auto const& exAtMarker : (*itType).second )
 		{
 		  std::string marker = exAtMarker.marker();
+		  		  auto g = expr(exAtMarker.expression());
+		  g.setParameterValues({{"t", t}});
+		  Feel::cout << "V[" << marker << "]=" << g.evaluate()(0,0) << ", ";
+
 		  double I = integrate( markedfaces( cond_mesh, marker ), inner(idv(J_induct),N()) + inner(idv(J_cond),N()) ).evaluate()(0,0);
 		  Feel::cout << "I[" << marker << "]=" << I << ", ";
 		}
 	    }
 	}
+
+      Feel::cout << " B(" << pt[0] << "," << pt[1] << "," << pt[2] << ") = {" << Bx << "," << By << "," << Bz << "}, ";
       Feel::cout << std::endl;
       
       if ( Uexact )
