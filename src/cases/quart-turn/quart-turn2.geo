@@ -37,7 +37,7 @@ Macro turn
   V=Extrude { {0,0,1} , {0,0,0} , Pi/2. } {Surface{S};};
   
   dSection[t]=L0;
-  Section[t]=S;
+  Section[t]=S; //V0
   coil[t]=V[1];
   V1[t]=V[0];
 
@@ -108,6 +108,7 @@ For t In {0:Nturn-1}
   Physical Surface(Sprintf("HP_%g", t)) = {HP[t]};
   Physical Surface(Sprintf("BP_%g", t)) = {BP[t]};  
 EndFor
+
 Physical Volume("air") = {out0[1], out1[1]}; // Infini
 
 Physical Surface("OXOZ") = {S_ext, S_inf};

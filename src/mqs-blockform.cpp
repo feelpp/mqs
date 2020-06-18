@@ -3,6 +3,8 @@
 #include <feel/feelcore/checker.hpp>
 
 #include <feel/feeldiscr/pch.hpp>
+#include <feel/feeldiscr/pchv.hpp>
+#include <feel/feeldiscr/pdhv.hpp>
 #include <feel/feelfilters/loadmesh.hpp>
 #include <feel/feelfilters/exporter.hpp>
 #include <feel/feelvf/vf.hpp>
@@ -18,7 +20,8 @@ int main(int argc, char**argv )
   using namespace Feel;
   po::options_description options( "MQS options" );
   options.add_options()
-    ("model-file", Feel::po::value<std::string>()->default_value( "" ), "file describing model properties")
+    ( "model-file", Feel::po::value<std::string>()->default_value( "" ), "file describing model properties")
+    ( "verbosity", po::value<int>()->default_value( 0 ), "set verbosisity level" )
     ( "weakdir", po::value<bool>()->default_value( "false" ), "use Dirichlet weak formulation" )
     ( "penalty-coeff", po::value<double>()->default_value( 1.e+3 ), "penalty coefficient for weak Dirichlet" )
     ( "A0", po::value<std::string>()->default_value( "{0,0,0}" ), "initial A" )
@@ -30,6 +33,8 @@ int main(int argc, char**argv )
 		   _about=about(_name="mqs",
 				_author="Feel++ Consortium",
 				_email="feelpp-devel@feelpp.org"));
+
+  int M_verbose = ioption(_name="verbosity");
 
   //Recuperer time frame
   double dt = doption(_name = "ts.time-step");
@@ -81,6 +86,9 @@ int main(int argc, char**argv )
   auto Vh = Pch<1>( mesh, markedelements(mesh, range) );
   auto cond_mesh = Vh->mesh();
   
+  auto Jh = Pdhv<0>( mesh, markedelements(mesh, range) );
+  auto Bh = Pdhv<0>( mesh );
+
   // Space Product
   auto Zh = product(Ah,Vh);
   auto U = Zh.element();
@@ -89,18 +97,28 @@ int main(int argc, char**argv )
   solve::strategy strategy = solve::strategy::monolithic; // if it enough if I want use fieldsplit?
   auto rhs = blockform1( Zh, strategy ,backend(_name="mqs") );
   auto lhs = blockform2( Zh, strategy ,backend(_name="mqs") );
-  toc("create blockforms", true);
+  toc("create blockforms",  (M_verbose > 0));
 
   double t = 0;
 
   auto e = exporter( _mesh=mesh );
 
+  // init solutions
   tic();
   auto Aexact = Ah->element();
   auto Vexact = Vh->element();
 
   auto A = Ah->element(); //Ah->element(A0); // how to init A to A0?;
   auto V = Vh->element(); //Vh->element(V0);
+
+  auto A0 = expr<3, 1>(soption(_name="A0"));
+  auto V0 = expr(soption(_name="V0"));
+  A = project(_space = Ah, _expr = A0);
+  V = project(_space = Vh, _expr = V0);
+
+  auto Aold = A;
+  auto Vold = V;
+  toc("init solutions", (M_verbose > 0));
   if ( Uexact )
     {
       Aexact_g.setParameterValues({{"t", t}});
@@ -114,35 +132,60 @@ int main(int argc, char**argv )
       A = Aexact;
       V = Vexact;
     }
-  toc("init exact solution", true);
+  toc("init exact solution",  (M_verbose > 0));
 
   auto phi = Ah->element();
   auto psi = Vh->element();
   
   
-#if 1
   node_type pt(3);
-  pt[0] = 0.5; pt[1] = 0.5; pt[2] = 2.5;
+  pt[0] = 0.; pt[1] = 0.; pt[2] = 0.;
+  auto M_B = Bh->element();
+  M_B = vf::project(_space=Bh, _range=elements(mesh), _expr=curlv(A));
   auto val = A(pt);
-  auto Ax = val(0,0,0); // evaluation de Ay
-  auto Ay = val(1,0,0); // evaluation de Az
-  auto Az = val(2,0,0); // evaluation de Az
-  auto Vval = V(pt);
+  auto Bx = val(0,0,0); // evaluation de Ay
+  auto By = val(1,0,0); // evaluation de Az
+  auto Bz = val(2,0,0); // evaluation de Az
+
   Feel::cout << "t=" << t << ", ";
-  Feel::cout << "A(" << pt[0] << "," << pt[1] << "," << pt[2] << ") = {" << Ax << "," << Ay << "," << Az << "}, ";
-  Feel::cout << "V(" << pt[0] << "," << pt[1] << "," << pt[2] << ")=" << Vval(0,0,0) << std::endl;
-#endif
+  Feel::cout << "B(" << pt[0] << "," << pt[1] << "," << pt[2] << ") = {" << Bx << "," << By << "," << Bz << "}, ";
+
+  // auto Vval = V(pt);
+  // Feel::cout << "V(" << pt[0] << "," << pt[1] << "," << pt[2] << ")=" << Vval(0,0,0);
+  Feel::cout << std::endl;
 
   tic();
   e->step(t)->add("A", A);
   e->step(t)->add("V", V);
+  e->step(t)->add("B", M_B);
   if ( Uexact )
     {
       e->step(t)->add("Aexact", Aexact);
       e->step(t)->add("Vexact", Vexact);
     }
+  auto J_cond = Jh->element();
+  auto J_induct = Jh->element();
+  for( auto const& pairMat : M_materials )
+    {
+      auto name = pairMat.first;
+      auto material = pairMat.second;
+
+      auto sigma = material.getScalar("sigma");
+      Feel::cout << "Material:" << material.meshMarkers() << std::endl;
+	  
+      J_cond += vf::project( _space=Jh, _range=markedelements(cond_mesh, material.meshMarkers()),
+  			     _expr=-sigma * trans(gradv(V)) );
+      Feel::cout << "J_cond:" << material.meshMarkers() << std::endl;
+	  
+      J_induct += vf::project( _space=Jh, _range=markedelements(cond_mesh, material.meshMarkers()),
+  			       _expr=-sigma * (idv(A)-idv(Aold))/dt );
+      Feel::cout << "J_induct:" << material.meshMarkers() << std::endl;
+    }
+  e->step(t)->add( "Jcond", J_cond );
+  e->step(t)->add( "Jinduct", J_induct );
+  e->step(t)->add( "J", idv(J_cond)+idv(J_induct) );
   e->save();
-  toc("export init solution", true);
+  toc("export init solution",  (M_verbose > 0));
   
   double L2Aexact, H1Aerror, L2Aerror;
   double L2Vexact, H1Verror, L2Verror;
@@ -174,7 +217,7 @@ int main(int argc, char**argv )
 	  // Ampere law: sigma dA/dt + rot(1/(mu_r*mu_0) rotA) + sigma grad(V) = Js
 	  lhs(0_c, 0_c) += integrate( _range=markedelements(mesh, material.meshMarkers()),
 				      _expr = dt * 1/mur * inner(curl(phi) , curlt(A)) );
-	  Feel::cout << "create lhs(0,0)" << std::endl;
+	  //Feel::cout << "create lhs(0,0)" << std::endl;
 
 	}
 
@@ -188,15 +231,15 @@ int main(int argc, char**argv )
 	  // Ampere law: sigma dA/dt + rot(1/(mu_r*mu_0) rotA) + sigma grad(V) = Js
 	  lhs(0_c, 0_c) += integrate( _range=markedelements(cond_mesh, material.meshMarkers()),
 				      _expr = mu0 * sigma * inner(id(phi) , idt(A) ));
-	  Feel::cout << "create lhs(0,0)" << std::endl;
+	  //Feel::cout << "create lhs(0,0)" << std::endl;
 
 	  lhs(0_c, 1_c) += integrate(_range=markedelements(cond_mesh, material.meshMarkers()),
 				     _expr = dt * mu0 * sigma * inner(id(phi),trans(gradt(V))) );
-	  Feel::cout << "create lhs(0,1)" << std::endl;
+	  //Feel::cout << "create lhs(0,1)" << std::endl;
 
 	  rhs(0_c) += integrate(_range=markedelements(cond_mesh, material.meshMarkers()),
 				_expr = mu0 * sigma * inner(id(phi) , idv(A)));
-	  Feel::cout << "create row(0)" << std::endl;
+	  //Feel::cout << "create row(0)" << std::endl;
 
 	  // Current conservation: div( -sigma grad(V) -sigma*dA/dt) = Qs
 	  lhs(1_c, 1_c) += integrate( _range=markedelements(cond_mesh, material.meshMarkers()),
@@ -204,14 +247,14 @@ int main(int argc, char**argv )
 	  Feel::cout << "create lhs(1,1)" << std::endl;
 	  lhs(1_c, 0_c) += integrate( _range=markedelements(cond_mesh, material.meshMarkers()),
 				      _expr = sigma * inner(idt(A), trans(grad(psi))) );
-	  Feel::cout << "create lhs(1,0)" << std::endl;
+	  //Feel::cout << "create lhs(1,0)" << std::endl;
 
 	  rhs(1_c) += integrate( _range=markedelements(cond_mesh, material.meshMarkers()),
 				 _expr = sigma * inner(idv(A), trans(grad(psi))) );
-	  Feel::cout << "create rhs(1)" << std::endl;
+	  //Feel::cout << "create rhs(1)" << std::endl;
 
 	}
-      toc("assembling", true);
+      toc("assembling",  (M_verbose > 0));
      
       tic();
       // define M_weakdir
@@ -228,7 +271,7 @@ int main(int argc, char**argv )
 		  std::string marker = exAtMarker.marker();
 		  auto g = expr<3,1>(exAtMarker.expression());
 		  g.setParameterValues({{"t", t}});
-		  Feel::cout << "A Dirichlet[" << marker << "] : " << g << " (weak=" << weakdir << ")" << std::endl;
+		  //Feel::cout << "A Dirichlet[" << marker << "] : " << g << " (weak=" << weakdir << ")" << std::endl;
 
 		  if (! weakdir )
 		    {
@@ -247,7 +290,7 @@ int main(int argc, char**argv )
 					    _expr = mu0 * dt * inner(g , curl(phi)));
 		      rhs(0_c) += integrate(_range=markedfaces(mesh,marker),
 					    _expr = mu0 * gamma * inner(cross(id(phi),N()) , g)/hFace());                                                                      }
-		  Feel::cout << "block(0,0) on " << marker << std::endl;
+		  //Feel::cout << "block(0,0) on " << marker << std::endl;
 		}
 	    }
 	  // 	ItType = mapField.find( "Neumann" );
@@ -276,7 +319,7 @@ int main(int argc, char**argv )
 		  std::string marker = exAtMarker.marker();
 		  auto g = expr(exAtMarker.expression());
 		  g.setParameterValues({{"t", t}});
-		  Feel::cout << "V Dirichlet[" << marker << "] : " << g << " (weak=" << weakdir << ")" << std::endl;
+		  Feel::cout << "V[" << marker << "]=" << g.evaluate()(0,0) << ", ";
 		  if (! weakdir )
 		    {
 		      lhs(1_c, 1_c) += on(_range=markedfaces(cond_mesh,marker), _rhs=rhs(1_c), _element=psi, _expr= g);
@@ -301,31 +344,65 @@ int main(int argc, char**argv )
 		}
 	    }
 	}       
-      toc("boundary conditions", true);
+      toc("boundary conditions",  (M_verbose > 0));
     
       /* Solve */
       tic();
       auto result = lhs.solve(_rhs=rhs,_solution=U);
-      toc("solve", true);
+      toc("solve",  (M_verbose > 0));
 
-#if 1
-      A = U(0_c); 
-      V = U(1_c);
+      // Display MAgnetic Field
+      M_B = vf::project(_space=Bh, _range=elements(mesh), _expr=curlv(U(0_c)));
+      val = M_B(pt);
+      Bx = val(0,0,0); // evaluation de Bx
+      By = val(1,0,0); // evaluation de By
+      Bz = val(2,0,0); // evaluation de Bz
 
-      val = A(pt);
-      Ax = val(0,0,0); // evaluation de Ay
-      Ay = val(1,0,0); // evaluation de Az
-      Az = val(2,0,0); // evaluation de Az
-      Vval = V(pt);
-      Feel::cout << "t=" << t << ", ";
-      Feel::cout << "A(" << pt[0] << "," << pt[1] << "," << pt[2] << ") = {" << Ax << "," << Ay << "," << Az << "}, ";
-      Feel::cout << "V(" << pt[0] << "," << pt[1] << "," << pt[2] << ")=" << Vval(0,0,0) << std::endl;
-#endif
+      // Vval = (*V)(vpt);
+      Feel::cout << "B(" << pt[0] << "," << pt[1] << "," << pt[2] << ") = {" << Bx << "," << By << "," << Bz << "}, ";
+      // Feel::cout << "V(" << pt[0] << "," << pt[1] << "," << pt[2] << ")=" << Vval(0,0,0);
+      // Feel::cout << std::endl;
 
       tic();
       e->step(t)->add( "A", U(0_c));
       e->step(t)->add( "V", U(1_c));
+      e->step(t)->add( "B", M_B );
     
+      // Update current densities
+      J_cond = vf::project(_space=Jh, _range=elements(cond_mesh), _expr=expr<3, 1>("{0,0,0}")); //Jh->element();
+      J_induct = vf::project(_space=Jh, _range=elements(cond_mesh), _expr=expr<3, 1>("{0,0,0}")); //Jh->element();
+      for( auto const& pairMat : M_materials )
+	{
+	  auto name = pairMat.first;
+	  auto material = pairMat.second;
+
+	  auto sigma = material.getScalar("sigma");
+	  J_cond += vf::project( _space=Jh, _range=markedelements(cond_mesh, material.meshMarkers()),
+				 _expr=-sigma * trans(gradv(U(1_c))) );
+	  J_induct += vf::project( _space=Jh, _range=markedelements(cond_mesh, material.meshMarkers()),
+				   _expr=-sigma * (idv(U(0_c))-idv(A))/dt );
+	}
+      e->step(t)->add( "Jcond", J_cond );
+      e->step(t)->add( "Jinduct", J_induct );
+      e->step(t)->add( "J", idv(J_cond)+idv(J_induct) );
+
+      itField = M_modelProps->boundaryConditions().find( "electric-potential");
+      if ( itField != M_modelProps->boundaryConditions().end() )
+	{
+	  auto mapField = (*itField).second;
+	  auto itType = mapField.find( "Dirichlet" );
+	  if ( itType != mapField.end() )
+	    {
+	      for ( auto const& exAtMarker : (*itType).second )
+		{
+		  std::string marker = exAtMarker.marker();
+		  double I = integrate( markedfaces( cond_mesh, marker ), inner(idv(J_induct),N()) + inner(idv(J_cond),N()) ).evaluate()(0,0);
+		  Feel::cout << "I[" << marker << "]=" << I << ", ";
+		}
+	    }
+	}
+      Feel::cout << std::endl;
+
       if ( Uexact )
 	{
 	  Aexact_g.setParameterValues({{"t", t}});
@@ -350,12 +427,10 @@ int main(int argc, char**argv )
 	  Feel::cout << " V: " << L2Verror << " " << L2Verror / L2Vexact << " " << H1Verror << std::endl;
 	}
       e->save();
-      toc("export", true);
+      toc("export",  (M_verbose > 0));
 
-#if 1
       A = U(0_c); 
       V = U(1_c);
-#endif
       
       /* reinit  */
       lhs.zero();

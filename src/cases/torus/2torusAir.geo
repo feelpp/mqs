@@ -10,7 +10,7 @@ eps=1*Unit;
 theta1=Asin( eps/(2*r1) );
 theta2=Asin( eps/(2*r2) );
 
-r_inf = 1.2*5*r2; // need to be adapted to NbTurns and z0
+r_inf = 1.2*10*r2; // need to be adapted to NbTurns and z0
 h_inf = 10*h;
 IsAir=1;
 
