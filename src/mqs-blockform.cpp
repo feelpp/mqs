@@ -3,6 +3,8 @@
 #include <feel/feelcore/checker.hpp>
 
 #include <feel/feeldiscr/pch.hpp>
+#include <feel/feeldiscr/pchv.hpp>
+#include <feel/feeldiscr/pdhv.hpp>
 #include <feel/feelfilters/loadmesh.hpp>
 #include <feel/feelfilters/exporter.hpp>
 #include <feel/feelvf/vf.hpp>
