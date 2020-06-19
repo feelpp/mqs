@@ -1,3 +1,6 @@
+#include <tabulate/table.hpp>
+#include <tabulate/markdown_exporter.hpp>
+using namespace tabulate;
 
 #include <feel/feelcore/environment.hpp>
 #include <feel/feelcore/checker.hpp>
@@ -17,6 +20,7 @@
 
 int main(int argc, char**argv )
 {
+
   using namespace Feel;
   po::options_description options( "MQS options" );
   options.add_options()
@@ -173,16 +177,17 @@ int main(int argc, char**argv )
   auto Bx = val(0,0,0); // evaluation de Bx
   auto By = val(1,0,0); // evaluation de By
   auto Bz = val(2,0,0); // evaluation de Bz
-
-  // node_type vpt(3);
-  // vpt[0] = 0.; vpt[1] = 87.5e-3; vpt[2] = 0.;
-  // auto Vval = (*V)(vpt);
+#if 0
+  node_type vpt(3);
+  vpt[0] = 0.; vpt[1] = 87.5e-3; vpt[2] = 0.;
+  auto Vval = (*V)(vpt);
+#endif
   Feel::cout << "t=" << t << ", ";
   Feel::cout << "B(" << pt[0] << "," << pt[1] << "," << pt[2] << ") = {" << Bx << "," << By << "," << Bz << "}, ";
-  // Feel::cout << "V(" << pt[0] << "," << pt[1] << "," << pt[2] << ")=" << Vval(0,0,0);
+  //Feel::cout << "V(" << pt[0] << "," << pt[1] << "," << pt[2] << ")=" << Vval(0,0,0);
   Feel::cout << std::endl;
   toc("compute induction field", (M_verbose > 0));
-  
+
   tic();
   auto e = exporter( _mesh=mesh );
 
@@ -231,8 +236,15 @@ int main(int argc, char**argv )
   toc("export init solution", (M_verbose > 0));
   
   auto mu0 = 4.e-7 * M_PI ; // SI Unit : H/m = m.kg/s2/A2
-  
-  for (t = dt; t < tmax; t += dt)
+
+  Table mqs;
+  std::string Vname[8];
+  std::string Vfirst[8];
+  std::string Bname;
+  int ii = 0;
+  int firstStep = 0;
+
+  for (t = dt; t < 0.05; t += dt)
     {
       tic();
       auto M00 = form2( _trial=Ah, _test=Ah ,_matrix=M, _rowstart=0, _colstart=0 ); 
@@ -422,11 +434,11 @@ int main(int argc, char**argv )
       Bx = val(0,0,0); // evaluation de Bx
       By = val(1,0,0); // evaluation de By
       Bz = val(2,0,0); // evaluation de Bz
-
-      // Vval = (*V)(vpt);
-      // Feel::cout << "V(" << pt[0] << "," << pt[1] << "," << pt[2] << ")=" << Vval(0,0,0);
-      // Feel::cout << std::endl;
-
+#if 0
+      Vval = (*V)(vpt);
+      Feel::cout << "V(" << pt[0] << "," << pt[1] << "," << pt[2] << ")=" << Vval(0,0,0);
+      Feel::cout << std::endl;
+#endif
       tic();
       e->step(t)->add( "A", A);
       e->step(t)->add( "V", V);
@@ -466,16 +478,51 @@ int main(int argc, char**argv )
 		  		  auto g = expr(exAtMarker.expression());
 		  g.setParameterValues({{"t", t}});
 		  Feel::cout << "V[" << marker << "]=" << g.evaluate()(0,0) << ", ";
+      Vname[ii] = std::to_string(g.evaluate()(0,0));
+      ii ++;
 
 		  double I = integrate( markedfaces( cond_mesh, marker ), inner(idv(J_induct),N()) + inner(idv(J_cond),N()) ).evaluate()(0,0);
 		  Feel::cout << "I[" << marker << "]=" << I << ", ";
+      Vname[ii] = std::to_string(I);
+      ii ++;
+      if (firstStep == 0){
+        Vfirst[ii-2] = "V[" + marker + "]";
+        Vfirst[ii-1] = "I[" + marker + "]";;
+      }
 		}
 	    }
 	}
 
-      Feel::cout << " B(" << pt[0] << "," << pt[1] << "," << pt[2] << ") = {" << Bx << "," << By << "," << Bz << "}, ";
+      Feel::cout << " B(" << pt[0] << "," << pt[1] << "," << pt[2] << ") = {" << Bx << "," << By << "," << Bz << "}";
       Feel::cout << std::endl;
-      
+
+      if(firstStep == 0){
+        Bname = "Bz("+std::to_string(pt[0]) + "," + std::to_string(pt[1]) + "," + std::to_string(pt[2]) + ")";
+        if (ii == 4){
+          mqs.add_row({"t","NbIter","Residual",Vfirst[0],Vfirst[1],Vfirst[2],Vfirst[3],Bname});
+        }
+        else{
+          mqs.add_row({"t","NbIter","Residual",Vfirst[0],Vfirst[1],Vfirst[2],Vfirst[3]
+                                        ,Vfirst[4],Vfirst[5],Vfirst[6],Vfirst[7],Bname});
+        }
+        firstStep = 1;
+      }
+
+
+      //Bname = "{"+std::to_string(Bx) + "," + std::to_string(By) + "," + std::to_string(Bz) + "}";
+      Bname = std::to_string(Bz);
+      if (ii == 4){
+        mqs.add_row({std::to_string(t),std::to_string(result.nIterations()),
+                    std::to_string(result.residual()),
+                    Vname[0],Vname[1],Vname[2],Vname[3],Bname});
+      }
+      else{
+        mqs.add_row({std::to_string(t),std::to_string(result.nIterations()),
+                    std::to_string(result.residual()),
+                    Vname[0],Vname[1],Vname[2],Vname[3],Vname[4],Vname[5],Vname[6],Vname[7],Bname});
+      }
+      ii = 0;
+
       if ( Uexact )
 	{
 	  Aexact_g.setParameterValues({{"t", t}});
@@ -511,4 +558,8 @@ int main(int argc, char**argv )
       Aold = (*A);
       Vold = (*V);
     }
+//std::cout << mqs << std::endl;
+MarkdownExporter exporter;
+auto markdown = exporter.dump(mqs);
+std::cout << markdown << std::endl;
 }
