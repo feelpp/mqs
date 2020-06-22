@@ -244,16 +244,10 @@ int main(int argc, char**argv )
   int ii = 0;
   int firstStep = 0; 
 
+
   std::ofstream ofile;
   ofile.open("data.csv");
-  if (ofile){
-    std::cout << "fichier creer "<< std::endl;
-  }
-  else{
-    std:cout << "fichier non créer"<<std::endl;
-  }
-
-  for (t = dt; t < 0.05; t += dt)
+  for (t = dt; t < tmax; t += dt)
     {
       tic();
       auto M00 = form2( _trial=Ah, _test=Ah ,_matrix=M, _rowstart=0, _colstart=0 ); 
