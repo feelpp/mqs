@@ -242,7 +242,16 @@ int main(int argc, char**argv )
   std::string Vfirst[8];
   std::string Bname;
   int ii = 0;
-  int firstStep = 0;
+  int firstStep = 0; 
+
+  std::ofstream ofile;
+  ofile.open("data.csv");
+  if (ofile){
+    std::cout << "fichier creer "<< std::endl;
+  }
+  else{
+    std:cout << "fichier non créer"<<std::endl;
+  }
 
   for (t = dt; t < 0.05; t += dt)
     {
@@ -500,10 +509,19 @@ int main(int argc, char**argv )
         Bname = "Bz("+std::to_string(pt[0]) + "," + std::to_string(pt[1]) + "," + std::to_string(pt[2]) + ")";
         if (ii == 4){
           mqs.add_row({"t","NbIter","Residual",Vfirst[0],Vfirst[1],Vfirst[2],Vfirst[3],Bname});
+          if (ofile){
+            ofile << std::setprecision(10) << "t,NbIter,Residual," << Vfirst[0] << "," 
+                 << Vfirst[1] << "," << Vfirst[2] << "," << Vfirst[3] << "," << Bname << std::endl;
+          }
         }
         else{
           mqs.add_row({"t","NbIter","Residual",Vfirst[0],Vfirst[1],Vfirst[2],Vfirst[3]
                                         ,Vfirst[4],Vfirst[5],Vfirst[6],Vfirst[7],Bname});
+          if (ofile){
+            ofile << std::setprecision(10) << "t,NbIter,Residual," << Vfirst[0] << "," 
+                 << Vfirst[1] << "," << Vfirst[2] << "," << Vfirst[3] << "," << Vfirst[4] 
+                 << "," << Vfirst[5] << "," << Vfirst[6] << "," << Vfirst[7] << "," << Bname << std::endl;
+          }
         }
         firstStep = 1;
       }
@@ -515,11 +533,22 @@ int main(int argc, char**argv )
         mqs.add_row({std::to_string(t),std::to_string(result.nIterations()),
                     std::to_string(result.residual()),
                     Vname[0],Vname[1],Vname[2],Vname[3],Bname});
+        if (ofile){
+        ofile << std::setprecision(10) << t << "," << result.nIterations() << "," << result.residual() 
+             << "," << Vname[0] << "," << Vname[1] << "," << Vname[2] << "," << Vname[3] 
+             << "," << Bname << std::endl;
+        }
       }
       else{
         mqs.add_row({std::to_string(t),std::to_string(result.nIterations()),
                     std::to_string(result.residual()),
                     Vname[0],Vname[1],Vname[2],Vname[3],Vname[4],Vname[5],Vname[6],Vname[7],Bname});
+        if (ofile){
+        ofile << std::setprecision(10) << t << "," << result.nIterations() << "," << result.residual() 
+             << "," << Vname[0] << "," << Vname[1] << "," << Vname[2] << "," << Vname[3] << ","
+             << Vname[4] << "," << Vname[5] << "," << Vname[6] << "," << Vname[7] << "," 
+             << Bname << std::endl;
+        }
       }
       ii = 0;
 
@@ -559,6 +588,7 @@ int main(int argc, char**argv )
       Vold = (*V);
     }
 //std::cout << mqs << std::endl;
+ofile.close();
 MarkdownExporter exporter;
 auto markdown = exporter.dump(mqs);
 std::cout << markdown << std::endl;
