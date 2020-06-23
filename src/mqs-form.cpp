@@ -18,7 +18,7 @@ using namespace tabulate;
 
 #include <feel/feelmodels/modelproperties.hpp>
 
-#include <toolbox/feel/feelmodels/maxwell/biotsavart.hpp>
+#include <feel/feelmodels/maxwell/biotsavart.hpp>
 
 int main(int argc, char**argv )
 {
@@ -137,7 +137,9 @@ int main(int argc, char**argv )
 
   double t = 0;
   double epsNL = 1.e-3;
-  double errorNL;
+  double errorNL, normA;
+  double Residual;
+  int nIterations;
   
   double L2Aexact, H1Aerror, L2Aerror;
   double L2Vexact, H1Verror, L2Verror;
@@ -412,12 +414,16 @@ int main(int argc, char**argv )
 		for ( auto const& exAtMarker : (*itType).second )
 		  {
 		    std::string marker = exAtMarker.marker(); // make a list instead
-
-		    auto As = BiotSavart<3>(cond_mesh, marker);
+		    std::set<std::string> markers;
+		    markers.insert(marker);
+		    
+		    auto As = BiotSavart<3>(cond_mesh, markers);
 		    auto jEx = idv(J_cond)+idv(J_induct);
-		    As.compute(jEx, false, true, marker);
+		    As.compute(jEx, false, true, markers);
+		    
 		    //Feel::cout << "A BiotSavart[" << marker << "] : " << std::endl;
-		    M00 += on(_range=markedfaces(mesh,marker), _rhs=F, _element=(*A)[Component::Z], _expr= idv(As));
+		    auto Abc = As.magneticPotential();
+		    M00 += on(_range=markedfaces(mesh,marker), _rhs=F, _element=(*A), _expr= idv(Abc) );
 		  }
 	      }
 	    // 	ItType = mapField.find( "Neumann" );
@@ -470,9 +476,11 @@ int main(int argc, char**argv )
 	    throw std::logic_error( errmsg );
 	  }
 
-	if ( iterNL = 0 )
+	if ( iterNL == 0 )
 	  initResidual = result.residual();
 	
+	Residual =  result.residual();
+	nIterations = result.nIterations();
 	toc("solve", (M_verbose > 0));
 
 	// update A and V pointers from U
@@ -494,7 +502,7 @@ int main(int argc, char**argv )
 	  }
 
 	// compute errorNL (see V. Chabannes comment for more precise handling)
-	if ( nonlinear=true)
+	if ( nonlinear==true)
 	  {
 	    errorNL = normL2(_range = elements(mesh), _expr = (idv(A)-idv(Anl)) );
 	    normA = normL2(_range = elements(mesh), _expr = idv(A) );
@@ -503,7 +511,7 @@ int main(int argc, char**argv )
 	    iterNL++;
 	  }
 	
-      } while ( (nonlinear=true) && (errorNL > epsNL*normA) && (iterNL < maxiterNL) );
+      } while ( (nonlinear==true) && (errorNL > epsNL*normA) && (iterNL < maxiterNL) );
       
       // Display Magnetic Field
       M_B = vf::project(_space=Bh, _range=elements(mesh), _expr=curlv(A));
@@ -528,7 +536,7 @@ int main(int argc, char**argv )
       e->step(t)->add( "Jinduct", J_induct );
       e->step(t)->add( "J", idv(J_cond)+idv(J_induct) );
 
-      itField = M_modelProps->boundaryConditions().find( "electric-potential");
+      auto itField = M_modelProps->boundaryConditions().find( "electric-potential");
       if ( itField != M_modelProps->boundaryConditions().end() )
 	{
 	  auto mapField = (*itField).second;
@@ -538,20 +546,20 @@ int main(int argc, char**argv )
 	      for ( auto const& exAtMarker : (*itType).second )
 		{
 		  std::string marker = exAtMarker.marker();
-		  		  auto g = expr(exAtMarker.expression());
+		  auto g = expr(exAtMarker.expression());
 		  g.setParameterValues({{"t", t}});
 		  Feel::cout << "V[" << marker << "]=" << g.evaluate()(0,0) << ", ";
-      Vname[ii] = std::to_string(g.evaluate()(0,0));
-      ii ++;
+		  Vname[ii] = std::to_string(g.evaluate()(0,0));
+		  ii ++;
 
 		  double I = integrate( markedfaces( cond_mesh, marker ), inner(idv(J_induct),N()) + inner(idv(J_cond),N()) ).evaluate()(0,0);
 		  Feel::cout << "I[" << marker << "]=" << I << ", ";
-      Vname[ii] = std::to_string(I);
-      ii ++;
-      if (firstStep == 0){
-        Vfirst[ii-2] = "V[" + marker + "]";
-        Vfirst[ii-1] = "I[" + marker + "]";;
-      }
+		  Vname[ii] = std::to_string(I);
+		  ii ++;
+		  if (firstStep == 0){
+		    Vfirst[ii-2] = "V[" + marker + "]";
+		    Vfirst[ii-1] = "I[" + marker + "]";;
+		  }
 		}
 	    }
 	}
@@ -566,7 +574,7 @@ int main(int argc, char**argv )
         }
         else{
           mqs.add_row({"t","NbIter","Residual",Vfirst[0],Vfirst[1],Vfirst[2],Vfirst[3]
-                                        ,Vfirst[4],Vfirst[5],Vfirst[6],Vfirst[7],Bname});
+		       ,Vfirst[4],Vfirst[5],Vfirst[6],Vfirst[7],Bname});
         }
         firstStep = 1;
       }
@@ -575,14 +583,14 @@ int main(int argc, char**argv )
       //Bname = "{"+std::to_string(Bx) + "," + std::to_string(By) + "," + std::to_string(Bz) + "}";
       Bname = std::to_string(Bz);
       if (ii == 4){
-        mqs.add_row({std::to_string(t),std::to_string(result.nIterations()),
-                    std::to_string(result.residual()),
-                    Vname[0],Vname[1],Vname[2],Vname[3],Bname});
+        mqs.add_row({std::to_string(t),std::to_string(nIterations),
+		     std::to_string(Residual),
+		     Vname[0],Vname[1],Vname[2],Vname[3],Bname});
       }
       else{
-        mqs.add_row({std::to_string(t),std::to_string(result.nIterations()),
-                    std::to_string(result.residual()),
-                    Vname[0],Vname[1],Vname[2],Vname[3],Vname[4],Vname[5],Vname[6],Vname[7],Bname});
+        mqs.add_row({std::to_string(t),std::to_string(nIterations),
+		     std::to_string(Residual),
+		     Vname[0],Vname[1],Vname[2],Vname[3],Vname[4],Vname[5],Vname[6],Vname[7],Bname});
       }
       ii = 0;
 
@@ -621,8 +629,8 @@ int main(int argc, char**argv )
       Aold = (*A);
       Vold = (*V);
     }
-//std::cout << mqs << std::endl;
-MarkdownExporter exporter;
-auto markdown = exporter.dump(mqs);
-std::cout << markdown << std::endl;
+  //std::cout << mqs << std::endl;
+  MarkdownExporter exporter;
+  auto markdown = exporter.dump(mqs);
+  std::cout << markdown << std::endl;
 }
