@@ -8,7 +8,7 @@ h_inf = 10*h;
 h_ext = 10*h;
 
 r1=75.*Unit;
-r2=100.2*Unit;
+r2=100.*Unit;
 L=50/2.*Unit;
 
 r_ext=5*r2;

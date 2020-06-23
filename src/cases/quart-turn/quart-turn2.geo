@@ -8,7 +8,7 @@ h_inf = 10*h;
 h_ext = 10*h;
 
 r1=75.*Unit;
-r2=100.2*Unit;
+r2=100.*Unit;
 L=50/2.*Unit;
 
 r_ext=10*r2;
@@ -53,6 +53,7 @@ eps=1*Unit;
 z0=-(3*(2*L)+2*eps)/2.;
 dz=2*Fabs(z0);
 For t In {0:Nturn-1}
+  Printf("coil[%g]: %g %g", t, z0-L, z0+L);
   Call turn;
   z0+=dz;
 EndFor
