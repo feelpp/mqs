@@ -8,7 +8,7 @@ r_int_Ind  =  75.e-3 ;
 r_ext_Ind  =  100.e-3 ;
 h_Ind      =  25.e-3;
 
-e_glue = 10.5e-3;
+e_glue = 1.e-3;
 
 r_int_Ind1  =  75.e-3 ;
 r_ext_Ind1  =  100.e-3 ;
