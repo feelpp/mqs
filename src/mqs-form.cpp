@@ -17,6 +17,7 @@ using namespace tabulate;
 #include <feel/feelvf/blockforms.hpp>
 
 #include <feel/feelmodels/modelproperties.hpp>
+#include <feel/feelmodels/maxwell/biotsavart.hpp>
 
 int main(int argc, char**argv )
 {
@@ -134,7 +135,9 @@ int main(int argc, char**argv )
   auto mybackend = backend(_name="mqs");
 
   double t = 0;
-
+  double epsNL = 1.e-3;
+  double errorNL;
+  
   double L2Aexact, H1Aerror, L2Aerror;
   double L2Vexact, H1Verror, L2Verror;
 
@@ -244,190 +247,263 @@ int main(int argc, char**argv )
   int ii = 0;
   int firstStep = 0;
 
+  int iterNL = 0;
+  int maxiterNL = 10;
+  double initResidual;
+  
   for (t = dt; t < 0.05; t += dt)
     {
-      tic();
-      auto M00 = form2( _trial=Ah, _test=Ah ,_matrix=M, _rowstart=0, _colstart=0 ); 
-      for( auto const& pairMat : M_modelProps->materials() )
-	{
-	  auto name = pairMat.first;
-	  auto material = pairMat.second;
-
-	  auto mur = material.getScalar("mu_mag");
-
-	  // Ampere law: sigma dA/dt + rot(1/(mu_r*mu_0) rotA) + sigma grad(V) = Js
-	  // M00 += integrate( _range=markedelements(mesh, material.meshMarkers()),
-	  // 		  _expr = dt * 1/mur * inner(curl(A) , curlt(A)) );
-	  
-	  M00 += integrate( _range=markedelements(mesh, material.meshMarkers()),
-			    _expr = dt * 1/mur * trace(trans(gradt(A))*grad(A)) );
-	  //Feel::cout << "create lhs(0,0):" << material.meshMarkers() << std::endl;
-
-	}
-
-      auto M01 = form2( _trial=Vh, _test=Ah ,_matrix=M, _rowstart=0, _colstart=1 );
-      auto F0 = form1( _test=Ah, _vector=F, _rowstart=0 );
-
-      auto M11 = form2( _trial=Vh, _test=Vh ,_matrix=M, _rowstart=1, _colstart=1 );
-      auto M10 = form2( _trial=Ah, _test=Vh ,_matrix=M, _rowstart=1, _colstart=0 );
-      auto F1 = form1( _test=Vh ,_vector=F, _rowstart=1 );
-      
+      // Update current densities
+      J_cond = vf::project(_space=Jh, _range=elements(cond_mesh), _expr=expr<3, 1>("{0,0,0}")); //Jh->element();
+      J_induct = vf::project(_space=Jh, _range=elements(cond_mesh), _expr=expr<3, 1>("{0,0,0}")); //Jh->element();
       for( auto const& pairMat : M_materials )
 	{
 	  auto name = pairMat.first;
 	  auto material = pairMat.second;
 
 	  auto sigma = material.getScalar("sigma");
+	  J_cond += vf::project( _space=Jh, _range=markedelements(cond_mesh, material.meshMarkers()),
+				 _expr=-sigma * trans(gradv(V)) );
+	  J_induct += vf::project( _space=Jh, _range=markedelements(cond_mesh, material.meshMarkers()),
+				   _expr=-sigma * (idv(A)-idv(Aold))/dt );
+	}
 
-	  // Ampere law: sigma dA/dt + rot(1/(mu_r*mu_0) rotA) + sigma grad(V) = Js
-	  M00 += integrate( _range=markedelements(mesh, material.meshMarkers()),
-			    _expr = mu0 * sigma * inner(id(A) , idt(A) ));
-	  //Feel::cout << "create lhs(0,0):" << material.meshMarkers() << std::endl;
+      // if BiotSavart Bc shall loop until ||A-Aold||<eps
+      bool nonlinear = false;
 
-	  M01  += integrate(_range=markedelements(mesh, material.meshMarkers()),
-			    _expr = dt * mu0 * sigma * inner(id(A),trans(gradt(V))) );
-	  //Feel::cout << "create lhs(0,1)" << std::endl;
+      do {
+	tic();
 
-	  F0 += integrate(_range=markedelements(mesh, material.meshMarkers()),
-			  _expr = mu0 * sigma * inner(id(A) , idv(Aold)));
-	  //Feel::cout << "create rhs(0)" << std::endl;
+	auto Anl = (*A);
+	auto Vnl = (*V);
 
-	  // auto Js = ;
-	  // F0 += integrate(_range=markedelements(cond_mesh, material.meshMarkers()),
-	  // 		 _expr = dt * mu0 * inner(id(A) , Js));
-	  // Feel::cout << "create rhs(0)" << std::endl;
+	auto M00 = form2( _trial=Ah, _test=Ah ,_matrix=M, _rowstart=0, _colstart=0 ); 
+	for( auto const& pairMat : M_modelProps->materials() )
+	  {
+	    auto name = pairMat.first;
+	    auto material = pairMat.second;
 
-	  // Current conservation: div( -sigma grad(V) -sigma*dA/dt) = Qs
+	    auto mur = material.getScalar("mu_mag");
+
+	    // Ampere law: sigma dA/dt + rot(1/(mu_r*mu_0) rotA) + sigma grad(V) = Js
+	    // M00 += integrate( _range=markedelements(mesh, material.meshMarkers()),
+	    // 		  _expr = dt * 1/mur * inner(curl(A) , curlt(A)) );
 	  
-	  M11  += integrate( _range=markedelements(cond_mesh, material.meshMarkers()),
-			     _expr = mu0 * sigma * dt * inner(gradt(V), grad(V)) );
-	  //Feel::cout << "create lhs(1,1)" << std::endl;
+	    M00 += integrate( _range=markedelements(mesh, material.meshMarkers()),
+			      _expr = dt * 1/mur * trace(trans(gradt(A))*grad(A)) );
+	    //Feel::cout << "create lhs(0,0):" << material.meshMarkers() << std::endl;
 
-	  
-	  M10  += integrate( _range=markedelements(cond_mesh, material.meshMarkers()),
-			     _expr = mu0 * sigma * inner(idt(A), trans(grad(V))) );
-	  //Feel::cout << "create lhs(1,0)" << std::endl;
+	  }
 
-	  F1 += integrate( _range=markedelements(cond_mesh, material.meshMarkers()),
-			   _expr = mu0 * sigma * inner(idv(Aold), trans(grad(V))) );
-	  //Feel::cout << "create rhs(1)" << std::endl;
+	auto M01 = form2( _trial=Vh, _test=Ah ,_matrix=M, _rowstart=0, _colstart=1 );
+	auto F0 = form1( _test=Ah, _vector=F, _rowstart=0 );
 
-	  // auto Qs = ...;
-	  // F1 += integrate(_range=markedelements(cond_mesh, material.meshMarkers()),
-	  // 		 _expr = dt * Qs * id(V);
-	  // Feel::cout << "create row(1)" << std::endl;
-	}
-      toc("assembling", (M_verbose > 0));
-     
-      tic();
-      // Implement Dirichlet fort
-      auto itField = M_modelProps->boundaryConditions().find( "magnetic-potential");
-      if ( itField != M_modelProps->boundaryConditions().end() )
-	{
-	  auto mapField = (*itField).second;
-	  auto itType = mapField.find( "Dirichlet" );
-	  if ( itType != mapField.end() )
-	    {
-	      for ( auto const& exAtMarker : (*itType).second )
-		{
-		  std::string marker = exAtMarker.marker();
-		  auto g = expr<3,1>(exAtMarker.expression());
-		  g.setParameterValues({{"t", t}});
-		  //Feel::cout << "A Dirichlet[" << marker << "] : " << exAtMarker.expression() << ", g=" << g << std::endl;
-		  M00 += on(_range=markedfaces(mesh,marker), _rhs=F, _element=*A, _expr= g);
-		}
-	    }
-	  itType = mapField.find( "DirichletX" );
-	  if ( itType != mapField.end() )
-	    {
-	      for ( auto const& exAtMarker : (*itType).second )
-		{
-		  std::string marker = exAtMarker.marker();
-		  auto g = expr(exAtMarker.expression());
-		  g.setParameterValues({{"t", t}});
-		  //Feel::cout << "A DirichletX[" << marker << "] : " << exAtMarker.expression() << ", g=" << g << std::endl;
-		  M00 += on(_range=markedfaces(mesh,marker), _rhs=F, _element=(*A)[Component::X], _expr= g);
-		}
-	    }
-	  itType = mapField.find( "DirichletY" );
-	  if ( itType != mapField.end() )
-	    {
-	      for ( auto const& exAtMarker : (*itType).second )
-		{
-		  std::string marker = exAtMarker.marker();
-		  auto g = expr(exAtMarker.expression());
-		  g.setParameterValues({{"t", t}});
-		  //Feel::cout << "A DirichletY[" << marker << "] : " << exAtMarker.expression() << ", g=" << g << std::endl;
-		  M00 += on(_range=markedfaces(mesh,marker), _rhs=F, _element=(*A)[Component::Y], _expr= g);
-		}
-	    }
-	  itType = mapField.find( "DirichletZ" );
-	  if ( itType != mapField.end() )
-	    {
-	      for ( auto const& exAtMarker : (*itType).second )
-		{
-		  std::string marker = exAtMarker.marker();
-		  auto g = expr(exAtMarker.expression());
-		  g.setParameterValues({{"t", t}});
-		  //Feel::cout << "A DirichletZ[" << marker << "] : " << exAtMarker.expression() << ", g=" << g << std::endl;
-		  M00 += on(_range=markedfaces(mesh,marker), _rhs=F, _element=(*A)[Component::Z], _expr= g);
-		}
-	    }
-	  // 	ItType = mapField.find( "Neumann" );
-	  // 	if ( itType != mapField.end() )
-	  // 	  {
-	  // 	    for ( auto const& exAtMarker : (*itType).second )
-	  // 	      {
-	  // 		std::string marker = exAtMarker.marker();
-	  // 		auto g = expr<3,1>(exAtMarker.expression());
-	  //          g.setParameterValues({{"t", t}});
-	  // 		Feel::cout << "Neuman[" << marker << "] : " << exAtMarker.expression() << std::endl;
-	  //          lhs(0_c, 0_c) += integrate(_range=markedfaces(mesh,marker), ....);
-	  //          Feel::cout << "block(0,0) on " << marker << std::endl;
-	  // 	      }
-	  // 	  }
-	}   
-      itField = M_modelProps->boundaryConditions().find( "electric-potential");
-      if ( itField != M_modelProps->boundaryConditions().end() )
-	{
-	  auto mapField = (*itField).second;
-	  auto itType = mapField.find( "Dirichlet" );
-	  if ( itType != mapField.end() )
-	    {
-	      for ( auto const& exAtMarker : (*itType).second )
-		{
-		  std::string marker = exAtMarker.marker();
-		  auto g = expr(exAtMarker.expression());
-		  g.setParameterValues({{"t", t}});
-		  // Feel::cout << "V[" << marker << "]=" << g.evaluate()(0,0) << ", ";
-		  M11 += on(_range=markedfaces(cond_mesh,marker), _rhs=F, _element=*V, _expr= g);
-		}
-	    }
-	}       
-      toc("boundary conditions", (M_verbose > 0));
-    
-      /* Solve */
-      tic();
-      auto result = mybackend->solve( _matrix=M, _rhs=F, _solution=U, _rebuild=true);
-      std::string msg = (boost::format("[MQS %2%] t=%1% NbIter=%3% Residual=%4%") % t
-			 % soption("mqs.pc-type")
-			 % result.nIterations()
-			 % result.residual()).str();
-      if (result.isConverged())
-	{
-	  Feel::cout << tc::green << msg << tc::reset << " "; // << std::endl;
-	}
-      else
-	{
-	  std::string errmsg = msg + " Failed to converge";
-	  throw std::logic_error( errmsg );
-	}
+	auto M11 = form2( _trial=Vh, _test=Vh ,_matrix=M, _rowstart=1, _colstart=1 );
+	auto M10 = form2( _trial=Ah, _test=Vh ,_matrix=M, _rowstart=1, _colstart=0 );
+	auto F1 = form1( _test=Vh ,_vector=F, _rowstart=1 );
       
-      toc("solve", (M_verbose > 0));
+	for( auto const& pairMat : M_materials )
+	  {
+	    auto name = pairMat.first;
+	    auto material = pairMat.second;
 
-      // update A and V pointers from U
-      myblockVecSol.localize(U);
+	    auto sigma = material.getScalar("sigma");
 
+	    // Ampere law: sigma dA/dt + rot(1/(mu_r*mu_0) rotA) + sigma grad(V) = Js
+	    M00 += integrate( _range=markedelements(mesh, material.meshMarkers()),
+			      _expr = mu0 * sigma * inner(id(A) , idt(A) ));
+	    //Feel::cout << "create lhs(0,0):" << material.meshMarkers() << std::endl;
+
+	    M01  += integrate(_range=markedelements(mesh, material.meshMarkers()),
+			      _expr = dt * mu0 * sigma * inner(id(A),trans(gradt(V))) );
+	    //Feel::cout << "create lhs(0,1)" << std::endl;
+
+	    F0 += integrate(_range=markedelements(mesh, material.meshMarkers()),
+			    _expr = mu0 * sigma * inner(id(A) , idv(Aold)));
+	    //Feel::cout << "create rhs(0)" << std::endl;
+
+	    // auto Js = ;
+	    // F0 += integrate(_range=markedelements(cond_mesh, material.meshMarkers()),
+	    // 		 _expr = dt * mu0 * inner(id(A) , Js));
+	    // Feel::cout << "create rhs(0)" << std::endl;
+
+	    // Current conservation: div( -sigma grad(V) -sigma*dA/dt) = Qs
+	  
+	    M11  += integrate( _range=markedelements(cond_mesh, material.meshMarkers()),
+			       _expr = mu0 * sigma * dt * inner(gradt(V), grad(V)) );
+	    //Feel::cout << "create lhs(1,1)" << std::endl;
+
+	  
+	    M10  += integrate( _range=markedelements(cond_mesh, material.meshMarkers()),
+			       _expr = mu0 * sigma * inner(idt(A), trans(grad(V))) );
+	    //Feel::cout << "create lhs(1,0)" << std::endl;
+
+	    F1 += integrate( _range=markedelements(cond_mesh, material.meshMarkers()),
+			     _expr = mu0 * sigma * inner(idv(Aold), trans(grad(V))) );
+	    //Feel::cout << "create rhs(1)" << std::endl;
+
+	    // auto Qs = ...;
+	    // F1 += integrate(_range=markedelements(cond_mesh, material.meshMarkers()),
+	    // 		 _expr = dt * Qs * id(V);
+	    // Feel::cout << "create row(1)" << std::endl;
+	  }
+	toc("assembling", (M_verbose > 0));
+     
+	tic();
+	// Implement Dirichlet fort
+	auto itField = M_modelProps->boundaryConditions().find( "magnetic-potential");
+	if ( itField != M_modelProps->boundaryConditions().end() )
+	  {
+	    auto mapField = (*itField).second;
+	    auto itType = mapField.find( "Dirichlet" );
+	    if ( itType != mapField.end() )
+	      {
+		for ( auto const& exAtMarker : (*itType).second )
+		  {
+		    std::string marker = exAtMarker.marker();
+		    auto g = expr<3,1>(exAtMarker.expression());
+		    g.setParameterValues({{"t", t}});
+		    //Feel::cout << "A Dirichlet[" << marker << "] : " << exAtMarker.expression() << ", g=" << g << std::endl;
+		    M00 += on(_range=markedfaces(mesh,marker), _rhs=F, _element=*A, _expr= g);
+		  }
+	      }
+	    itType = mapField.find( "DirichletX" );
+	    if ( itType != mapField.end() )
+	      {
+		for ( auto const& exAtMarker : (*itType).second )
+		  {
+		    std::string marker = exAtMarker.marker();
+		    auto g = expr(exAtMarker.expression());
+		    g.setParameterValues({{"t", t}});
+		    //Feel::cout << "A DirichletX[" << marker << "] : " << exAtMarker.expression() << ", g=" << g << std::endl;
+		    M00 += on(_range=markedfaces(mesh,marker), _rhs=F, _element=(*A)[Component::X], _expr= g);
+		  }
+	      }
+	    itType = mapField.find( "DirichletY" );
+	    if ( itType != mapField.end() )
+	      {
+		for ( auto const& exAtMarker : (*itType).second )
+		  {
+		    std::string marker = exAtMarker.marker();
+		    auto g = expr(exAtMarker.expression());
+		    g.setParameterValues({{"t", t}});
+		    //Feel::cout << "A DirichletY[" << marker << "] : " << exAtMarker.expression() << ", g=" << g << std::endl;
+		    M00 += on(_range=markedfaces(mesh,marker), _rhs=F, _element=(*A)[Component::Y], _expr= g);
+		  }
+	      }
+	    itType = mapField.find( "DirichletZ" );
+	    if ( itType != mapField.end() )
+	      {
+		for ( auto const& exAtMarker : (*itType).second )
+		  {
+		    std::string marker = exAtMarker.marker();
+		    auto g = expr(exAtMarker.expression());
+		    g.setParameterValues({{"t", t}});
+		    //Feel::cout << "A DirichletZ[" << marker << "] : " << exAtMarker.expression() << ", g=" << g << std::endl;
+		    M00 += on(_range=markedfaces(mesh,marker), _rhs=F, _element=(*A)[Component::Z], _expr= g);
+		  }
+	      }
+	    itType = mapField.find( "BiotSavart" );
+	    if ( itType != mapField.end() )
+	      {
+		nonlinear = true;
+
+		for ( auto const& exAtMarker : (*itType).second )
+		  {
+		    std::string marker = exAtMarker.marker(); // make a list instead
+
+		    auto As = BiotSavart<3>(cond_mesh, marker);
+		    auto jEx = idv(J_cond)+idv(J_induct);
+		    As.compute(jEx, false, true, marker);
+		    //Feel::cout << "A BiotSavart[" << marker << "] : " << std::endl;
+		    M00 += on(_range=markedfaces(mesh,marker), _rhs=F, _element=(*A)[Component::Z], _expr= idv(As));
+		  }
+	      }
+	    // 	ItType = mapField.find( "Neumann" );
+	    // 	if ( itType != mapField.end() )
+	    // 	  {
+	    // 	    for ( auto const& exAtMarker : (*itType).second )
+	    // 	      {
+	    // 		std::string marker = exAtMarker.marker();
+	    // 		auto g = expr<3,1>(exAtMarker.expression());
+	    //          g.setParameterValues({{"t", t}});
+	    // 		Feel::cout << "Neuman[" << marker << "] : " << exAtMarker.expression() << std::endl;
+	    //          lhs(0_c, 0_c) += integrate(_range=markedfaces(mesh,marker), ....);
+	    //          Feel::cout << "block(0,0) on " << marker << std::endl;
+	    // 	      }
+	    // 	  }
+	  }   
+	itField = M_modelProps->boundaryConditions().find( "electric-potential");
+	if ( itField != M_modelProps->boundaryConditions().end() )
+	  {
+	    auto mapField = (*itField).second;
+	    auto itType = mapField.find( "Dirichlet" );
+	    if ( itType != mapField.end() )
+	      {
+		for ( auto const& exAtMarker : (*itType).second )
+		  {
+		    std::string marker = exAtMarker.marker();
+		    auto g = expr(exAtMarker.expression());
+		    g.setParameterValues({{"t", t}});
+		    // Feel::cout << "V[" << marker << "]=" << g.evaluate()(0,0) << ", ";
+		    M11 += on(_range=markedfaces(cond_mesh,marker), _rhs=F, _element=*V, _expr= g);
+		  }
+	      }
+	  }       
+	toc("boundary conditions", (M_verbose > 0));
+    
+	/* Solve */
+	tic();
+	auto result = mybackend->solve( _matrix=M, _rhs=F, _solution=U, _rebuild=true);
+	std::string msg = (boost::format("[MQS %2%] t=%1% NbIter=%3% Residual=%4%") % t
+			   % soption("mqs.pc-type")
+			   % result.nIterations()
+			   % result.residual()).str();
+	if (result.isConverged())
+	  {
+	    Feel::cout << tc::green << msg << tc::reset << " "; // << std::endl;
+	  }
+	else
+	  {
+	    std::string errmsg = msg + " Failed to converge";
+	    throw std::logic_error( errmsg );
+	  }
+
+	if ( iterNL = 0 )
+	  initResidual = result.residual();
+	
+	toc("solve", (M_verbose > 0));
+
+	// update A and V pointers from U
+	myblockVecSol.localize(U);
+
+	// Update current densities
+	J_cond = vf::project(_space=Jh, _range=elements(cond_mesh), _expr=expr<3, 1>("{0,0,0}")); //Jh->element();
+	J_induct = vf::project(_space=Jh, _range=elements(cond_mesh), _expr=expr<3, 1>("{0,0,0}")); //Jh->element();
+	for( auto const& pairMat : M_materials )
+	  {
+	    auto name = pairMat.first;
+	    auto material = pairMat.second;
+
+	    auto sigma = material.getScalar("sigma");
+	    J_cond += vf::project( _space=Jh, _range=markedelements(cond_mesh, material.meshMarkers()),
+				   _expr=-sigma * trans(gradv(V)) );
+	    J_induct += vf::project( _space=Jh, _range=markedelements(cond_mesh, material.meshMarkers()),
+				     _expr=-sigma * (idv(A)-idv(Aold))/dt );
+	  }
+
+	// compute errorNL (see V. Chabannes comment for more precise handling)
+	if ( nonlinear=true)
+	  {
+	    errorNL = normL2(_range = elements(mesh), _expr = (idv(A)-idv(Anl)) );
+	    normA = normL2(_range = elements(mesh), _expr = idv(A) );
+	    Feel::cout << "iterNL=" << iterNL << " ,errorNL=" << errorNL << " ,nomrA=" << normA << std::endl;
+
+	    iterNL++;
+	  }
+	
+      } while ( (nonlinear=true) && (errorNL > epsNL*normA) && (iterNL < maxiterNL) );
+      
       // Display Magnetic Field
       M_B = vf::project(_space=Bh, _range=elements(mesh), _expr=curlv(A));
       val = M_B(pt);
@@ -447,20 +523,6 @@ int main(int argc, char**argv )
       // M_gradV = vf::project(_space=Jh, _range=elements(cond_mesh), _expr=trans(gradv(V))); // breaks in // why?
       // e->step(t)->add( "E", M_gradV );
 
-      // Update current densities
-      J_cond = vf::project(_space=Jh, _range=elements(cond_mesh), _expr=expr<3, 1>("{0,0,0}")); //Jh->element();
-      J_induct = vf::project(_space=Jh, _range=elements(cond_mesh), _expr=expr<3, 1>("{0,0,0}")); //Jh->element();
-      for( auto const& pairMat : M_materials )
-	{
-	  auto name = pairMat.first;
-	  auto material = pairMat.second;
-
-	  auto sigma = material.getScalar("sigma");
-	  J_cond += vf::project( _space=Jh, _range=markedelements(cond_mesh, material.meshMarkers()),
-				 _expr=-sigma * trans(gradv(V)) );
-	  J_induct += vf::project( _space=Jh, _range=markedelements(cond_mesh, material.meshMarkers()),
-				   _expr=-sigma * (idv(A)-idv(Aold))/dt );
-	}
       e->step(t)->add( "Jcond", J_cond );
       e->step(t)->add( "Jinduct", J_induct );
       e->step(t)->add( "J", idv(J_cond)+idv(J_induct) );
