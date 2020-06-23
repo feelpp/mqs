@@ -17,7 +17,8 @@ using namespace tabulate;
 #include <feel/feelvf/blockforms.hpp>
 
 #include <feel/feelmodels/modelproperties.hpp>
-#include <feel/feelmodels/maxwell/biotsavart.hpp>
+
+#include <toolbox/feel/feelmodels/maxwell/biotsavart.hpp>
 
 int main(int argc, char**argv )
 {
