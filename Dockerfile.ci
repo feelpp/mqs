@@ -1,6 +1,7 @@
-ARG FEELPP_BRANCH=stable
+ARG FEELPP_BRANCH=feature-biotsavart-v0.108.0-beta.1-ubuntu-20.04
+ARG BRANCH=biotsavart-bcs
 
-FROM feelpp/feelpp:${FEELPP_BRANCH}
+FROM feelpp/feelpp-toolboxes:${FEELPP_BRANCH}
 
 USER root
 
@@ -15,6 +16,14 @@ ARG USERNAME=vscode
 ARG USER_UID=1001
 ARG USER_GID=$USER_UID
 
+
+# install Feelpp from BinTray Debian repository
+RUN apt update && \
+    apt install -y lsb-release && \
+    echo "deb http://archive.ubuntu.com/ubuntu $(lsb_release -cs)-proposed main restricted"  |  tee -a /etc/apt/sources.list && \
+    echo "deb http://archive.ubuntu.com/ubuntu $(lsb_release -cs)-proposed universe"  |  tee -a /etc/apt/sources.list && \
+    echo "deb http://archive.ubuntu.com/ubuntu $(lsb_release -cs)-proposed multiverse"  |  tee -a /etc/apt/sources.list && \
+    apt update
 
 # Configure apt and install packages
 RUN apt-get update \
@@ -71,7 +80,7 @@ USER vscode
 ENV HOME /home/vscode
 WORKDIR $HOME
 
-RUN cd $HOME; pwd; git clone https://github.com/feelpp/mqs.git; \
+RUN cd $HOME; pwd; git clone --branch ${BRANCH} https://github.com/feelpp/mqs.git; \
     mkdir build && cd build; \
     cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=clang++-9 ../mqs; \
     make -j3;\
