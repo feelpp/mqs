@@ -1,5 +1,4 @@
 ARG FEELPP_BRANCH=feature-biotsavart-v0.108.0-beta.1-ubuntu-20.04
-ARG BRANCH=biotsavart-bcs
 
 FROM feelpp/feelpp-toolboxes:${FEELPP_BRANCH}
 
@@ -16,6 +15,7 @@ ARG USERNAME=vscode
 ARG USER_UID=1001
 ARG USER_GID=$USER_UID
 
+ARG BRANCH=biotsavart-bcs
 
 # install Feelpp from BinTray Debian repository
 RUN apt update && \
@@ -80,7 +80,7 @@ USER vscode
 ENV HOME /home/vscode
 WORKDIR $HOME
 
-RUN cd $HOME; pwd; git clone --branch ${BRANCH} https://github.com/feelpp/mqs.git; \
+RUN cd $HOME; pwd; echo $BRANCH; git clone --single-branch --branch "${BRANCH}" -- https://github.com/feelpp/mqs.git; \
     mkdir build && cd build; \
     cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=clang++-9 ../mqs; \
     make -j3;\
@@ -88,3 +88,5 @@ RUN cd $HOME; pwd; git clone --branch ${BRANCH} https://github.com/feelpp/mqs.gi
     echo "mkdir check && cd check"; \
     echo "mpirun --bind-to core --mca btl vader,self -np 4 feelpp_mqs_form --config-file /usr/local/share/feelpp/data/testcases/mqs/cases" ; \
     make clean;
+
+CMD ["/bin/bash"]
