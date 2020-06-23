@@ -1,4 +1,4 @@
-FROM feelpp/feelpp-toolboxes:stable
+FROM feelpp/feelpp-toolboxes:feature-biotsavart-v0.108.0-beta.1-ubuntu-20.04
 #FROM feelpp/feelpp-toolboxes:latest
 
 USER root
@@ -13,6 +13,14 @@ ENV DEBIAN_FRONTEND=noninteractive
 ARG USERNAME=vscode
 ARG USER_UID=1001
 ARG USER_GID=$USER_UID
+
+# install Feelpp from BinTray Debian repository
+RUN apt update && \
+    apt install -y lsb-release && \
+    echo "deb http://archive.ubuntu.com/ubuntu $(lsb_release -cs)-proposed main restricted"  |  tee -a /etc/apt/sources.list && \
+    echo "deb http://archive.ubuntu.com/ubuntu $(lsb_release -cs)-proposed universe"  |  tee -a /etc/apt/sources.list && \
+    echo "deb http://archive.ubuntu.com/ubuntu $(lsb_release -cs)-proposed multiverse"  |  tee -a /etc/apt/sources.list && \
+    apt update
 
 
 # Configure apt and install packages
