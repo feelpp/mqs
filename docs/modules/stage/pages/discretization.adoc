@@ -1,0 +1,71 @@
+= Discretization
+
+To solve these two differential equations, we can first discretize the time derivative by finite differences. 
+If u is a functions. Let us note stem:[u^n] the quantity designating stem:[u] at time stem:[n].
+
+Let's go back to our equations  :
+
+[stem]
+++++
+\begin{equation}
+\int_{\Omega} \frac{1}{\mu} \, (\nabla \times \phi) \cdot (\nabla \times A) = - \int_{\Omega_C} \sigma \phi \cdot (\nabla V + \frac{\partial A}{\partial t})
+\end{equation}
+++++
+
+(or the following one if the edges are curved :)
+
+[stem]
+++++
+\begin{equation}
+\int_{\Omega} \frac{1}{\mu} \, (\nabla \times \phi) \cdot (\nabla \times A) - \int_{\Gamma_D} \frac{1}{\mu} A_D \cdot (\nabla \times A) = - \int_{\Omega_C} \sigma \phi \cdot (\nabla V + \frac{\partial A}{\partial t})
+\end{equation}
+++++
+
+and :
+
+[stem]
+++++
+\begin{equation}
+ - \int_{\Omega_C} \sigma ( -\nabla V -\frac{\partial A}{\partial t}) \cdot \nabla \psi = 0
+\end{equation} 
+++++
+
+Let us note stem:[\Delta t > 0] the step time, such that stem:[t_n = n\Delta t]. 
+Let us note stem:[A^n(x) := A(t_n,x)].
+We have, using an implicit euler's schema : stem:[\frac{\partial A}{\partial t} = \frac{A^n-A^{n-1}}{\Delta t}].
+
+So, in the case where the edges are not curved, we have :
+
+[stem]
+++++
+\begin{equation}
+\int_{\Omega} \frac{1}{\mu} \, (\nabla \times \phi) \cdot (\nabla \times A^n) = - \int_{\Omega_C} \sigma \phi \cdot (\nabla V + \frac{A^n-A^{n-1}}{\Delta t})
+\end{equation}
+++++ 
+
+In other words :
+
+[stem]
+++++
+\begin{equation}
+\int_{\Omega} \frac{\Delta t}{\mu} \, (\nabla \times \phi) \cdot (\nabla \times A^n) + \int_{\Omega_C} \sigma \phi \cdot (A^n + \Delta t\nabla V) = \int_{\Omega_C} \sigma \phi \cdot A^{n-1}
+\end{equation}
+++++ 
+
+and the second equations : 
+
+[stem]
+++++
+\begin{equation}
+ \int_{\Omega_C} \sigma (A^n + \Delta t\nabla V) \cdot \nabla \psi =  \int_{\Omega_C} \sigma A^{n-1} \cdot \nabla \psi
+\end{equation} 
+++++
+
+If the edges are curved, our first equation becomes : 
+
+[stem]
+++++
+\begin{equation}
+\int_{\Omega} \frac{\Delta t}{\mu} \, (\nabla \times \phi) \cdot (\nabla \times A^n) - \int_{\Gamma_D} \frac{1}{\mu} A_D \cdot (\nabla \times A^n) + \int_{\Omega_C} \sigma \phi \cdot (A^n + \Delta t \nabla V) =  \int_{\Omega_C} \sigma \phi \cdot A^{n-1}
+\end{equation}
+++++ 

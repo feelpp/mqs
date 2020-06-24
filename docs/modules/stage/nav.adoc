@@ -1,0 +1,19 @@
+.MQS
+* Outline of the project
+** xref:front.adoc[Modeling the transient behavior of high field magnets]
+** xref:index.adoc[Introduction]
+** xref:formulation.adoc[Formulation]
+** xref:discretization.adoc[Discretization]
+** xref:implementation.adoc[Implementation]
+** xref:validation.adoc[Validations]
+** xref:conclusion.adoc[Conclusion]
+** xref:acknowledgments.adoc[Acknowledgments]
+** xref:code.adoc[Code]
+** xref:bibliography.adoc[Bibliography]
+** xref:appendix.adoc[Appendix]
+* Roadmap
+** xref:roadmap.adoc[Roadmap]
+* References
+** xref:toolboxes:maxwell:mqs/README.adoc[Eddy Currents]
+//** xref:cases:electric:[Eddy Currents]
+

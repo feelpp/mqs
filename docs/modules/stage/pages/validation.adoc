@@ -1,0 +1,179 @@
+= Validations
+:stem: latexmath
+
+== Introduction
+Two simple test cases are used to validate the formulation:
+
+* a single magnet,
+* a set of 2 magnets.
+
+We will consider simple geometries for the magnets. They are
+modeled as rectangular cross section torus. This allows us to 
+derive analytical expressions for the resistance stem:[R] and inductances stem:[L]
+of the magnets. For each case, we will model the powering and 
+a powerfailure. The computed total current flowing into the magnets
+will be compared to the results obtained by a simple equivalent stem:[RL] circuit.
+The circuit may be either modeled by a simple ODE solver or using analytical methods 
+(aka exponential Matrices). For other quantities, we will compared our simulation
+results with other Finite Element Solver. We have chosen http://getdp.info/[getdp] 
+with a MQS formulation for axisymetric geometries.
+
+NB: getdp model and test geometry are accessible here. To reproduce the results follow the procedure in this appendix.
+
+== A solenoidal magnet
+
+=== Setup
+
+The magnet is centered on the origin of the cylindrical frame as shown bellow.
+
+image:helix/helix.png[geometry,50%]
+
+The geometry is defined by the following parameters:
+
+[options="header"]
+|===
+| Name           | Description    | Value        | Unit                              
+| stem:[r_i]     | internal radius               | 75.         | stem:[mm]                         
+| stem:[r_e]     | external radius               | 100.2         | stem:[mm]                         
+| stem:[h]       | heigth                        | 50.        | stem:[mm]                         
+| stem:[r_\text{infty}]     | internal radius       | 500. | stem:[mm] 
+|===
+
+The magnet is supposed to be made of some conducting amagnetic material:
+
+[options="header"]
+|===
+| Name          | Description           | Marker | Value        | Unit 
+| stem:[\sigma] | electric conductivity | Ind  | stem:[58.e3] | stem:[S.mm^{-1}] 
+| stem:[\mu_r] | relative magnetic permeability | Ind  | stem:[1] |
+|===
+
+The applied source electrical potential has the following form:
+
+[options="header"]
+|===
+| stem:[V_D]     | electrical potential          | stem:[1*t/(0.1*\tau)]        | stem:[V] | stem:[0 <= t < 0.1\,\tau]
+| stem:[V_D]     | electrical potential          | 1        | stem:[V] | stem:[ 0.1 \, \tau <= t <= 0.5\,\tau]
+| stem:[V_D]     | electrical potential          | 0        | stem:[V] | stem:[t>\tau]
+|===
+
+The boundary conditions for the electromagnetic problem are:
+
+[options="header"]
+|===
+| Marker                    | Type      | Value 
+| stem:[Oz] Axis            | Dirichlet | stem:[\mathbf{0}]  
+| Infty                     | Dirichlet | stem:[\mathbf{0}] 
+|===
+
+
+=== Resistance stem:[R] and Self Inductance stem:[L]
+
+The resistance is defined as the ration of the applied electrical potential difference over the total current. In case of a rectangular cross section stem:[ (r_1,r_2) \times (z_1,z_2) ] torus, we can show that:
+
+[stem]
+++++
+R = \frac{2 \pi r_1 \rho}{r_1 ln(r_2/r_1)\,(z_2-z_1)}
+++++
+
+with stem:[\rho=1/\sigma] the resistivity of the material composing the torus. For details on this expression, see feelpp electric toolbox test case.
+
+As for the self-inductance, we recall the defintion of the stored magnetic energy:
+
+[stem]
+++++
+E = \frac{1}{2} L I^2 = \frac{1}{2} \int_\mathbf{R^3} \mathbf{B} \times \mathbf{H}\, d\Omega
+++++
+
+to continue...
+
+=== Equivalent circuit model
+
+From a macroscopic point of view, the studied system is simply equivalent to a stem:[RL] circuit modeled by:
+
+[stem]
+++++
+U(t) = R I(t) + L \, \frac{dI}{dt}
+++++
+
+[options="header"]
+|===
+|           | Value     | Unit 
+| stem:[R]  | stem:[7.5313 10^{-6}]      | Ohm 
+| stem:[L]  | stem:[1.9204 10^{-7}] | Henry 
+|===
+
+=== Results
+
+The normalized computed electric potential, current and magnetic field at the Origin are plotted bellow:
+
+image:helix/Torus_vs_t.png[results,50%]
+
+We use the expected values of the applied electric potential, current and magnetic field for the transient regime (aka t):
+
+[options="header"]
+|===
+|  | Value | Unit
+| stem:[V] | 1 | V
+| stem:[I] | 135069 | A
+| stem:[B_z(\mathbf{O})] | 0.944 | T
+|===
+
+== 2 solenoidal magnets
+
+For sake of simplicity, we consider 2 solenoid magnets similar to the one described in previous section stacked as shown bellow.
+
+insert a figure
+image:2helix/2helix.png[geometry,50%]
+
+=== Mutual Inductance stem:[M]
+
+Obviously, the 2 magnets have the same resistance and self-inductance as they have the same geometry and are made of the same material. We only need then
+to compute the so-called mutual inductance stem:[M].
+
+As before, we start wih the stored magnetic energy stem:[E] of the system:
+
+[stem]
+++++
+E = \frac{1}{2} \sum_k L_k I_k^2 + \sum_k \sum_{l \neq k} M_{k,l} I_k I_l 
+++++
+
+to continue...
+
+=== Equivalent circuit model
+
+The equivalent circuit is this time similar to a transformer circuit. Thus, it may be modeled as:
+
+[stem]
+++++
+\begin{align}
+U_1(t) &=& R_1 I_1(t) + L_1 \, \frac{dI_1}{dt}+ M\,\frac{dI_2}{dt}, \\
+U_2(t) &=& R_2 I_2(t) + M\, \frac{dI_1}{dt}+ L_2\,\frac{dI_2}{dt}
+\end{align}
+++++
+
+In our case, we have stem:[R_1=R_2] and stem:[L_1=L_2].
+
+[options="header"]
+|===
+|           | Value     | Unit 
+| stem:[R]  | stem:[7.5313 10^{-6}]      | Ohm 
+| stem:[L]  | stem:[1.9204 10^{-7}] | Henry 
+| stem:[M]  | stem:[2.6487 10^{-8}] | Henry 
+|===
+
+=== Results
+
+The normalized computed electric potential, current and magnetic field at the Origin are plotted bellow:
+
+image:2helix/2helix_I_vs_t.png[results,50%]
+
+We use the expected values of the applied electric potential, current and magnetic field for the transient regime (aka t):
+
+[options="header"]
+|===
+|  | Value | Unit
+| stem:[V] | 1 | V
+| stem:[I] | 135069 | A
+| stem:[B_z(\mathbf{O})] | 1.09325 | T
+|===

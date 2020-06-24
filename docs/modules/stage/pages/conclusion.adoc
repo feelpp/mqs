@@ -1,0 +1,8 @@
+= Conclusion
+
+After implementation, we can see that the algorithms that individually model the first and second 
+equations are very correct. We have obtained the expected results through error calculation and 
+visualization on paraview. In the case of the coupled system, the problem encountered in 
+the algorithm has not been solved for the moment, therefore no results could be obtained for 
+the system for the moment. Afterwards, the goal will be to fix the bug in order to complete the 
+implementation, and use the algorithm to solve the two test cases present in the validation part. 
