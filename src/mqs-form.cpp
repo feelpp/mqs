@@ -253,7 +253,7 @@ int main(int argc, char**argv )
     std:cout << "fichier non créer"<<std::endl;
   }
 
-  for (t = dt; t < 0.05; t += dt)
+  for (t = dt; t < tmax; t += dt)
     {
       tic();
       auto M00 = form2( _trial=Ah, _test=Ah ,_matrix=M, _rowstart=0, _colstart=0 ); 
