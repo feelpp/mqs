@@ -35,7 +35,7 @@ int main(int argc, char**argv )
     ( "Aexact", po::value<std::string>()->default_value( "" ), "exact A" )
     ( "Vexact", po::value<std::string>()->default_value( "" ), "exact V" );
 
-  Environment env( _argc=argc, _argv=argv,_desc=options.add(Feel::backend_options("mqs")),
+  Environment env( _argc=argc, _argv=argv,_desc=options.add(Feel::backend_options("mqs")).add(Feel::biotsavart_options()),
 		   _about=about(_name="mqs",
 				_author="Feel++ Consortium",
 				_email="feelpp-devel@feelpp.org"));
@@ -75,16 +75,18 @@ int main(int argc, char**argv )
     throw std::logic_error( "model-file: " + soption(_name="model-file") + " no such file" );
 
   auto M_materials = M_modelProps->materials().materialWithPhysic(std::vector<std::string>({"electric","thermo-electric"}));
-  std::vector<std::string> range;
+  std::vector<std::string> range_conductors;
   for( auto const& mp : M_materials )
     for (auto const& marker : mp.second.meshMarkers() )
-      range.push_back(marker);
-  Feel::cout << "Electric Materials markers: " << range << std::endl;
+      range_conductors.push_back(marker);
+  // Feel::cout << "Electric Materials markers: " << range_conductors << std::endl;
+  std::set<std::string> conductors(std::begin(range_conductors), std::end(range_conductors));
+  Feel::cout << "Electric Materials markers (set): " << conductors << std::endl;
   
   // Define SpaceFunctions
   tic();
   auto Ah = Pchv<1>( mesh );
-  auto Vh = Pch<1>( mesh, markedelements(mesh, range) );
+  auto Vh = Pch<1>( mesh, markedelements(mesh, range_conductors) );
 
   auto cond_mesh = Vh->mesh();
   if (Environment::worldComm().isMasterRank())
@@ -95,7 +97,7 @@ int main(int argc, char**argv )
       std::cout << "Vh->nDof() "<<Vh->nDof() << std::endl;
     }
 
-  auto Jh = Pdhv<0>( mesh, markedelements(mesh, range) );
+  auto Jh = Pdhv<0>( mesh, markedelements(mesh, range_conductors) );
   auto Bh = Pdhv<0>( mesh );
 
   auto A = Ah->elementPtr(); //Ah->element(A0); // how to init A to A0?;
@@ -417,9 +419,10 @@ int main(int argc, char**argv )
 		    std::set<std::string> markers;
 		    markers.insert(marker);
 		    
-		    auto As = BiotSavart<3>(cond_mesh, markers);
+		    auto As = BiotSavart<3>(mesh, markers);
 		    auto jEx = idv(J_cond)+idv(J_induct);
-		    As.compute(jEx, false, true, markers);
+
+		    As.compute(jEx, false, true, conductors);
 		    
 		    //Feel::cout << "A BiotSavart[" << marker << "] : " << std::endl;
 		    auto Abc = As.magneticPotential();
