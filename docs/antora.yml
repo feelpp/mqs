@@ -1,11 +1,6 @@
 name: mqs
 title: Feel++ MQS
-version: '0.1.0'
-nav:
-- modules/ROOT/nav.adoc
-
-name: mqs
-title: Feel++ MQS
 version: '0.1.1'
 nav:
 - modules/ROOT/nav.adoc
+- modules/stage/nav.adoc
