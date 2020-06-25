@@ -276,6 +276,7 @@ int main(int argc, char**argv )
       // if BiotSavart Bc shall loop until ||A-Aold||<eps
       bool nonlinear = false;
 
+      tic();
       do {
 	tic();
 
@@ -515,6 +516,10 @@ int main(int argc, char**argv )
 	  }
 	
       } while ( (nonlinear==true) && (errorNL > epsNL*normA) && (iterNL < maxiterNL) );
+      toc("non-linear step", ( (M_verbose > 0) && nonlinear) );
+
+      // reset NL counter
+      iterNL = 0;
       
       // Display Magnetic Field
       M_B = vf::project(_space=Bh, _range=elements(mesh), _expr=curlv(A));
@@ -632,8 +637,9 @@ int main(int argc, char**argv )
       Aold = (*A);
       Vold = (*V);
     }
-  //std::cout << mqs << std::endl;
+
+  // export as markdow table
   MarkdownExporter exporter;
   auto markdown = exporter.dump(mqs);
-  std::cout << markdown << std::endl;
+  Feel::cout << markdown << std::endl;
 }
