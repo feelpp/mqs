@@ -42,8 +42,8 @@ int main(int argc, char**argv )
   int M_verbose = ioption(_name="verbosity");
   
   //Recuperer time frame
-  //double dt = doption(_name = "ts.time-step");
-  //Feel::cout << "time-step=" << dt << std::endl;
+  double dt = doption(_name = "ts.time-step");
+  Feel::cout << "time-step=" << dt << std::endl;
 
   double tmax = doption(_name = "ts.time-final");
   Feel::cout << "time-final=" << tmax << std::endl;
@@ -145,7 +145,10 @@ int main(int argc, char**argv )
   auto Aexact_g = expr<3, 1>("{0,0,0}");
   auto Vexact_g = expr("0");
 
-  //auto mybdf = bdf(_space = )
+  auto mybdfA = bdf(_space = Ah, _name="mybdfA");
+  auto mybdfV = bdf(_space = Vh, _name="mybdfV");
+  auto mybdfB = bdf(_space = Bh, _name="mybdfB");
+  auto mybdfJ = bdf(_space = Jh, _name="mybdfJ");
 
 
 
@@ -153,13 +156,13 @@ int main(int argc, char**argv )
     {
       tic();
       Aexact_g = expr<3, 1>(Aexact_s);
-      Aexact_g.setParameterValues({{"t", t}});
+      Aexact_g.setParameterValues({{"t", mybdfA->timeInitial()}});
       Aexact = project(_space = Ah, _expr = Aexact_g);
       Feel::cout << "Define Aexact" << std::endl;
       (*A) = Aexact;
       
       Vexact_g = expr(Vexact_s);
-      Vexact_g.setParameterValues({{"t", t}});
+      Vexact_g.setParameterValues({{"t", mybdfV->timeInitial()}});
       Vexact = project(_space = Vh, _expr = Vexact_g);
       Feel::cout << "Define Vexact" << std::endl;
       (*V) = Vexact;
@@ -188,7 +191,7 @@ int main(int argc, char**argv )
   vpt[0] = 0.; vpt[1] = 87.5e-3; vpt[2] = 0.;
   auto Vval = (*V)(vpt);
 #endif
-  Feel::cout << "t=" << t << ", ";
+  Feel::cout << "t=" << mybdfA->timeInitial() << ", ";
   Feel::cout << "B(" << pt[0] << "," << pt[1] << "," << pt[2] << ") = {" << Bx << "," << By << "," << Bz << "}, ";
   //Feel::cout << "V(" << pt[0] << "," << pt[1] << "," << pt[2] << ")=" << Vval(0,0,0);
   Feel::cout << std::endl;
@@ -197,9 +200,9 @@ int main(int argc, char**argv )
   tic();
   auto e = exporter( _mesh=mesh );
 
-  e->step(t)->add("A", A);
-  e->step(t)->add("V", V);
-  e->step(t)->add("B", M_B);
+  e->step(0)->add("A", A);
+  e->step(0)->add("V", V);
+  e->step(0)->add("B", M_B);
   
   // Feel::cout << "Compute Electric Field" << std::endl;
   // auto M_gradV = Jh->element(); 
@@ -208,8 +211,8 @@ int main(int argc, char**argv )
 
   if ( Uexact )
     {
-      e->step(t)->add("Aexact", Aexact);
-      e->step(t)->add("Vexact", Vexact);
+      e->step(0)->add("Aexact", Aexact);
+      e->step(0)->add("Vexact", Vexact);
     }
 
   Aold = (*A);
@@ -231,12 +234,12 @@ int main(int argc, char**argv )
     // Feel::cout << "J_cond:" << material.meshMarkers() << " ";
 	  
     J_induct += vf::project( _space=Jh, _range=markedelements(cond_mesh, material.meshMarkers()),
-  			       _expr=-sigma * (idv(A)-idv(Aold))/dt );
+  			       _expr=-sigma * (idv(A)-idv(Aold))/mybdfJ->polyDerivCoefficient(0) );
     // Feel::cout << "J_induct:" << material.meshMarkers() << std::endl;
   }
-  e->step(t)->add( "Jcond", J_cond );
-  e->step(t)->add( "Jinduct", J_induct );
-  e->step(t)->add( "J", idv(J_cond)+idv(J_induct) );
+  e->step(0)->add( "Jcond", J_cond );
+  e->step(0)->add( "Jinduct", J_induct );
+  e->step(0)->add( "J", idv(J_cond)+idv(J_induct) );
 
   e->save();
   toc("export init solution", (M_verbose > 0));
@@ -253,7 +256,7 @@ int main(int argc, char**argv )
 
   std::ofstream ofile;
   ofile.open("data.csv");
-  for (t = dt; t < tmax; t += dt)
+  for (double t = dt; mybdfA->isFinished() == false; )
   {
     tic();
     auto M00 = form2( _trial=Ah, _test=Ah ,_matrix=M, _rowstart=0, _colstart=0 ); 
@@ -269,7 +272,7 @@ int main(int argc, char**argv )
 	    // 		  _expr = dt * 1/mur * inner(curl(A) , curlt(A)) );
 	  
 	    M00 += integrate( _range=markedelements(mesh, material.meshMarkers()),
-			      _expr = dt * 1/mur * trace(trans(gradt(A))*grad(A)) );
+			      _expr = mybdfA->polyDerivCoefficient(0) * 1/mur * trace(trans(gradt(A))*grad(A)) );
 	    //Feel::cout << "create lhs(0,0):" << material.meshMarkers() << std::endl;
 
 	  }
@@ -294,7 +297,7 @@ int main(int argc, char**argv )
 	    //Feel::cout << "create lhs(0,0):" << material.meshMarkers() << std::endl;
 
 	    M01  += integrate(_range=markedelements(mesh, material.meshMarkers()),
-			      _expr = dt * mu0 * sigma * inner(id(A),trans(gradt(V))) );
+			      _expr = mybdfA->polyDerivCoefficient(0) * mu0 * sigma * inner(id(A),trans(gradt(V))) );
 	    //Feel::cout << "create lhs(0,1)" << std::endl;
 
 	    F0 += integrate(_range=markedelements(mesh, material.meshMarkers()),
@@ -309,7 +312,7 @@ int main(int argc, char**argv )
 	    // Current conservation: div( -sigma grad(V) -sigma*dA/dt) = Qs
 	  
 	    M11  += integrate( _range=markedelements(cond_mesh, material.meshMarkers()),
-			      _expr = mu0 * sigma * dt * inner(gradt(V), grad(V)) );
+			      _expr = mu0 * sigma * mybdfV->polyDerivCoefficient(0) * inner(gradt(V), grad(V)) );
 	    //Feel::cout << "create lhs(1,1)" << std::endl;
 
 	  
@@ -341,7 +344,7 @@ int main(int argc, char**argv )
 		    {
 		      std::string marker = exAtMarker.marker();
 		      auto g = expr<3,1>(exAtMarker.expression());
-		      g.setParameterValues({{"t", t}});
+		      g.setParameterValues({{"t", mybdfA->time()}});
 		      //Feel::cout << "A Dirichlet[" << marker << "] : " << exAtMarker.expression() << ", g=" << g << std::endl;
 		      M00 += on(_range=markedfaces(mesh,marker), _rhs=F, _element=*A, _expr= g);
 		    }
@@ -353,7 +356,7 @@ int main(int argc, char**argv )
 		    {
 		      std::string marker = exAtMarker.marker();
 		      auto g = expr(exAtMarker.expression());
-		      g.setParameterValues({{"t", t}});
+		      g.setParameterValues({{"t", mybdfA->time()}});
 		      //Feel::cout << "A DirichletX[" << marker << "] : " << exAtMarker.expression() << ", g=" << g << std::endl;
 		      M00 += on(_range=markedfaces(mesh,marker), _rhs=F, _element=(*A)[Component::X], _expr= g);
 		    }
@@ -365,7 +368,7 @@ int main(int argc, char**argv )
 		    {
 		      std::string marker = exAtMarker.marker();
 		      auto g = expr(exAtMarker.expression());
-		      g.setParameterValues({{"t", t}});
+		      g.setParameterValues({{"t",mybdfA->time()}});
 		      //Feel::cout << "A DirichletY[" << marker << "] : " << exAtMarker.expression() << ", g=" << g << std::endl;
 		      M00 += on(_range=markedfaces(mesh,marker), _rhs=F, _element=(*A)[Component::Y], _expr= g);
 		    }
@@ -377,7 +380,7 @@ int main(int argc, char**argv )
 		    {
 		      std::string marker = exAtMarker.marker();
 		      auto g = expr(exAtMarker.expression());
-		      g.setParameterValues({{"t", t}});
+		      g.setParameterValues({{"t", mybdfA->time()}});
 		      //Feel::cout << "A DirichletZ[" << marker << "] : " << exAtMarker.expression() << ", g=" << g << std::endl;
 		      M00 += on(_range=markedfaces(mesh,marker), _rhs=F, _element=(*A)[Component::Z], _expr= g);
 		    }
@@ -407,7 +410,7 @@ int main(int argc, char**argv )
 		    {
 		      std::string marker = exAtMarker.marker();
 		      auto g = expr(exAtMarker.expression());
-		      g.setParameterValues({{"t", t}});
+		      g.setParameterValues({{"t", mybdfV->time()}});
 		      // Feel::cout << "V[" << marker << "]=" << g.evaluate()(0,0) << ", ";
 		      M11 += on(_range=markedfaces(cond_mesh,marker), _rhs=F, _element=*V, _expr= g);
 		    }
@@ -418,7 +421,7 @@ int main(int argc, char**argv )
     /* Solve */
     tic();
     auto result = mybackend->solve( _matrix=M, _rhs=F, _solution=U, _rebuild=true);
-    std::string msg = (boost::format("[MQS %2%] t=%1% NbIter=%3% Residual=%4%") % t
+    std::string msg = (boost::format("[MQS %2%] t=%1% NbIter=%3% Residual=%4%") % mybdfA->time()
 			 % soption("mqs.pc-type")
 			 % result.nIterations()
 			 % result.residual()).str();
@@ -449,10 +452,10 @@ int main(int argc, char**argv )
     Feel::cout << std::endl;
 #endif
     tic();
-    e->step(t)->add( "A", A);
-    e->step(t)->add( "V", V);
+    e->step(mybdfA->time())->add( "A", A);
+    e->step(mybdfV->time())->add( "V", V);
       
-    e->step(t)->add( "B", M_B );
+    e->step(mybdfB->time())->add( "B", M_B );
     // M_gradV = vf::project(_space=Jh, _range=elements(cond_mesh), _expr=trans(gradv(V))); // breaks in // why?
     // e->step(t)->add( "E", M_gradV );
 
@@ -468,11 +471,11 @@ int main(int argc, char**argv )
 	    J_cond += vf::project( _space=Jh, _range=markedelements(cond_mesh, material.meshMarkers()),
 				        _expr=-sigma * trans(gradv(V)) );
 	    J_induct += vf::project( _space=Jh, _range=markedelements(cond_mesh, material.meshMarkers()),
-				          _expr=-sigma * (idv(A)-idv(Aold))/dt );
+				          _expr=-sigma * (idv(A)-idv(Aold))/mybdfJ->polyDerivCoefficient(0) );
 	  }
-    e->step(t)->add( "Jcond", J_cond );
-    e->step(t)->add( "Jinduct", J_induct );
-    e->step(t)->add( "J", idv(J_cond)+idv(J_induct) );
+    e->step(mybdfJ->time())->add( "Jcond", J_cond );
+    e->step(mybdfJ->time())->add( "Jinduct", J_induct );
+    e->step(mybdfJ->time())->add( "J", idv(J_cond)+idv(J_induct) );
 
     itField = M_modelProps->boundaryConditions().find( "electric-potential");
     if ( itField != M_modelProps->boundaryConditions().end() )
@@ -485,7 +488,7 @@ int main(int argc, char**argv )
 		    {
 		      std::string marker = exAtMarker.marker();
 		  		auto g = expr(exAtMarker.expression());
-		      g.setParameterValues({{"t", t}});
+		      g.setParameterValues({{"t", mybdfV->time()}});
 		      Feel::cout << "V[" << marker << "]=" << g.evaluate()(0,0) << ", ";
           Vname[ii] = std::to_string(g.evaluate()(0,0));
           ii ++;
@@ -537,24 +540,24 @@ int main(int argc, char**argv )
     Bname = std::to_string(Bz);
     if (ii == 4)
     {
-      mqs.add_row({std::to_string(t),std::to_string(result.nIterations()),
+      mqs.add_row({std::to_string(mybdfA->time()),std::to_string(result.nIterations()),
                    std::to_string(result.residual()),
                    Vname[0],Vname[1],Vname[2],Vname[3],Bname});
       if (ofile)
       {
-        ofile << std::setprecision(10) << t << "," << result.nIterations() << "," << result.residual() 
+        ofile << std::setprecision(10) << mybdfA->time() << "," << result.nIterations() << "," << result.residual() 
              << "," << Vname[0] << "," << Vname[1] << "," << Vname[2] << "," << Vname[3] 
              << "," << Bname << std::endl;
       }
     }
     else
     {
-      mqs.add_row({std::to_string(t),std::to_string(result.nIterations()),
+      mqs.add_row({std::to_string(mybdfA->time()),std::to_string(result.nIterations()),
                     std::to_string(result.residual()),
                     Vname[0],Vname[1],Vname[2],Vname[3],Vname[4],Vname[5],Vname[6],Vname[7],Bname});
       if (ofile)
       {
-        ofile << std::setprecision(10) << t << "," << result.nIterations() << "," << result.residual() 
+        ofile << std::setprecision(10) << mybdfA->time() << "," << result.nIterations() << "," << result.residual() 
              << "," << Vname[0] << "," << Vname[1] << "," << Vname[2] << "," << Vname[3] << ","
              << Vname[4] << "," << Vname[5] << "," << Vname[6] << "," << Vname[7] << "," 
              << Bname << std::endl;
@@ -564,13 +567,13 @@ int main(int argc, char**argv )
 
     if ( Uexact )
 	  {
-	    Aexact_g.setParameterValues({{"t", t}});
+	    Aexact_g.setParameterValues({{"t", mybdfA->time()}});
 	    Aexact = project(_space = Ah, _expr = Aexact_g);
-	    Vexact_g.setParameterValues({{"t", t}});
+	    Vexact_g.setParameterValues({{"t", mybdfV->time()}});
 	    Vexact = project(_space = Vh, _expr = Vexact_g);
 
-	    e->step(t)->add( "Aexact", Aexact);
-	    e->step(t)->add( "Vexact", Vexact);
+	    e->step(mybdfA->time())->add( "Aexact", Aexact);
+	    e->step(mybdfV->time())->add( "Vexact", Vexact);
 	  }
     e->save();
     toc("export", (M_verbose > 0));
@@ -581,7 +584,7 @@ int main(int argc, char**argv )
 	    L2Aexact = normL2(_range = elements(mesh), _expr = Aexact_g);
 	    L2Aerror = normL2(elements(mesh), (idv(A) - idv(Aexact)));
 	    H1Aerror = normH1(elements(mesh), _expr = (idv(A) - idv(Aexact)), _grad_expr = (gradv(A) - gradv(Aexact)));
-	    Feel::cout << "error: " << "t="<< t;
+	    Feel::cout << "error: " << "t="<< mybdfA->time();
 	    Feel::cout << " A: " << L2Aerror << " " << L2Aerror / L2Aexact << " " << H1Aerror << " ";
 
   	  L2Vexact = normL2(_range = elements(cond_mesh), _expr = Vexact_g);
@@ -590,12 +593,18 @@ int main(int argc, char**argv )
 	    Feel::cout << " V: " << L2Verror << " " << L2Verror / L2Vexact << " " << H1Verror << std::endl;
 	  }
     
+    mybdfA->next(*A);
+    mybdfV->next(*V);
+    mybdfB->next(M_B);
+    mybdfJ->next(J_cond+J_induct);
+
     /* reinit  */
     M->zero();
     F->zero();
 
     Aold = (*A);
     Vold = (*V);
+
   }
   //std::cout << mqs << std::endl;
   ofile.close();
