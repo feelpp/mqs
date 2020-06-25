@@ -93,8 +93,9 @@ int main(int argc, char**argv )
       std::cout << "Ah->nDof() "<<Ah->nDof() << std::endl;
       std::cout << "Vh->nDof() "<<Vh->nDof() << std::endl;
     }
-
+#if 0
   auto Jh = Pdhv<0>( mesh, markedelements(mesh, range) );
+#endif
   auto Bh = Pdhv<0>( mesh );
 
   auto A = Ah->elementPtr(); //Ah->element(A0); // how to init A to A0?;
@@ -147,10 +148,27 @@ int main(int argc, char**argv )
 
   auto mybdfA = bdf(_space = Ah, _name="mybdfA");
   auto mybdfV = bdf(_space = Vh, _name="mybdfV");
-  auto mybdfB = bdf(_space = Bh, _name="mybdfB");
+#if 0
+  auto mybdfB = bdf(_space = Bh, _name="mybdfB")
   auto mybdfJ = bdf(_space = Jh, _name="mybdfJ");
+#endif
 
-
+  for (auto time : mybdfA -> priorTimes() )
+  {
+    if (Environment::worldComm().isMasterRank())
+    {
+      std::cout << "Initialize prior times (from timeInitial()) : " << time.second << "s index: " << time.first << "\n";
+    }
+    mybdfA->setUnknown(time.first,*A);
+  }
+  for (auto time : mybdfV -> priorTimes() )
+  {
+    if (Environment::worldComm().isMasterRank())
+    {
+      std::cout << "Initialize prior times (from timeInitial()) : " << time.second << "s index: " << time.first << "\n";
+    }
+    mybdfV->setUnknown(time.first,*V);
+  }
 
   if ( Uexact )
     {
@@ -218,6 +236,7 @@ int main(int argc, char**argv )
   Aold = (*A);
   Vold = (*V);
 
+#if 0
   // Feel::cout << "Compute Current density" << std::endl;
   auto J_cond = Jh->element();
   auto J_induct = Jh->element();
@@ -240,7 +259,7 @@ int main(int argc, char**argv )
   e->step(0)->add( "Jcond", J_cond );
   e->step(0)->add( "Jinduct", J_induct );
   e->step(0)->add( "J", idv(J_cond)+idv(J_induct) );
-
+#endif
   e->save();
   toc("export init solution", (M_verbose > 0));
   
@@ -256,8 +275,10 @@ int main(int argc, char**argv )
 
   std::ofstream ofile;
   ofile.open("data.csv");
+
   for (double t = dt; mybdfA->isFinished() == false; )
   {
+    auto bdfA_poly = mybdfA->polyDeriv();
     tic();
     auto M00 = form2( _trial=Ah, _test=Ah ,_matrix=M, _rowstart=0, _colstart=0 ); 
     for( auto const& pairMat : M_modelProps->materials() )
@@ -272,7 +293,7 @@ int main(int argc, char**argv )
 	    // 		  _expr = dt * 1/mur * inner(curl(A) , curlt(A)) );
 	  
 	    M00 += integrate( _range=markedelements(mesh, material.meshMarkers()),
-			      _expr = mybdfA->polyDerivCoefficient(0) * 1/mur * trace(trans(gradt(A))*grad(A)) );
+			      _expr = 1/mur * trace(trans(gradt(A))*grad(A)) );
 	    //Feel::cout << "create lhs(0,0):" << material.meshMarkers() << std::endl;
 
 	  }
@@ -293,15 +314,15 @@ int main(int argc, char**argv )
 
 	    // Ampere law: sigma dA/dt + rot(1/(mu_r*mu_0) rotA) + sigma grad(V) = Js
 	    M00 += integrate( _range=markedelements(mesh, material.meshMarkers()),
-			      _expr = mu0 * sigma * inner(id(A) , idt(A) ));
+			      _expr = mybdfA->polyDerivCoefficient(0) * sigma * inner(id(A) , idt(A) ));
 	    //Feel::cout << "create lhs(0,0):" << material.meshMarkers() << std::endl;
 
 	    M01  += integrate(_range=markedelements(mesh, material.meshMarkers()),
-			      _expr = mybdfA->polyDerivCoefficient(0) * mu0 * sigma * inner(id(A),trans(gradt(V))) );
+			      _expr = mu0 * sigma * inner(id(A),trans(gradt(V))) );
 	    //Feel::cout << "create lhs(0,1)" << std::endl;
 
 	    F0 += integrate(_range=markedelements(mesh, material.meshMarkers()),
-			    _expr = mu0 * sigma * inner(id(A) , idv(Aold)));
+			    _expr = mu0 * sigma * inner(id(A) , idv(bdfA_poly)));
 	    //Feel::cout << "create rhs(0)" << std::endl;
 
 	    // auto Js = ;
@@ -312,16 +333,16 @@ int main(int argc, char**argv )
 	    // Current conservation: div( -sigma grad(V) -sigma*dA/dt) = Qs
 	  
 	    M11  += integrate( _range=markedelements(cond_mesh, material.meshMarkers()),
-			      _expr = mu0 * sigma * mybdfV->polyDerivCoefficient(0) * inner(gradt(V), grad(V)) );
+			      _expr = mu0 * sigma *(gradt(V), grad(V)) );
 	    //Feel::cout << "create lhs(1,1)" << std::endl;
 
 	  
 	    M10  += integrate( _range=markedelements(cond_mesh, material.meshMarkers()),
-			      _expr = mu0 * sigma * inner(idt(A), trans(grad(V))) );
+			      _expr = mu0 * sigma * mybdfA->polyDerivCoefficient(0) * inner(idt(A), trans(grad(V))) );
 	    //Feel::cout << "create lhs(1,0)" << std::endl;
 
 	    F1 += integrate( _range=markedelements(cond_mesh, material.meshMarkers()),
-			    _expr = mu0 * sigma * inner(idv(Aold), trans(grad(V))) );
+			    _expr = mu0 * sigma * inner(idv(bdfA_poly), trans(grad(V))) );
 	    //Feel::cout << "create rhs(1)" << std::endl;
 
 	    // auto Qs = ...;
@@ -455,11 +476,12 @@ int main(int argc, char**argv )
     e->step(mybdfA->time())->add( "A", A);
     e->step(mybdfV->time())->add( "V", V);
       
-    e->step(mybdfB->time())->add( "B", M_B );
+    e->step(mybdfA->time())->add( "B", M_B );
     // M_gradV = vf::project(_space=Jh, _range=elements(cond_mesh), _expr=trans(gradv(V))); // breaks in // why?
     // e->step(t)->add( "E", M_gradV );
 
     // Update current densities
+#if 0
     J_cond = vf::project(_space=Jh, _range=elements(cond_mesh), _expr=expr<3, 1>("{0,0,0}")); //Jh->element();
     J_induct = vf::project(_space=Jh, _range=elements(cond_mesh), _expr=expr<3, 1>("{0,0,0}")); //Jh->element();
     for( auto const& pairMat : M_materials )
@@ -476,7 +498,7 @@ int main(int argc, char**argv )
     e->step(mybdfJ->time())->add( "Jcond", J_cond );
     e->step(mybdfJ->time())->add( "Jinduct", J_induct );
     e->step(mybdfJ->time())->add( "J", idv(J_cond)+idv(J_induct) );
-
+#endif
     itField = M_modelProps->boundaryConditions().find( "electric-potential");
     if ( itField != M_modelProps->boundaryConditions().end() )
 	  {
@@ -492,9 +514,11 @@ int main(int argc, char**argv )
 		      Feel::cout << "V[" << marker << "]=" << g.evaluate()(0,0) << ", ";
           Vname[ii] = std::to_string(g.evaluate()(0,0));
           ii ++;
-
+#if 0
 		      double I = integrate( markedfaces( cond_mesh, marker ), inner(idv(J_induct),N()) + inner(idv(J_cond),N()) ).evaluate()(0,0);
-		      Feel::cout << "I[" << marker << "]=" << I << ", ";
+#endif		
+          double I = 0;      
+          Feel::cout << "I[" << marker << "]=" << I << ", ";
           Vname[ii] = std::to_string(I);
           ii ++;
           if (firstStep == 0)
@@ -595,9 +619,10 @@ int main(int argc, char**argv )
     
     mybdfA->next(*A);
     mybdfV->next(*V);
+#if 0
     mybdfB->next(M_B);
     mybdfJ->next(J_cond+J_induct);
-
+#endif
     /* reinit  */
     M->zero();
     F->zero();
