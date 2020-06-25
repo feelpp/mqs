@@ -333,7 +333,7 @@ int main(int argc, char**argv )
 	    // Current conservation: div( -sigma grad(V) -sigma*dA/dt) = Qs
 	  
 	    M11  += integrate( _range=markedelements(cond_mesh, material.meshMarkers()),
-			      _expr = mu0 * sigma *(gradt(V), grad(V)) );
+			      _expr = mu0 * sigma *inner(gradt(V), grad(V)) );
 	    //Feel::cout << "create lhs(1,1)" << std::endl;
 
 	  
