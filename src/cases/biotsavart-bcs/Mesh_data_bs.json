@@ -1,0 +1,91 @@
+{
+    "Name": "CoupledCart",
+    "ShortName":"MSC",
+    "Models":
+    {
+	    "use-model-name":1,
+	    "solid":
+	    {
+	        "equations":"Elasticity"
+	    },
+        "maxwell":
+        {
+	        "equations":"magnetostatic-cart"
+	    }
+    },
+    "Parameters":
+    {
+	"Tau":"1",
+	"V0": "0",
+	"V1": "1*1/4."
+    },
+    "Materials":
+    {
+        "copper0":
+        {
+            "markers":"Coil0",
+	    "physics":["heat","electric","solid","maxwell"],
+            "sigma":"58.e+6",
+            "mu_mag": "1"
+        },
+        "copper1":
+        {
+            "markers":"Coil1",
+	    "physics":["heat","electric","solid","maxwell"],
+            "sigma":"58.e+6",
+            "mu_mag": "1"
+        },
+        "copper2":
+        {
+            "markers":"Screen0",
+	    "physics":["heat","electric","solid","maxwell"],
+            "sigma":"58.e+6",
+            "mu_mag": "1"
+        },
+        "air":
+        {
+            "markers":"Air",
+	    "physics":["maxwell"],
+            "mu_mag": "1"
+        }
+    },
+    "BoundaryConditions":
+    {
+        "electric-potential":
+        {
+            "Dirichlet":
+            {
+                "V0_0":
+                {
+                    "expr":"0" 
+                },
+                "V1_0":
+                {
+                    "expr":"t/(0.1)*(t<0.1)+(1.*(t<0.5)+0*(t>0.5))*(t>0.1):t"
+		},
+                "V0_1":
+                {
+                    "expr":"0" 
+                },
+                "V1_1":
+                {
+                    "expr":"t/(0.1)*(t<0.1)+(1.*(t<0.7)+0*(t>0.7))*(t>0.1):t"
+		}
+            }
+        },
+        "magnetic-potential":
+        {
+            "BiotSavart":
+            {
+                "Infty": {}
+            }
+        }
+    },
+    "PostProcess":
+    {
+	"Exports":
+	{
+	    "fields":["magneticPotential","magneticField"]
+	}
+    }
+}
