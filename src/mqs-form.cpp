@@ -27,6 +27,8 @@ int main(int argc, char**argv )
   po::options_description options( "MQS options" );
   options.add_options()
     ( "model-file", Feel::po::value<std::string>()->default_value( "" ), "file describing model properties")
+    ( "adaptive", po::value<bool>()->default_value( false ), "activate dt apdative scheme" )
+    ( "dttol", po::value<double>()->default_value( 0. ), "dt tolerance" )
     ( "verbosity", po::value<int>()->default_value( 0 ), "set verbosisity level" )
     ( "weakdir", po::value<bool>()->default_value( "false" ), "use Dirichlet weak formulation" )
     ( "penalty-coeff", po::value<double>()->default_value( 1.e+3 ), "penalty coefficient for weak Dirichlet" )
@@ -48,6 +50,12 @@ int main(int argc, char**argv )
 
   double tmax = doption(_name = "ts.time-final");
   Feel::cout << "time-final=" << tmax << std::endl;
+
+  double dttol = doption(_name="dttol");
+  if ( boption("adaptive") && dttol == 0)
+    dttol = dt/10.;
+  Feel::cout << "time-dttol=" << dttol << std::endl;
+  double dtprev = dt;
 
   // Eventually get a solution
   bool Uexact = false;
@@ -256,7 +264,7 @@ int main(int argc, char**argv )
   int maxiterNL = 10;
   double initResidual;
   
-  for (t = dt; t <= tmax; t += dt)
+  for(t = dt; t <= tmax+1e-10; )
     {
       // Update current densities
       J_cond = vf::project(_space=Jh, _range=elements(cond_mesh), _expr=expr<3, 1>("{0,0,0}")); //Jh->element();
@@ -524,122 +532,191 @@ int main(int argc, char**argv )
 
       // reset NL counter
       iterNL = 0;
+    
+      bool do_export=true;
       
-      // Display Magnetic Field
-      M_B = vf::project(_space=Bh, _range=elements(mesh), _expr=curlv(A));
-      val = M_B(pt);
-      Bx = val(0,0,0); // evaluation de Bx
-      By = val(1,0,0); // evaluation de By
-      Bz = val(2,0,0); // evaluation de Bz
-#if 0
-      Vval = (*V)(vpt);
-      Feel::cout << "V(" << pt[0] << "," << pt[1] << "," << pt[2] << ")=" << Vval(0,0,0);
-      Feel::cout << std::endl;
-#endif
-      tic();
-      e->step(t)->add( "A", A);
-      e->step(t)->add( "V", V);
-      
-      e->step(t)->add( "B", M_B );
-      // M_gradV = vf::project(_space=Jh, _range=elements(cond_mesh), _expr=trans(gradv(V))); // breaks in // why?
-      // e->step(t)->add( "E", M_gradV );
-
-      e->step(t)->add( "Jcond", J_cond );
-      e->step(t)->add( "Jinduct", J_induct );
-      e->step(t)->add( "J", idv(J_cond)+idv(J_induct) );
-
-      auto itField = M_modelProps->boundaryConditions().find( "electric-potential");
-      if ( itField != M_modelProps->boundaryConditions().end() )
-	{
-	  auto mapField = (*itField).second;
-	  auto itType = mapField.find( "Dirichlet" );
-	  if ( itType != mapField.end() )
+      /* Solve */
+      if ( boption( "adaptive") )
+        {
+	  tic();
+	  std::string adapt_msg;
+	  // time filtering , get order 2
+	  auto filter = [&dt, &dtprev]( auto const& in, auto const& inprev, auto& out ) { 
+			  double nu = dt*(dt+dtprev)/(dtprev*(2*dt+dtprev));
+			  double c1 = 2*dtprev/(dt+dtprev);
+			  double c2 = 2*dt/(dt+dtprev);
+			  Feel::cout << "  adaptive time stepping nu=" << nu << " c1=" << c1 << " c2=" << c2 << "; "; //<< std::endl;
+			  out.on( _range=elements(out.mesh()), _expr=idv(in)-(nu/2)*(c1*idv(inprev) - 2*idv(in) + c2*idv(inprev) )); 
+			};
+	  auto Apre=*A, Apost = *A;
+	  filter( A, Aold, Apost );
+	  auto Vpre=*V, Vpost = *V;
+	  filter( V, Vold, Vpost );
+	  auto estA = normL2( _range=elements(mesh), _expr=idv(A)-idv(Apost));
+	  auto estV = normL2( _range=elements(cond_mesh), _expr=idv(V)-idv(Vpost));
+	  auto est = std::max( estA, estV );
+	  Feel::cout << "est : " << std::scientific << std::setprecision(3) << est << " estA : " << estA << " estV : " << estV << " (dttol=" << dttol << "); ";// << std::endl;
+	  if ( est > dttol )
+	    {  
+	      t -= dt;
+	      dt/=2;
+	      adapt_msg = "refining(/2) the time step";
+	      // no export
+	      do_export=false;
+	    }
+	  else if ( est < dttol/8 )
 	    {
-	      for ( auto const& exAtMarker : (*itType).second )
-		{
-		  std::string marker = exAtMarker.marker();
-		  auto g = expr(exAtMarker.expression());
-		  g.setParameterValues({{"t", t}});
-		  Feel::cout << "V[" << marker << "]=" << g.evaluate()(0,0) << ", ";
-		  Vname[ii] = std::to_string(g.evaluate()(0,0));
-		  ii ++;
+	      dtprev=dt;
+	      dt*=2;
+	      Aold= Apost;
+	      Vold= Vpost;
+	      adapt_msg = "increasing(x2) the time step";
+	      // export
+	    }
+	  else
+	    {
+	      dtprev=dt;
+	      Aold = Apost;
+	      Vold = Vpost;
+	      adapt_msg = "keeping the time step";
+	      // export
+	    }
+	  std::string msg = (boost::format("[adapt dt=%1%] ") % dt).str();
+	  msg += adapt_msg;
+	  Feel:cout << msg << std::endl;
+	  toc( msg, (M_verbose > 0));
+        }
+      else
+	{
+	  Aold = (*A);
+	  Vold = (*V);
+	}
+      
+      
+      if ( do_export)
+	{
+	  // Display Magnetic Field
+	  M_B = vf::project(_space=Bh, _range=elements(mesh), _expr=curlv(A));
+	  val = M_B(pt);
+	  Bx = val(0,0,0); // evaluation de Bx
+	  By = val(1,0,0); // evaluation de By
+	  Bz = val(2,0,0); // evaluation de Bz
+#if 0
+	  Vval = (*V)(vpt);
+	  Feel::cout << "V(" << pt[0] << "," << pt[1] << "," << pt[2] << ")=" << Vval(0,0,0);
+	  Feel::cout << std::endl;
+#endif
+	  tic();
+	  e->step(t)->add( "A", A);
+	  e->step(t)->add( "V", V);
+      
+	  e->step(t)->add( "B", M_B );
+	  // M_gradV = vf::project(_space=Jh, _range=elements(cond_mesh), _expr=trans(gradv(V))); // breaks in // why?
+	  // e->step(t)->add( "E", M_gradV );
 
-		  double I = integrate( markedfaces( cond_mesh, marker ), inner(idv(J_induct),N()) + inner(idv(J_cond),N()) ).evaluate()(0,0);
-		  Feel::cout << "I[" << marker << "]=" << I << ", ";
-		  Vname[ii] = std::to_string(I);
-		  ii ++;
-		  if (firstStep == 0){
-		    Vfirst[ii-2] = "V[" + marker + "]";
-		    Vfirst[ii-1] = "I[" + marker + "]";;
-		  }
+	  e->step(t)->add( "Jcond", J_cond );
+	  e->step(t)->add( "Jinduct", J_induct );
+	  e->step(t)->add( "J", idv(J_cond)+idv(J_induct) );
+
+	  auto itField = M_modelProps->boundaryConditions().find( "electric-potential");
+	  if ( itField != M_modelProps->boundaryConditions().end() )
+	    {
+	      auto mapField = (*itField).second;
+	      auto itType = mapField.find( "Dirichlet" );
+	      if ( itType != mapField.end() )
+		{
+		  for ( auto const& exAtMarker : (*itType).second )
+		    {
+		      std::string marker = exAtMarker.marker();
+		      auto g = expr(exAtMarker.expression());
+		      g.setParameterValues({{"t", t}});
+		      Feel::cout << "V[" << marker << "]=" << g.evaluate()(0,0) << ", ";
+		      Vname[ii] = std::to_string(g.evaluate()(0,0));
+		      ii ++;
+		      
+		      double I = integrate( markedfaces( cond_mesh, marker ), inner(idv(J_induct),N()) + inner(idv(J_cond),N()) ).evaluate()(0,0);
+		      Feel::cout << "I[" << marker << "]=" << I << ", ";
+		      Vname[ii] = std::to_string(I);
+		      ii ++;
+		      if (firstStep == 0)
+			{
+			  Vfirst[ii-2] = "V[" + marker + "]";
+			  Vfirst[ii-1] = "I[" + marker + "]";;
+			}
+		    }
 		}
+	    }
+
+	  Feel::cout << " B(" << pt[0] << "," << pt[1] << "," << pt[2] << ") = {" << Bx << "," << By << "," << Bz << "}";
+	  Feel::cout << std::endl;
+
+	  if(firstStep == 0)
+	    {
+	      Bname = "Bz("+std::to_string(pt[0]) + "," + std::to_string(pt[1]) + "," + std::to_string(pt[2]) + ")";
+	      if (ii == 4)
+		{
+		  mqs.add_row({"t","NbIter","Residual",Vfirst[0],Vfirst[1],Vfirst[2],Vfirst[3],Bname});
+		}
+	      else
+		{
+		  mqs.add_row({"t","NbIter","Residual",Vfirst[0],Vfirst[1],Vfirst[2],Vfirst[3]
+			       ,Vfirst[4],Vfirst[5],Vfirst[6],Vfirst[7],Bname});
+		}
+	      firstStep = 1;
+	    }
+
+
+	  //Bname = "{"+std::to_string(Bx) + "," + std::to_string(By) + "," + std::to_string(Bz) + "}";
+	  Bname = std::to_string(Bz);
+	  if (ii == 4)
+	    {
+	      mqs.add_row({std::to_string(t),std::to_string(nIterations),
+			   std::to_string(Residual),
+			   Vname[0],Vname[1],Vname[2],Vname[3],Bname});
+	    }
+	  else
+	    {
+	      mqs.add_row({std::to_string(t),std::to_string(nIterations),
+			   std::to_string(Residual),
+			   Vname[0],Vname[1],Vname[2],Vname[3],Vname[4],Vname[5],Vname[6],Vname[7],Bname});
+	    }
+	  ii = 0;
+
+	  if ( Uexact )
+	    {
+	      Aexact_g.setParameterValues({{"t", t}});
+	      Aexact = project(_space = Ah, _expr = Aexact_g);
+	      Vexact_g.setParameterValues({{"t", t}});
+	      Vexact = project(_space = Vh, _expr = Vexact_g);
+	      
+	      e->step(t)->add( "Aexact", Aexact);
+	      e->step(t)->add( "Vexact", Vexact);
+	    }
+	  e->save();
+	  toc("export", (M_verbose > 0));
+
+	  // Compute error
+	  if ( Uexact )
+	    {
+	      L2Aexact = normL2(_range = elements(mesh), _expr = Aexact_g);
+	      L2Aerror = normL2(elements(mesh), (idv(A) - idv(Aexact)));
+	      H1Aerror = normH1(elements(mesh), _expr = (idv(A) - idv(Aexact)), _grad_expr = (gradv(A) - gradv(Aexact)));
+	      Feel::cout << "error: " << "t="<< t;
+	      Feel::cout << " A: " << L2Aerror << " " << L2Aerror / L2Aexact << " " << H1Aerror << " ";
+
+	      L2Vexact = normL2(_range = elements(cond_mesh), _expr = Vexact_g);
+	      L2Verror = normL2(elements(cond_mesh), (idv(V) - idv(Vexact)));
+	      H1Verror = normH1(elements(cond_mesh), _expr = (idv(V) - idv(Vexact)), _grad_expr = (gradv(V) - gradv(Vexact)));
+	      Feel::cout << " V: " << L2Verror << " " << L2Verror / L2Vexact << " " << H1Verror << std::endl;
 	    }
 	}
 
-      Feel::cout << " B(" << pt[0] << "," << pt[1] << "," << pt[2] << ") = {" << Bx << "," << By << "," << Bz << "}";
-      Feel::cout << std::endl;
-
-      if(firstStep == 0){
-        Bname = "Bz("+std::to_string(pt[0]) + "," + std::to_string(pt[1]) + "," + std::to_string(pt[2]) + ")";
-        if (ii == 4){
-          mqs.add_row({"t","NbIter","Residual",Vfirst[0],Vfirst[1],Vfirst[2],Vfirst[3],Bname});
-        }
-        else{
-          mqs.add_row({"t","NbIter","Residual",Vfirst[0],Vfirst[1],Vfirst[2],Vfirst[3]
-		       ,Vfirst[4],Vfirst[5],Vfirst[6],Vfirst[7],Bname});
-        }
-        firstStep = 1;
-      }
-
-
-      //Bname = "{"+std::to_string(Bx) + "," + std::to_string(By) + "," + std::to_string(Bz) + "}";
-      Bname = std::to_string(Bz);
-      if (ii == 4){
-        mqs.add_row({std::to_string(t),std::to_string(nIterations),
-		     std::to_string(Residual),
-		     Vname[0],Vname[1],Vname[2],Vname[3],Bname});
-      }
-      else{
-        mqs.add_row({std::to_string(t),std::to_string(nIterations),
-		     std::to_string(Residual),
-		     Vname[0],Vname[1],Vname[2],Vname[3],Vname[4],Vname[5],Vname[6],Vname[7],Bname});
-      }
-      ii = 0;
-
-      if ( Uexact )
-	{
-	  Aexact_g.setParameterValues({{"t", t}});
-	  Aexact = project(_space = Ah, _expr = Aexact_g);
-	  Vexact_g.setParameterValues({{"t", t}});
-	  Vexact = project(_space = Vh, _expr = Vexact_g);
-
-	  e->step(t)->add( "Aexact", Aexact);
-	  e->step(t)->add( "Vexact", Vexact);
-	}
-      e->save();
-      toc("export", (M_verbose > 0));
-
-      // Compute error
-      if ( Uexact )
-	{
-	  L2Aexact = normL2(_range = elements(mesh), _expr = Aexact_g);
-	  L2Aerror = normL2(elements(mesh), (idv(A) - idv(Aexact)));
-	  H1Aerror = normH1(elements(mesh), _expr = (idv(A) - idv(Aexact)), _grad_expr = (gradv(A) - gradv(Aexact)));
-	  Feel::cout << "error: " << "t="<< t;
-	  Feel::cout << " A: " << L2Aerror << " " << L2Aerror / L2Aexact << " " << H1Aerror << " ";
-
-	  L2Vexact = normL2(_range = elements(cond_mesh), _expr = Vexact_g);
-	  L2Verror = normL2(elements(cond_mesh), (idv(V) - idv(Vexact)));
-	  H1Verror = normH1(elements(cond_mesh), _expr = (idv(V) - idv(Vexact)), _grad_expr = (gradv(V) - gradv(Vexact)));
-	  Feel::cout << " V: " << L2Verror << " " << L2Verror / L2Vexact << " " << H1Verror << std::endl;
-	}
-    
       /* reinit  */
       M->zero();
       F->zero();
 
-      Aold = (*A);
-      Vold = (*V);
+      t += dt;
+
     }
 
   // export as markdow table
