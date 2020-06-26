@@ -93,7 +93,7 @@ int main(int argc, char**argv )
       std::cout << "Ah->nDof() "<<Ah->nDof() << std::endl;
       std::cout << "Vh->nDof() "<<Vh->nDof() << std::endl;
     }
-#if 0
+#if 1
   auto Jh = Pdhv<0>( mesh, markedelements(mesh, range) );
 #endif
   auto Bh = Pdhv<0>( mesh );
@@ -243,7 +243,8 @@ int main(int argc, char**argv )
   Aold = (*A);
   Vold = (*V);
 
-#if 0
+auto bdfA_poly = mybdfA->polyDeriv();
+#if 1
   // Feel::cout << "Compute Current density" << std::endl;
   auto J_cond = Jh->element();
   auto J_induct = Jh->element();
@@ -260,7 +261,7 @@ int main(int argc, char**argv )
     // Feel::cout << "J_cond:" << material.meshMarkers() << " ";
 	  
     J_induct += vf::project( _space=Jh, _range=markedelements(cond_mesh, material.meshMarkers()),
-  			       _expr=-sigma * (idv(A)-idv(Aold))/mybdfJ->polyDerivCoefficient(0) );
+  			       _expr=-sigma * (mybdfA->polyDerivCoefficient(0) * idv(A)-idv(bdfA_poly)) );
     // Feel::cout << "J_induct:" << material.meshMarkers() << std::endl;
   }
   e->step(0)->add( "Jcond", J_cond );
@@ -490,7 +491,7 @@ int main(int argc, char**argv )
     // e->step(t)->add( "E", M_gradV );
 
     // Update current densities
-#if 0
+#if 1
     J_cond = vf::project(_space=Jh, _range=elements(cond_mesh), _expr=expr<3, 1>("{0,0,0}")); //Jh->element();
     J_induct = vf::project(_space=Jh, _range=elements(cond_mesh), _expr=expr<3, 1>("{0,0,0}")); //Jh->element();
     for( auto const& pairMat : M_materials )
@@ -502,11 +503,11 @@ int main(int argc, char**argv )
 	    J_cond += vf::project( _space=Jh, _range=markedelements(cond_mesh, material.meshMarkers()),
 				        _expr=-sigma * trans(gradv(V)) );
 	    J_induct += vf::project( _space=Jh, _range=markedelements(cond_mesh, material.meshMarkers()),
-				          _expr=-sigma * (idv(A)-idv(Aold))/mybdfJ->polyDerivCoefficient(0) );
+				          _expr=-sigma * (mybdfA->polyDerivCoefficient(0)*idv(A)-idv(bdfA_poly)) );
 	  }
-    e->step(mybdfJ->time())->add( "Jcond", J_cond );
-    e->step(mybdfJ->time())->add( "Jinduct", J_induct );
-    e->step(mybdfJ->time())->add( "J", idv(J_cond)+idv(J_induct) );
+    e->step(mybdfA->time())->add( "Jcond", J_cond );
+    e->step(mybdfA->time())->add( "Jinduct", J_induct );
+    e->step(mybdfA->time())->add( "J", idv(J_cond)+idv(J_induct) );
 #endif
     itField = M_modelProps->boundaryConditions().find( "electric-potential");
     if ( itField != M_modelProps->boundaryConditions().end() )
@@ -523,10 +524,9 @@ int main(int argc, char**argv )
 		      Feel::cout << "V[" << marker << "]=" << g.evaluate()(0,0) << ", ";
           Vname[ii] = std::to_string(g.evaluate()(0,0));
           ii ++;
-#if 0
+#if 1
 		      double I = integrate( markedfaces( cond_mesh, marker ), inner(idv(J_induct),N()) + inner(idv(J_cond),N()) ).evaluate()(0,0);
-#endif		
-          double I = 0;      
+#endif		      
           Feel::cout << "I[" << marker << "]=" << I << ", ";
           Vname[ii] = std::to_string(I);
           ii ++;
