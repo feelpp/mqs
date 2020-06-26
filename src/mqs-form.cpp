@@ -256,7 +256,7 @@ int main(int argc, char**argv )
   int maxiterNL = 10;
   double initResidual;
   
-  for (t = dt; t < 0.05; t += dt)
+  for (t = dt; t <= tmax; t += dt)
     {
       // Update current densities
       J_cond = vf::project(_space=Jh, _range=elements(cond_mesh), _expr=expr<3, 1>("{0,0,0}")); //Jh->element();
@@ -510,7 +510,11 @@ int main(int argc, char**argv )
 	  {
 	    errorNL = normL2(_range = elements(mesh), _expr = (idv(A)-idv(Anl)) );
 	    normA = normL2(_range = elements(mesh), _expr = idv(A) );
-	    Feel::cout << "iterNL=" << iterNL << " ,errorNL=" << errorNL << " ,nomrA=" << normA << std::endl;
+	    Feel::cout << "iterNL=" << iterNL << " ,";
+	    Feel::cout << "errorNL=" << errorNL << " ,";
+	    Feel::cout << "nomrA=" << normA << ", ";
+	    Feel::cout << "epsNL*normA=" << epsNL*normA << ", ";
+	    // Feel::cout << std::endl;
 
 	    iterNL++;
 	  }
