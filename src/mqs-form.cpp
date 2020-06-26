@@ -106,6 +106,8 @@ int main(int argc, char**argv )
   tic();
   auto A0 = expr<3, 1>(soption(_name="A0"));
   auto V0 = expr(soption(_name="V0"));
+  auto A0e = Ah->element();
+  auto V0e = Vh->element();
   (*A) = project(_space = Ah, _expr = A0);
   (*V) = project(_space = Vh, _expr = V0);
 
@@ -159,7 +161,10 @@ int main(int argc, char**argv )
     {
       std::cout << "Initialize prior times (from timeInitial()) : " << time.second << "s index: " << time.first << "\n";
     }
-    mybdfA->setUnknown(time.first,*A);
+    A0.setParameterValues({{"t",time.second}});
+    A0e = project(_space=Ah, _expr=A0);
+    mybdfA->setUnknown(time.first,A0e);
+    //mybdfA->setUnknown(time.first,*A);
   }
   for (auto time : mybdfV -> priorTimes() )
   {
@@ -167,7 +172,9 @@ int main(int argc, char**argv )
     {
       std::cout << "Initialize prior times (from timeInitial()) : " << time.second << "s index: " << time.first << "\n";
     }
-    mybdfV->setUnknown(time.first,*V);
+    V0.setParameterValues({{"t",time.second}});
+    V0e = project(_space=Vh, _expr=V0);
+    mybdfV->setUnknown(time.first,V0e);
   }
 
   if ( Uexact )
@@ -276,6 +283,8 @@ int main(int argc, char**argv )
   std::ofstream ofile;
   ofile.open("data.csv");
 
+  mybdfA->start();
+  mybdfV->start();
   for (double t = dt; mybdfA->isFinished() == false; )
   {
     auto bdfA_poly = mybdfA->polyDeriv();
@@ -338,7 +347,7 @@ int main(int argc, char**argv )
 
 	  
 	    M10  += integrate( _range=markedelements(cond_mesh, material.meshMarkers()),
-			      _expr = mu0 * sigma * mybdfA->polyDerivCoefficient(0) * inner(idt(A), trans(grad(V))) );
+			      _expr = mu0 * sigma * mybdfV->polyDerivCoefficient(0) * inner(idt(A), trans(grad(V))) );
 	    //Feel::cout << "create lhs(1,0)" << std::endl;
 
 	    F1 += integrate( _range=markedelements(cond_mesh, material.meshMarkers()),
