@@ -101,7 +101,8 @@ def main():
   ncoils=2
   nscreens=1
   output="torusAir"
-
+  rinf=0
+  
   for o, a in opts:
     if o in ("-h", "--help"):
       usage(sys.argv)
@@ -112,18 +113,21 @@ def main():
       nscreens = int(a)
     elif o == "--output":
       output = a
+    elif o == "--rinf":
+      rinf = float(a)
 
   # Loop over Coil
   r1=75
-  r2=100.2
+  r2=100.
   h=50
   eps=4
-
-  rinf=10*r2
 
   cut = 1
   z0 = -((ncoils+1)*h+ncoils*cut)/2.
   dz = 2*math.fabs(z0)
+
+  if rinf == 0 :
+    rinf=2*max(r2,math.fabs(z0))
 
   print ("Create coils")
   Coils=[]
