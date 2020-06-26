@@ -323,7 +323,7 @@ int main(int argc, char**argv )
 
 	    // Ampere law: sigma dA/dt + rot(1/(mu_r*mu_0) rotA) + sigma grad(V) = Js
 	    M00 += integrate( _range=markedelements(mesh, material.meshMarkers()),
-			      _expr = mybdfA->polyDerivCoefficient(0) * sigma * inner(id(A) , idt(A) ));
+			      _expr = mu0 * mybdfA->polyDerivCoefficient(0) * sigma * inner(id(A) , idt(A) ));
 	    //Feel::cout << "create lhs(0,0):" << material.meshMarkers() << std::endl;
 
 	    M01  += integrate(_range=markedelements(mesh, material.meshMarkers()),
