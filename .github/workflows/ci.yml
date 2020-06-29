@@ -24,7 +24,7 @@ jobs:
         which clang++-9
         mkdir build && cd build
         cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=/usr/bin/clang++-9 -DCMAKE_INSTALL_PREFIX=./install ..
-        make -j3
+        make
         make install
     - name: Check build
       run: |
