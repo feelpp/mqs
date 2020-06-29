@@ -4,4 +4,6 @@
 ** xref:index.adoc[Introduction]
 ** xref:formulation.adoc[Formulation]
 ** xref:validation.adoc[Validations]
+** xref:results.adoc[Resuls]
+** xref:bdf.adoc[Backward differentiation formula]
 
