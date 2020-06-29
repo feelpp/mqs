@@ -5,11 +5,8 @@ site:
 content:
   sources:
   - url: ..
-    branches: [master,bdf,biotsavart-bcs]
+    branches: [master, BDF, biotsavart-bcs]
     start_path: docs
-    tags:
-    - 0.1.0
-    - v1.1
   - url: https://github.com/feelpp/toolbox
     branches: master
     start_path: examples
