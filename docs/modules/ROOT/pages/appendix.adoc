@@ -20,7 +20,7 @@ Install `gmsh` and `getdp`. Download the files needed to run the simulation. The
 [source,bash]
 ----
 gmsh -2 -bin helix.geo
-getdp -m helix.msh helix.pro -solve MagDyn_t_av_Axi -pos Map_a U_av
+getdp -m helix.msh helix.pro -solve MagDyn_t_av_Axi -pos Map_av U_av
 ----
 
 [NOTE]
