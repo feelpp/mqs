@@ -50,11 +50,12 @@ Point(1) = {0,0,0,pCorey};
 
 // First inducteur
 z0_Ind = -(2*h_Ind + 2*h_Ind1 + 2*h_Ind2 + 2*e_glue)/2.;
+Printf("Z0_Ind=%g, Z1_Ind=%g", z0_Ind-h_Ind, z0_Ind+h_Ind);
 
-Point(4) = {r_int_Ind, z0_Ind,0,pIndx};
-Point(5) = {r_ext_Ind, z0_Ind,0,pIndx};
-Point(6) = {r_ext_Ind,  2*h_Ind+z0_Ind,0,pIndx};
-Point(7) = {r_int_Ind,  2*h_Ind+z0_Ind,0,pIndx};
+Point(4) = {r_int_Ind, z0_Ind-h_Ind,0,pIndx};
+Point(5) = {r_ext_Ind, z0_Ind-h_Ind,0,pIndx};
+Point(6) = {r_ext_Ind, z0_Ind+h_Ind,0,pIndx};
+Point(7) = {r_int_Ind, z0_Ind+h_Ind,0,pIndx};
 
 Line(2)  = {4,5};
 Line(3)  = {5,6};
@@ -68,12 +69,12 @@ Transfinite Surface{130} = {4,5,6,7};
 Physical Surface(200) = {130}; // Inducteur
 
 // Second inducteur
-z0_Ind1=(z0_Ind+2*h_Ind)+e_glue;
+z0_Ind1=0;
 
-Point(18) = {r_int_Ind1,z0_Ind1,0,pInd1x};
-Point(19) = {r_ext_Ind1,z0_Ind1,0,pInd1x};
-Point(20) = {r_ext_Ind1,z0_Ind1+2*h_Ind1,0,pInd1x};
-Point(21) = {r_int_Ind1,z0_Ind1+2*h_Ind1,0,pInd1x};
+Point(18) = {r_int_Ind1,z0_Ind1-h_Ind1,0,pInd1x};
+Point(19) = {r_ext_Ind1,z0_Ind1-h_Ind1,0,pInd1x};
+Point(20) = {r_ext_Ind1,z0_Ind1+h_Ind1,0,pInd1x};
+Point(21) = {r_int_Ind1,z0_Ind1+h_Ind1,0,pInd1x};
 
 Line(8)  = {18,19};
 Line(9)  = {19,20};
@@ -87,12 +88,13 @@ Transfinite Surface{131} = {18,19,20,21};
 Physical Surface(201) = {131}; // Inducteur 1
 
 // Third inducteur
-z0_Ind2=(z0_Ind1+2*h_Ind1)+e_glue;
+z0_Ind2=-z0_Ind;
+Printf("Z0_Ind=%g, Z1_Ind2=%g", z0_Ind2-h_Ind2, z0_Ind2+h_Ind2);
 
-Point(22) = {r_int_Ind2,z0_Ind2,0,pInd1x};
-Point(23) = {r_ext_Ind2,z0_Ind2,0,pInd1x};
-Point(24) = {r_ext_Ind2,z0_Ind2+2*h_Ind2,0,pInd1x};
-Point(25) = {r_int_Ind2,z0_Ind2+2*h_Ind2,0,pInd1x};
+Point(22) = {r_int_Ind2,z0_Ind2-h_Ind2,0,pInd1x};
+Point(23) = {r_ext_Ind2,z0_Ind2-h_Ind2,0,pInd1x};
+Point(24) = {r_ext_Ind2,z0_Ind2+h_Ind2,0,pInd1x};
+Point(25) = {r_int_Ind2,z0_Ind2+h_Ind2,0,pInd1x};
 
 Line(14)  = {22,23};
 Line(15)  = {23,24};
