@@ -168,7 +168,7 @@ set fit brief errorvariables nocovariancevariables errorscaling prescale nowrap 
 GNUTERM = "qt"
 Sym=1
 I0=135069
-B0=1.09325586707399
+B0=0.850698
 ## Last datafile plotted: "test_MagDyn_I.pos"
 plot "test_MagDyn_U.pos" using 1:($2*(2*pi)) w lin lw 2 lc 1 title 'U1(t)', \
      "test_MagDyn_I.pos" using 1:(-$2/(I0/Sym)) every 1 w linesp lw 1 pt 4 ps 1 title "Axi: I1(t)", \
