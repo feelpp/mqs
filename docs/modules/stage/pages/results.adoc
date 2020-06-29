@@ -1,0 +1,61 @@
+= Results
+
+==  A solenoidl magnet
+
+The normalized computed electric potential, current and magnetic field at the Origin are plotted bellow:
+
+image:helix/Torus_vs_t.png[results,50%]
+
+We use the expected values of the applied electric potential, current and magnetic field for the transient regime (aka t):
+
+[options="header"]
+|===
+|  | Value | Unit
+| stem:[V] | 1 | V
+| stem:[I] | 135069 | A
+| stem:[B_z(\mathbf{O})] | 0.944 | T
+|===
+
+Here is what we get on feelpp using the block-form program, after normalization by the above values.
+
+image:helix/resultTorus_vs_t.png[results,50%]
+
+To obtain these results, use the command :
+
+[source,cmd]
+----
+mpirun -np 1 feelpp_mqs_form --config-file cases/quart-turn/quart-turn.cfg --gmsh.hsize 0.05 --pc-type gasm --ksp-monitor=1
+----
+
+This will produce a csv file in the feel folder associated with this case.
+
+To obtain these results, use the command :
+
+== 2 solenoidal magnets
+
+The normalized computed electric potential, current and magnetic field at the Origin are plotted bellow:
+
+image:2helix/2helix_I_vs_t.png[results,50%]
+
+We use the expected values of the applied electric potential, current and magnetic field for the transient regime (aka t):
+
+[options="header"]
+|===
+|  | Value | Unit
+| stem:[V] | 1 | V
+| stem:[I] | 135069 | A
+| stem:[B_z(\mathbf{O})] | 0.850698279 | T
+|===
+
+Here is what we get on feelpp using the block-form program, after normalization by the above values.
+
+image:2helix/result2helix_I_vs_t.png[results,50%]
+
+To obtain these results, use the command :
+
+[source,cmd]
+----
+mpirun -np 1 feelpp_mqs_form --config-file cases/quart-turn/quart-turn2.cfg --gmsh.hsize 0.05 --pc-type gasm --ksp-monitor=1
+----
+
+This will produce a csv file in the feel folder associated with this case.
