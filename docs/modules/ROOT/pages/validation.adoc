@@ -175,5 +175,5 @@ We use the expected values of the applied electric potential, current and magnet
 |  | Value | Unit
 | stem:[V] | 1 | V
 | stem:[I] | 135069 | A
-| stem:[B_z(\mathbf{O})] | 1.09325 | T
+| stem:[B_z(\mathbf{O})] | 0.8507 | T
 |===

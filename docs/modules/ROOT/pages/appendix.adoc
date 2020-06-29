@@ -4,7 +4,7 @@
 
 Modeling with getdp relies on:
 
-* a formal description of the variational formulation to be solved: link:{attachmentsdir}/aximodel/getdp/MagDyn-av_Axi.pro[MagDyn-av_Axi.pro]
+* a formal description of the variational formulation to be solved: link:{attachmentsdir}/aximodel/getdp/MagDyn_av_Axi.pro[MagDyn-av_Axi.pro]
 * a file for describing numerical integration methods to be used: link:{attachmentsdir}/aximodel/getdp/Integration_Lib.pro[Integration_Lib.pro]
 * a file for describing transformation to be done: link:{attachmentsdir}/aximodel/getdp/Jacobian_Lib.pro[Jacobian_Lib.pro]
 
