@@ -1,1 +1,174 @@
 = Backward differentiation formula
+
+The Backward differentiation formula (BDF) is a family of implicit methods for the numerical integration of ordinary differential equations.
+They are linear multistep methods that, for a given function and time, approximate the derivate of that function using 
+informationfrom already computed time points, thereby increasing the accuracy of the approximation.
+
+== General formuma
+
+We use BDF to solve the initial value problem 
+
+[stem]
+++++
+\begin{equation*}
+y'=f(t,y), y(t_0)=y_0
+\end{equation*}
+++++
+
+The general formula for a BDF can be written as 
+
+[stem]
+++++
+\begin{equation*}
+\sum_{k=0}^s a_k y_{n+k} = h\beta f(t_{n+s},y_{n+s})
+\end{equation*}
+++++
+
+where h denotes he step size and stem:[t_n=t_0+nh]. Since stem:[f] is evaluated for the unknown stem:[y_{n+s}],
+BDF methods are implicit and possibly require the solution of nonlinear equations at each step. The coefficients 
+stem:[\alpha_k] and stem:[\beta] are chosen so that the method achieves order s, which is the maximum possible.
+
+== Derivation of the ccoefficients
+
+Starting from the formula stem:[y'(t_{n+s})=f(t_{n+s},y(t_{n+s}))] one approximates stem:[y(t_{n+s})=y_{n+s}]
+and stem:[y'(t_{n+s}) \approx p'_{n,s}(t_{n+s})] where stem:[p'_{n,s}(t)] is the Lagrange interpolation 
+polynomial for the points stem:[(t_n,y_n),\ldot,(t_{n+s},y_{n+s})].
+Using that stem:[t_n=t_0+nh] and multiplying by h one arrives at the BDF method of order s.
+
+For exemple the BDF with order 1 is :
+
+[stem]
+++++
+\begin{equation*}
+y_{n+1} - y_n = hf(t_{n+1},y_{n+1})
+\end{equation*}
+++++
+
+and order 2 is :
+
+[stem]
+++++
+\begin{equation*}
+y_{n+2} - \frac{4}{3}y_{n+1}+\frac{1}{3}y_n = \frac{2}{3}hf(t_{n+2},y_{n+2})
+\end{equation*}
+++++
+
+== BDF in feelpp
+
+To implement BDF on feelpp, we use the feel bdf library. 
+
+First, we define our bdf, one for each space :
+
+[source,cpp]
+----
+auto mybdfA = bdf(_space = Ah, _name="mybdfA");
+auto mybdfV = bdf(_space = Vh, _name="mybdfV");
+----
+
+We must then initialize each bdf with the initial conditions :
+
+[source,cpp]
+----
+for (auto time : mybdfA -> priorTimes() )
+  {
+    if (Environment::worldComm().isMasterRank())
+    {
+      std::cout << "Initialize prior times (from timeInitial()) : " << time.second << "s index: " << time.first << "\n";
+    }
+    A0.setParameterValues({{"t",time.second}});
+    A0e = project(_space=Ah, _expr=A0);
+    mybdfA->setUnknown(time.first,A0e);
+    //mybdfA->setUnknown(time.first,*A);
+  }
+  for (auto time : mybdfV -> priorTimes() )
+  {
+    if (Environment::worldComm().isMasterRank())
+    {
+      std::cout << "Initialize prior times (from timeInitial()) : " << time.second << "s index: " << time.first << "\n";
+    }
+    V0.setParameterValues({{"t",time.second}});
+    V0e = project(_space=Vh, _expr=V0);
+    mybdfV->setUnknown(time.first,V0e);
+  }
+----
+
+We finally start our bdf right before the time loop. 
+
+[source,cpp]
+----
+  mybdfA->start();
+  mybdfV->start();
+  for (double t = dt; mybdfA->isFinished() == false; )
+  {
+      ...
+----
+
+Below, we will use a scheme of order 1, but a scheme of higher order is possible.
+We define in the loop the polynomial derivate coefficients associeted to mybdfA, because only the derivate of A
+appear both equations.
+
+[source,cpp]
+----
+auto bdfA_poly = mybdfA->polyDeriv();
+----
+
+Thereafter, the only changes in the loop compared to an explicit Euler formulation are at the level of the equations, and at the level of the time variable. 
+Here is the difference between the two versions for the implementation of the first equation.
+
+For explicit Euler it was :
+
+[source,cpp]
+----
+	  M00 += integrate( _range=markedelements(mesh, material.meshMarkers()),
+			    _expr = dt * 1/mur * trace(trans(gradt(A))*grad(A)) );
+
+	  M00 += integrate( _range=markedelements(mesh, material.meshMarkers()),
+			    _expr = mu0 * sigma * inner(id(A) , idt(A) ));
+
+	  M01  += integrate(_range=markedelements(mesh, material.meshMarkers()),
+			    _expr = dt * mu0 * sigma * inner(id(A),trans(gradt(V))) );
+
+	  F0 += integrate(_range=markedelements(mesh, material.meshMarkers()),
+			  _expr = mu0 * sigma * inner(id(A) , idv(Aold)));
+----
+
+and for bdf it's:
+
+[source,cpp]
+----
+	    M00 += integrate( _range=markedelements(mesh, material.meshMarkers()),
+			      _expr = 1/mur * trace(trans(gradt(A))*grad(A)) );
+
+	    M00 += integrate( _range=markedelements(mesh, material.meshMarkers()),
+			      _expr = mu0 * mybdfA->polyDerivCoefficient(0) * sigma * inner(id(A) , idt(A) ));
+
+	    M01  += integrate(_range=markedelements(mesh, material.meshMarkers()),
+			      _expr = mu0 * sigma * inner(id(A),trans(gradt(V))) );
+
+	    F0 += integrate(_range=markedelements(mesh, material.meshMarkers()),
+			    _expr = mu0 * sigma * inner(id(A) , idv(bdfA_poly)));
+----
+
+Finally, instead of using stem:[t] we use 
+
+[source,cpp]
+----
+mybdfA->time()
+----
+
+or 
+
+[source,cpp]
+----
+mybdfB->time()
+----
+
+to get the time.
+
+At the end of the loop, we initialized next step of both bdf with :
+
+[source,cpp]
+----
+    mybdfA->next(*A);
+    mybdfV->next(*V);
+----
