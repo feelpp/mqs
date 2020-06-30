@@ -1,0 +1,58 @@
+{
+    "Name": "Heatonly",
+    "ShortName":"HO",
+    "Models":
+    {
+	    "use-model-name":1,
+	    "solid":
+	    {
+	        "equations":"Elasticity"
+	    },
+        "maxwell":
+        {
+	        "equations":"magnetostatic-cart"
+	    }
+    },
+    "Parameters":
+    {
+	"Tau":"1",
+	"V0": "0",
+	"V1": "1*1/4."
+    },
+    "Materials":
+    {
+        "copper":
+        {
+            "markers":"coil",
+	    "physics":["heat","electric","solid","maxwell"],
+            "sigma":"58.e+6",
+            "mu_mag": "1"
+        },
+        "air":
+        {
+            "markers":"air",
+	    "physics":["maxwell"],
+            "mu_mag": "1"
+        }
+    },
+    "BoundaryConditions":
+    {
+        "temperature":
+        {
+            "Dirichlet":
+            {
+                "Border":
+                {
+                    "expr":"{0,0,0}"
+                }
+            }
+        }
+    },
+    "PostProcess":
+    {
+	"Exports":
+	{
+	    "fields":[""]
+	}
+    }
+}
