@@ -39,7 +39,7 @@ gnuplot> load "I_vs_t.cmd"
 ----
 
 [NOTE]
-The command file for `gnuplot`may be found link:{attachmentsdir}/aximodel/helix/I-vs_t.cmd[here].
+The command file for `gnuplot` may be found link:{attachmentsdir}/aximodel/helix/I-vs_t.cmd[here].
 
 [source,bash]
 ----
