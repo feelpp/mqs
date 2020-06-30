@@ -29,6 +29,7 @@ int main(int argc, char**argv )
     ( "model-file", Feel::po::value<std::string>()->default_value( "" ), "file describing model properties")
     ( "adaptive", po::value<bool>()->default_value( false ), "activate dt apdative scheme" )
     ( "dttol", po::value<double>()->default_value( 0. ), "dt tolerance" )
+    ( "forced-sequence", po::value< std::vector<double> >()->default_value(std::vector<double>()), "list of forced times" )
     ( "verbosity", po::value<int>()->default_value( 0 ), "set verbosisity level" )
     ( "weakdir", po::value<bool>()->default_value( "false" ), "use Dirichlet weak formulation" )
     ( "penalty-coeff", po::value<double>()->default_value( 1.e+3 ), "penalty coefficient for weak Dirichlet" )
@@ -53,10 +54,15 @@ int main(int argc, char**argv )
 
   double dttol = doption(_name="dttol");
   if ( boption("adaptive") && dttol == 0)
-    dttol = dt/10.;
+    dttol = dt/100.;
   Feel::cout << "time-dttol=" << dttol << std::endl;
   double dtprev = dt;
 
+  double dt_min = dttol/100.;
+  double dt_max = dt*100.;
+  Feel::cout << "time-dtmin=" << dt_min << std::endl;
+  Feel::cout << "time-dtmax=" << dt_max << std::endl;
+  
   // Eventually get a solution
   bool Uexact = false;
 
@@ -263,6 +269,18 @@ int main(int argc, char**argv )
   int iterNL = 0;
   int maxiterNL = 10;
   double initResidual;
+
+  // define sequence of forced time steps
+  double epstime = 1.e-3;
+  bool reached = false;
+  std::vector<double> forced_times;
+  forced_times.push_back(0.1);
+  forced_times.push_back(0.5);
+  forced_times.push_back(tmax);
+  Feel::cout << "Forced sequence:" << forced_times << std::endl;
+
+  int n_forced = 0;
+  double forced_t = forced_times[n_forced];
   
   for(t = dt; t <= tmax+1e-10; )
     {
@@ -548,39 +566,84 @@ int main(int argc, char**argv )
 			  Feel::cout << "  adaptive time stepping nu=" << nu << " c1=" << c1 << " c2=" << c2 << "; "; //<< std::endl;
 			  out.on( _range=elements(out.mesh()), _expr=idv(in)-(nu/2)*(c1*idv(inprev) - 2*idv(in) + c2*idv(inprev) )); 
 			};
-	  auto Apre=*A, Apost = *A;
+	  auto Apost = (*A);
+	  auto Vpost = (*V);
 	  filter( A, Aold, Apost );
-	  auto Vpre=*V, Vpost = *V;
 	  filter( V, Vold, Vpost );
 	  auto estA = normL2( _range=elements(mesh), _expr=idv(A)-idv(Apost));
 	  auto estV = normL2( _range=elements(cond_mesh), _expr=idv(V)-idv(Vpost));
 	  auto est = std::max( estA, estV );
 	  Feel::cout << "est : " << std::scientific << std::setprecision(3) << est << " estA : " << estA << " estV : " << estV << " (dttol=" << dttol << "); ";// << std::endl;
+
+	  Feel::cout << "forced_time=" << forced_t << ", ";
+	  Feel::cout << "t=" << t << ", ";
+	  Feel::cout << "allmost=" << fabs(1-forced_t/t) << " (" << (fabs(1-forced_t/t) <= epstime) << ") ";
+	  Feel::cout << "reached" << reached << std::endl;
 	  if ( est > dttol )
 	    {  
+	      //Feel::cout << "reject (>dttol): dt estimate: " << 0.7 * dt * sqrt(dttol/est);
 	      t -= dt;
-	      dt/=2;
+	      dt/=2.;
 	      adapt_msg = "refining(/2) the time step";
+	      if ( dt < dt_min )
+		{
+		  dt = dt_min;
+		  adapt_msg = "refining the time step to dt_min";
+		}
 	      // no export
 	      do_export=false;
+
+	      // time rejected
+	      if ( reached )
+		{
+		  reached = false;
+		  Feel::cout << "***";
+		}
 	    }
-	  else if ( est < dttol/8 )
+	  else //if ( est < dttol )
 	    {
+	      //Feel::cout << "accepted (<ddtol): dt estimate: " << 0.9 * dt * sqrt(dttol/est);
+	      
 	      dtprev=dt;
-	      dt*=2;
-	      Aold= Apost;
-	      Vold= Vpost;
-	      adapt_msg = "increasing(x2) the time step";
+
+	      Aold = (*A);
+	      Vold = (*V);
+
 	      // export
+	      do_export=true; //false;
+
+	      bool allmost = ( fabs(1-forced_t/t) <= epstime );
+	      if ( !allmost )
+		{
+		  if ( est <= dttol/8. )
+		    {
+		      dt*=2;
+		      adapt_msg = "increasing(x2) the time step";
+		      if ( dt > dt_max )
+			{
+			  dt = dt_max;
+			  adapt_msg = "increasing the time step to dt_max";
+			}
+		    }
+		  else
+		    {
+		      adapt_msg = "keeping the time step";
+		    }
+		}
+
+	      // time accepted
+	      if ( reached || allmost )
+		if ( n_forced < forced_times.size()-1 )
+		  {
+		    reached = false;
+		    n_forced++;
+		    forced_t = forced_times[n_forced] ;
+		    dt = doption(_name = "ts.time-step");
+		    dtprev=dt;
+		    Feel::cout << "go to next sequence" << std::endl;
+		  }
 	    }
-	  else
-	    {
-	      dtprev=dt;
-	      Aold = Apost;
-	      Vold = Vpost;
-	      adapt_msg = "keeping the time step";
-	      // export
-	    }
+	   
 	  std::string msg = (boost::format("[adapt dt=%1%] ") % dt).str();
 	  msg += adapt_msg;
 	  Feel:cout << msg << std::endl;
@@ -588,6 +651,19 @@ int main(int argc, char**argv )
         }
       else
 	{
+	  if ( reached )
+	    {
+	      Feel::cout << "reached[" << forced_t << "]: ";
+	      Feel::cout << ( n_forced < forced_times.size()-1 ) << std::endl;
+	      if ( n_forced < forced_times.size()-1 )
+		{
+		  n_forced++;
+		  forced_t = forced_times[n_forced];
+		  reached = false;
+		  dt = doption(_name = "ts.time-step");
+		  Feel::cout << "go to next sequence" << std::endl;
+		}
+	    }
 	  Aold = (*A);
 	  Vold = (*V);
 	}
@@ -717,6 +793,23 @@ int main(int argc, char**argv )
 
       t += dt;
 
+      // force time step
+      if ( !forced_times.empty() && !reached )
+	{
+	  forced_t = forced_times[n_forced];
+	  if ( t > forced_t )
+	    {
+	      reached = true;
+	      if ( fabs(1-forced_t/t) > epstime )
+		{
+		  dt -= t-forced_t;
+		  t = forced_t;
+		  Feel::cout << "forced_time=" << forced_t << ", ";
+		  Feel::cout << "forced_dt=" << dt << ", ";
+		  Feel::cout << "t=" << t << std::endl;
+		}
+	    }
+	}
     }
 
   // export as markdow table
