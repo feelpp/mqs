@@ -1,7 +1,3 @@
-#include <tabulate/table.hpp>
-#include <tabulate/markdown_exporter.hpp>
-using namespace tabulate;
-
 #include <feel/feelcore/environment.hpp>
 #include <feel/feelcore/checker.hpp>
 
@@ -24,16 +20,16 @@ using namespace tabulate;
 int main(int argc, char**argv )
 {
   using namespace Feel;
-  po::options_description options( "MQS options" );
+  po::options_description options( "heat" );
   options.add_options()
     ( "model-file", Feel::po::value<std::string>()->default_value( "" ), "file describing model properties")
     ( "verbosity", po::value<int>()->default_value( 0 ), "set verbosisity level" )
     ( "weakdir", po::value<bool>()->default_value( "false" ), "use Dirichlet weak formulation" )
     ( "penalty-coeff", po::value<double>()->default_value( 1.e+3 ), "penalty coefficient for weak Dirichlet" )
     ( "T0", po::value<std::string>()->default_value( "{0,0,0}" ), "initial T" )
-    ( "Texact", po::value<std::string>()->default_value( "" ), "exact T" )
+    ( "Texact", po::value<std::string>()->default_value( "" ), "exact T" );
 
-  Environment env( _argc=argc, _argv=argv,_desc=options.add(Feel::backend_options("mqs")),
+  Environment env( _argc=argc, _argv=argv,_desc=options.add(Feel::backend_options("heat")),
 		   _about=about(_name="heatmqs",
 				_author="Feel++ Consortium",
 				_email="feelpp-devel@feelpp.org"));
@@ -48,11 +44,11 @@ int main(int argc, char**argv )
   Feel::cout << "time-final=" << tmax << std::endl;
 
   // Eventually get a solution
-  bool Texact = false;
+  bool Uexact = false;
 
   std::string Texact_s = soption(_name = "Texact");
 
-  if ( !Aexact_s.empty() && !Vexact_s.empty() )
+  if ( !Texact_s.empty() )
     {
       Uexact = true;
       Feel::cout << "* Texact=" << Texact_s << std::endl;
@@ -100,7 +96,7 @@ auto cond_mesh = Vh->mesh();
 
   // init solutions
   tic();
-  auto T0 = expr<1, 1>(soption(_name="T0"));
+  auto T0 = expr(soption(_name="T0"));
   auto T0e = Th->element();
   (*T) = project(_space = Th, _expr = T0);
 
@@ -109,7 +105,7 @@ auto cond_mesh = Vh->mesh();
     
   // Vincent way
   tic();
-  BlocksBaseGraphCSR myblockGraph(2,2);
+  BlocksBaseGraphCSR myblockGraph(1,2);
   myblockGraph(0,0) = stencil(_test=Th,_trial=Th, _diag_is_nonzero=false, _close=false)->graph();
   myblockGraph(0,1) = stencil(_test=Th,_trial=Th, _diag_is_nonzero=false, _close=false)->graph();
   auto M = backend()->newBlockMatrix(_block=myblockGraph);
@@ -123,7 +119,7 @@ auto cond_mesh = Vh->mesh();
   auto U = backend()->newBlockVector(_block=myblockVecSol, _copy_values=false);
   toc("create Algebric blockforms", (M_verbose > 0));
 
-  auto mybackend = backend(_name="mqs");
+  auto mybackend = backend(_name="heat");
 
   //double t = 0;
 
@@ -131,7 +127,7 @@ auto cond_mesh = Vh->mesh();
 
   auto Texact = Th->element();
 
-  auto Texact_g = expr<1, 1>("{0,0,0}");
+  auto Texact_g = expr("{0,0,0}");
 
   auto mybdfT = bdf(_space = Th, _name="mybdfT");
 
@@ -143,13 +139,13 @@ auto cond_mesh = Vh->mesh();
     }
     T0.setParameterValues({{"t",time.second}});
     T0e = project(_space=Th, _expr=T0);
-    mybdfA->setUnknown(time.first,T0e);
+    mybdfT->setUnknown(time.first,T0e);
   }
 
-  if ( Texact )
+  if ( Uexact )
   {
     tic();
-    Texact_g = expr<1, 1>(Texact_s);
+    Texact_g = expr(Texact_s);
     Texact_g.setParameterValues({{"t", mybdfT->timeInitial()}});
     Texact = project(_space = Th, _expr = Texact_g);
     Feel::cout << "Define Texact" << std::endl;
@@ -166,7 +162,7 @@ auto cond_mesh = Vh->mesh();
 
   e->step(0)->add("T", T);
 
-  if ( Texact )
+  if ( Uexact )
   {
     e->step(0)->add("Texact", Texact);
   }
@@ -192,7 +188,7 @@ auto cond_mesh = Vh->mesh();
   
       //heat
 	    M00 += integrate( _range=markedelements(mesh, material.meshMarkers()),
-			      _expr = trace(trans(gradt(T))*grad(T)) );
+			      _expr = trans(gradt(T))*grad(T) );
 
 	  }
 
@@ -209,15 +205,15 @@ auto cond_mesh = Vh->mesh();
 
 	    // heat
 	    M00 += integrate( _range=markedelements(mesh, material.meshMarkers()),
-			      _expr = Cp * rho * mybdfT->polyDerivCoefficient(0) * inner(id(T) , idt(T) ));
-T
+			      _expr = Cp * rho * mybdfT->polyDerivCoefficient(0) * id(T) * idt(T) );
+
       //heat
 	    M01  += integrate(_range=markedelements(mesh, material.meshMarkers()),
 			      _expr = 0 );
 
       //heat
 	    F0 += integrate(_range=markedelements(mesh, material.meshMarkers()),
-			    _expr = Cp * rho * inner(id(T) , idv(bdfT_poly)) );
+			    _expr = Cp * rho * id(T) * idv(bdfT_poly) );
 	  }
     toc("assembling", (M_verbose > 0));
 
@@ -234,10 +230,10 @@ T
 	      for ( auto const& exAtMarker : (*itType).second )
 		    {
 		      std::string marker = exAtMarker.marker();
-		      auto f = expr<1,1>(exAtMarker.expression());
+		      auto f = expr(exAtMarker.expression());
 		      f.setParameterValues({{"t", mybdfT->time()}});
 	        F0 += integrate(_range=markedelements(mesh, material.meshMarkers()),
-			                    _expr = inner(id(T) , f );
+			                    _expr = id(T) * f ;
 		    }
 	    }
 	    itType = mapField.find( "Dirichlet" );
@@ -246,34 +242,34 @@ T
 	      for ( auto const& exAtMarker : (*itType).second )
 		    {
 		      std::string marker = exAtMarker.marker();
-		      auto g = expr<1,1>(exAtMarker.expression());
+		      auto g = expr(exAtMarker.expression());
 		      g.setParameterValues({{"t", mybdfT->time()}});
 		      //Feel::cout << "A Dirichlet[" << marker << "] : " << exAtMarker.expression() << ", g=" << g << std::endl;
 		      M00 += on(_range=markedfaces(mesh,marker), _rhs=F, _element=*T, _expr= g);
 		    }
 	    }
-      ItType = mapField.find( "Neumann" );
+      itType = mapField.find( "Neumann" );
 	    if ( itType != mapField.end() )
 	    {
 	      for ( auto const& exAtMarker : (*itType).second )
 	     	{
 	     		std::string marker = exAtMarker.marker();
-	     		auto g = expr<1,1>(exAtMarker.expression());
+	     		auto g = expr(exAtMarker.expression());
 	        g.setParameterValues({{"t", t}});
 	       	Feel::cout << "Neuman[" << marker << "] : " << exAtMarker.expression() << std::endl;
 	        M00 += integrate(_range=markedfaces(mesh,marker), 
-                           _expr= inner(g,id(T));
+                           _expr= g * id(T) );
 	     	}
       }
 
-      ItType = mapField.find( "Robin" );
+      itType = mapField.find( "Robin" );
 	    if ( itType != mapField.end() )
 	    {
 	      for ( auto const& exAtMarker : (*itType).second )
 	     	{
 	     		std::string marker = exAtMarker.marker();
-          auto h = expr<1,1>(exAtMarker.expression1());
-	     		auto Tw = expr<1,1>(exAtMarker.expression2());
+          auto h = expr(exAtMarker.expression1());
+	     		auto Tw = expr(exAtMarker.expression2());
 	        Tw.setParameterValues({{"t", t}});
           h.setParameterValues({{"t", t}});
 	       	Feel::cout << "Robin[" << marker << "] : " << exAtMarker.expression() << std::endl;
@@ -284,7 +280,7 @@ T
 
 	          auto k = material.getScalar("k");
 	          M00 += integrate(_range=markedfaces(mesh,marker), 
-                             _expr= h / k *inner(idt(T)-Tw,id(T));
+                             _expr= h / k * (idt(T)-Tw) * id(T) );
 	     	  }
         }
       }
@@ -355,7 +351,7 @@ T
     tic();
     e->step(mybdfT->time())->add( "T", T);
 
-    if ( Texact )
+    if ( Uexact )
 	  {
 	    Texact_g.setParameterValues({{"t", mybdfT->time()}});
 	    Texact = project(_space = Th, _expr = Texact_g);
@@ -366,7 +362,7 @@ T
     toc("export", (M_verbose > 0));
 
     // Compute error
-    if ( Texact )
+    if ( Uexact )
 	  {
 	    L2Texact = normL2(_range = elements(mesh), _expr = Texact_g);
 	    L2Terror = normL2(elements(mesh), (idv(T) - idv(Texact)));
@@ -375,7 +371,7 @@ T
 	    Feel::cout << " T: " << L2Terror << " " << L2Terror / L2Texact << " " << H1Terror << " ";
 	  }
     
-    mybdfA->next(*T);
+    mybdfT->next(*T);
 
     /* reinit  */
     M->zero();
