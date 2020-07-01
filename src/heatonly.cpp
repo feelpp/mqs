@@ -70,6 +70,13 @@ int main(int argc, char**argv )
     M_modelProps = std::make_shared<ModelProperties>( modelPropFilename );
   else
     throw std::logic_error( "model-file: " + soption(_name="model-file") + " no such file" );
+
+  auto M_materials = M_modelProps->materials().materialWithPhysic(std::vector<std::string>({"heat"}));
+  std::vector<std::string> range;
+  for( auto const& mp : M_materials )
+    for (auto const& marker : mp.second.meshMarkers() )
+      range.push_back(marker);
+  Feel::cout << "Heat Materials markers: " << range << std::endl;
 #endif
 
   // Define SpaceFunctions
