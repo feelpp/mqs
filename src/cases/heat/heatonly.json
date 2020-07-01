@@ -1,58 +1,58 @@
 {
     "Name": "Heatonly",
     "ShortName":"HO",
-    "Models":
-    {
-	    "use-model-name":1,
-	    "solid":
-	    {
-	        "equations":"Elasticity"
-	    },
-        "maxwell":
-        {
-	        "equations":"magnetostatic-cart"
-	    }
-    },
-    "Parameters":
-    {
-	"Tau":"1",
-	"V0": "0",
-	"V1": "1*1/4."
-    },
+    "Models":"mythermicmodel",
     "Materials":
     {
-        "copper":
+        "Omega":
         {
-            "markers":"coil",
-	    "physics":["heat","electric","solid","maxwell"],
-            "sigma":"58.e+6",
-            "mu_mag": "1"
-        },
-        "air":
-        {
-            "markers":"air",
-	    "physics":["maxwell"],
-            "mu_mag": "1"
+            "name":"mymat1",
+            "k":"0", //[W/(m*K)]
+            "Cp":"0", //[J/(kg/K)]
+            "rho":"0" //[kg/(m^3)]
         }
     },
     "BoundaryConditions":
     {
         "temperature":
         {
+            "VolumicForces":
+            {
+                "Omega":
+                {
+                    "expr":"0"
+                }
+            },
             "Dirichlet":
             {
                 "Border":
                 {
-                    "expr":"{0,0,0}"
+                    "expr":"0"
+                }
+            },
+            "Neumann":
+            {
+                "Border":
+                {
+                    "expr":"0"
+                }
+            },
+            "Robin":
+            {
+                "Border":
+                {
+                    "expr1":"0",
+                    "expr2":"0"
                 }
             }
+
         }
     },
     "PostProcess":
     {
-	"Exports":
-	{
-	    "fields":[""]
-	}
+        "Exports":
+        {
+            "fields":["temperature"]
+        }
     }
 }
