@@ -100,7 +100,7 @@ auto cond_mesh = Vh->mesh();
 
   // init solutions
   tic();
-  auto T0 = expr<3, 1>(soption(_name="T0"));
+  auto T0 = expr<1, 1>(soption(_name="T0"));
   auto T0e = Th->element();
   (*T) = project(_space = Th, _expr = T0);
 
@@ -131,7 +131,7 @@ auto cond_mesh = Vh->mesh();
 
   auto Texact = Th->element();
 
-  auto Texact_g = expr<3, 1>("{0,0,0}");
+  auto Texact_g = expr<1, 1>("{0,0,0}");
 
   auto mybdfT = bdf(_space = Th, _name="mybdfT");
 
@@ -149,7 +149,7 @@ auto cond_mesh = Vh->mesh();
   if ( Texact )
   {
     tic();
-    Texact_g = expr<3, 1>(Texact_s);
+    Texact_g = expr<1, 1>(Texact_s);
     Texact_g.setParameterValues({{"t", mybdfT->timeInitial()}});
     Texact = project(_space = Th, _expr = Texact_g);
     Feel::cout << "Define Texact" << std::endl;
@@ -189,8 +189,6 @@ auto cond_mesh = Vh->mesh();
 	  {
 	    auto name = pairMat.first;
 	    auto material = pairMat.second;
-
-	    auto mur = material.getScalar("mu_mag");
   
       //heat
 	    M00 += integrate( _range=markedelements(mesh, material.meshMarkers()),
@@ -206,11 +204,12 @@ auto cond_mesh = Vh->mesh();
 	    auto name = pairMat.first;
 	    auto material = pairMat.second;
 
-	    auto sigma = material.getScalar("sigma");
+	    auto rho = material.getScalar("rho");
+      auto Cp = material.getScalar("Cp");
 
 	    // heat
 	    M00 += integrate( _range=markedelements(mesh, material.meshMarkers()),
-			      _expr = mybdfT->polyDerivCoefficient(0) * inner(id(T) , idt() ));
+			      _expr = Cp * rho * mybdfT->polyDerivCoefficient(0) * inner(id(T) , idt(T) ));
 T
       //heat
 	    M01  += integrate(_range=markedelements(mesh, material.meshMarkers()),
@@ -218,7 +217,7 @@ T
 
       //heat
 	    F0 += integrate(_range=markedelements(mesh, material.meshMarkers()),
-			    _expr = inner(id(T) , idv(bdfT_poly)));
+			    _expr = Cp * rho * inner(id(T) , idv(bdfT_poly)) );
 	  }
     toc("assembling", (M_verbose > 0));
 
@@ -228,18 +227,67 @@ T
     if ( itField != M_modelProps->boundaryConditions().end() )
 	  {
 	    auto mapField = (*itField).second;
-	    auto itType = mapField.find( "Dirichlet" );
+
+      auto itType = mapField.find( "VolumicForces" );
+      if ( itType != mapField.end() )
+	    {
+	      for ( auto const& exAtMarker : (*itType).second )
+		    {
+		      std::string marker = exAtMarker.marker();
+		      auto f = expr<1,1>(exAtMarker.expression());
+		      f.setParameterValues({{"t", mybdfT->time()}});
+	        F0 += integrate(_range=markedelements(mesh, material.meshMarkers()),
+			                    _expr = inner(id(T) , f );
+		    }
+	    }
+	    itType = mapField.find( "Dirichlet" );
 	    if ( itType != mapField.end() )
 	    {
 	      for ( auto const& exAtMarker : (*itType).second )
 		    {
 		      std::string marker = exAtMarker.marker();
-		      auto g = expr<3,1>(exAtMarker.expression());
+		      auto g = expr<1,1>(exAtMarker.expression());
 		      g.setParameterValues({{"t", mybdfT->time()}});
 		      //Feel::cout << "A Dirichlet[" << marker << "] : " << exAtMarker.expression() << ", g=" << g << std::endl;
 		      M00 += on(_range=markedfaces(mesh,marker), _rhs=F, _element=*T, _expr= g);
 		    }
 	    }
+      ItType = mapField.find( "Neumann" );
+	    if ( itType != mapField.end() )
+	    {
+	      for ( auto const& exAtMarker : (*itType).second )
+	     	{
+	     		std::string marker = exAtMarker.marker();
+	     		auto g = expr<1,1>(exAtMarker.expression());
+	        g.setParameterValues({{"t", t}});
+	       	Feel::cout << "Neuman[" << marker << "] : " << exAtMarker.expression() << std::endl;
+	        M00 += integrate(_range=markedfaces(mesh,marker), 
+                           _expr= inner(g,id(T));
+	     	}
+      }
+
+      ItType = mapField.find( "Robin" );
+	    if ( itType != mapField.end() )
+	    {
+	      for ( auto const& exAtMarker : (*itType).second )
+	     	{
+	     		std::string marker = exAtMarker.marker();
+          auto h = expr<1,1>(exAtMarker.expression1());
+	     		auto Tw = expr<1,1>(exAtMarker.expression2());
+	        Tw.setParameterValues({{"t", t}});
+          h.setParameterValues({{"t", t}});
+	       	Feel::cout << "Robin[" << marker << "] : " << exAtMarker.expression() << std::endl;
+		      for( auto const& pairMat : M_materials )
+	        {
+	          auto name = pairMat.first;
+	          auto material = pairMat.second;
+
+	          auto k = material.getScalar("k");
+	          M00 += integrate(_range=markedfaces(mesh,marker), 
+                             _expr= h / k *inner(idt(T)-Tw,id(T));
+	     	  }
+        }
+      }
 #if 0      
 	    itType = mapField.find( "DirichletX" );
 	    if ( itType != mapField.end() )
