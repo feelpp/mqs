@@ -2,14 +2,21 @@
     "Name": "Heatonly",
     "ShortName":"HO",
     "Models":"mythermicmodel",
+    "Parameters":
+    {
+        "k":"393", //[W/(m*K)]
+        "Cp":"386.Oe06", //[J/(kg/K)]
+        "rho":"8.94e-09" //[kg/(m^3)]
+    },
     "Materials":
     {
         "Omega":
         {
             "name":"mymat1",
-            "k":"0", //[W/(m*K)]
-            "Cp":"0", //[J/(kg/K)]
-            "rho":"0" //[kg/(m^3)]
+            "physics":["heat"],
+            "k":"k", //[W/(m*K)]
+            "Cp":"Cp", //[J/(kg/K)]
+            "rho":"rho" //[kg/(m^3)]
         }
     },
     "BoundaryConditions":
@@ -20,29 +27,29 @@
             {
                 "Omega":
                 {
-                    "expr":"0"
+                    "expr":"y*z*(Cp*rho*x*x-2*t):x:y:z:t"
                 }
             },
             "Dirichlet":
             {
-                "Border":
+                "Dirichlet":
                 {
-                    "expr":"0"
+                    "expr":"x*x*y*z*t:x:y:z:t"
                 }
             },
             "Neumann":
             {
-                "Border":
+                "Neumann":
                 {
-                    "expr":"0"
+                    "expr":"-x*x*y*t:x:y:z:t"
                 }
             },
             "Robin":
             {
-                "Border":
+                "Robin":
                 {
-                    "expr1":"0",
-                    "expr2":"0"
+                    "expr1":"4.35e-03", //hcoef
+                    "expr2":"x*x*y*t*(k+4.35e-03)/4.35e-03" //temp ext
                 }
             }
 
