@@ -18,7 +18,7 @@ Curve Loop (1)={1,2,3,4} ;
 Plane Surface (1)={1};
 
 //Physical Curve ("Gamma") = {1,2,3,4};
-Physical Surface ("Gamma_I", 1)={1};
+Physical Surface ("Neumann", 1)={1};
 
 out[] = Extrude {0, 0, Lz} {
   Surface{1}; 
@@ -29,6 +29,6 @@ Printf ("out[2]=%g", out[2]);
 Printf ("out[3]=%g", out[3]);
 Printf ("out[4]=%g", out[4]);
 
-Physical Volume ("Omega_C", out[1])={out[1]};
-Physical Surface ("Gamma_O", out[0])={out[0]};
-Physical Surface ("Gamma_C", 2)={out[2], out[3], out[4], out[5]};
+Physical Volume ("Omega", out[1])={out[1]};
+Physical Surface ("Robin", out[0])={out[0]};
+Physical Surface ("Dirichlet", 2)={out[2], out[3], out[4], out[5]};
