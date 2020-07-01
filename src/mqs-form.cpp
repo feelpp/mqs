@@ -273,9 +273,7 @@ int main(int argc, char**argv )
   // define sequence of forced time steps
   double epstime = 1.e-3;
   bool reached = false;
-  std::vector<double> forced_times;
-  forced_times.push_back(0.1);
-  forced_times.push_back(0.5);
+  std::vector<double> forced_times = vdoption("forced-sequence");;
   forced_times.push_back(tmax);
   Feel::cout << "Forced sequence:" << forced_times << std::endl;
 
