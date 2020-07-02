@@ -321,7 +321,7 @@ int main(int argc, char**argv )
 	    Texact_g.setParameterValues({{"t", mybdfT->time()}});
 	    Texact = project(_space = Th, _expr = Texact_g);
 
-	    e->step(mybdfT->time())->add( "Aexact", Texact);
+	    e->step(mybdfT->time())->add( "Texact", Texact);
 	  }
     e->save();
     toc("export", (M_verbose > 0));
