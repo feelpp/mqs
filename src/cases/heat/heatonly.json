@@ -5,7 +5,7 @@
     "Parameters":
     {
         "k":"393", //[W/(m*K)]
-        "Cp":"386.Oe06", //[J/(kg/K)]
+        "Cp":"386.e+06", //[J/(kg/K)]
         "rho":"8.94e-09" //[kg/(m^3)]
     },
     "Materials":
@@ -14,9 +14,9 @@
         {
             "name":"mymat1",
             "physics":["heat"],
-            "k":"k", //[W/(m*K)]
-            "Cp":"Cp", //[J/(kg/K)]
-            "rho":"rho" //[kg/(m^3)]
+            "k":"393", //[W/(m*K)]
+            "Cp":"386.e+06", //[J/(kg/K)]
+            "rho":"8.94e-09" //[kg/(m^3)]
         }
     },
     "BoundaryConditions":
@@ -27,7 +27,7 @@
             {
                 "Omega":
                 {
-                    "expr":"y*z*(Cp*rho*x*x-2*t):x:y:z:t"
+                    "expr":"y*z*(386.e+06*8.94e-09*x*x-2*t):x:y:z:t"
                 }
             },
             "Dirichlet":
@@ -49,7 +49,7 @@
                 "Robin":
                 {
                     "expr1":"4.35e-03", //hcoef
-                    "expr2":"x*x*y*t*(k+4.35e-03)/4.35e-03" //temp ext
+                    "expr2":"x*x*y*t*(393+z*4.35e-03)/4.35e-03:x:y:z:t" //temp ext
                 }
             }
 
