@@ -26,7 +26,7 @@ int main(int argc, char**argv )
     ( "verbosity", po::value<int>()->default_value( 0 ), "set verbosisity level" )
     ( "weakdir", po::value<bool>()->default_value( "false" ), "use Dirichlet weak formulation" )
     ( "penalty-coeff", po::value<double>()->default_value( 1.e+3 ), "penalty coefficient for weak Dirichlet" )
-    ( "T0", po::value<std::string>()->default_value( "{0,0,0}" ), "initial T" )
+    ( "T0", po::value<std::string>()->default_value( "0" ), "initial T" )
     ( "Texact", po::value<std::string>()->default_value( "" ), "exact T" );
 
   Environment env( _argc=argc, _argv=argv,_desc=options.add(Feel::backend_options("heat")),
@@ -77,16 +77,13 @@ int main(int argc, char**argv )
 
   // Define SpaceFunctions
   tic();
-  auto Th = Pchv<1>( mesh );
+  auto Th = Pch<1>( mesh );
 
-#if 0 // ??????
-auto cond_mesh = Vh->mesh();
+#if 1 // ??????
   if (Environment::worldComm().isMasterRank())
   {
     std::cout << "mesh->numGlobalElements() "<< mesh->numGlobalElements() << std::endl;
-    std::cout << "cond_mesh->numGlobalElements() "<< cond_mesh->numGlobalElements() << std::endl;
-    std::cout << "Ah->nDof() "<<Ah->nDof() << std::endl;
-    std::cout << "Vh->nDof() "<<Vh->nDof() << std::endl;
+    std::cout << "Th->nDof() "<<Th->nDof() << std::endl;
   }
 #endif 
 
@@ -127,7 +124,7 @@ auto cond_mesh = Vh->mesh();
 
   auto Texact = Th->element();
 
-  auto Texact_g = expr("{0,0,0}");
+  auto Texact_g = expr("0");
 
   auto mybdfT = bdf(_space = Th, _name="mybdfT");
 
@@ -209,7 +206,7 @@ auto cond_mesh = Vh->mesh();
 
       //heat
 	    M01  += integrate(_range=markedelements(mesh, material.meshMarkers()),
-			      _expr = 0 );
+			      _expr = cst(0.) );
 
       //heat
 	    F0 += integrate(_range=markedelements(mesh, material.meshMarkers()),
