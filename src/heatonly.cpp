@@ -178,6 +178,7 @@ int main(int argc, char**argv )
     auto bdfT_poly = mybdfT->polyDeriv();
     tic();
     auto M00 = form2( _trial=Th, _test=Th ,_matrix=M, _rowstart=0, _colstart=0 ); 
+#if 0    
     for( auto const& pairMat : M_modelProps->materials() )
 	  {
 	    auto name = pairMat.first;
@@ -186,8 +187,8 @@ int main(int argc, char**argv )
       //heat
 	    M00 += integrate( _range=markedelements(mesh, material.meshMarkers()),
 			      _expr = trans(gradt(T))*grad(T) );
-
 	  }
+#endif
 
     auto M01 = form2( _trial=Th, _test=Th ,_matrix=M, _rowstart=0, _colstart=1 );
     auto F0 = form1( _test=Th, _vector=F, _rowstart=0 );
@@ -203,6 +204,9 @@ int main(int argc, char**argv )
 	    // heat
 	    M00 += integrate( _range=markedelements(mesh, material.meshMarkers()),
 			      _expr = Cp * rho * mybdfT->polyDerivCoefficient(0) * id(T) * idt(T) );
+
+	    M00 += integrate( _range=markedelements(mesh, material.meshMarkers()),
+			      _expr = inner( gradt(T),grad(T) ) );
 
       //heat
 	    M01  += integrate(_range=markedelements(mesh, material.meshMarkers()),
@@ -229,8 +233,8 @@ int main(int argc, char**argv )
 		      std::string marker = exAtMarker.marker();
 		      auto f = expr(exAtMarker.expression());
 		      f.setParameterValues({{"t", mybdfT->time()}});
-	        F0 += integrate(_range=markedelements(mesh, material.meshMarkers()),
-			                    _expr = id(T) * f ;
+	        F0 += integrate(_range=markedelements(mesh, marker),
+			                    _expr = id(T) * f );
 		    }
 	    }
 	    itType = mapField.find( "Dirichlet" );
