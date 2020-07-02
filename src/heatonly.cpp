@@ -30,7 +30,7 @@ int main(int argc, char**argv )
     ( "Texact", po::value<std::string>()->default_value( "" ), "exact T" );
 
   Environment env( _argc=argc, _argv=argv,_desc=options.add(Feel::backend_options("heat")),
-		   _about=about(_name="heatmqs",
+		   _about=about(_name="heat",
 				_author="Feel++ Consortium",
 				_email="feelpp-devel@feelpp.org"));
 
@@ -102,9 +102,9 @@ int main(int argc, char**argv )
     
   // Vincent way
   tic();
-  BlocksBaseGraphCSR myblockGraph(1,2);
+  BlocksBaseGraphCSR myblockGraph(1,1);
   myblockGraph(0,0) = stencil(_test=Th,_trial=Th, _diag_is_nonzero=false, _close=false)->graph();
-  myblockGraph(0,1) = stencil(_test=Th,_trial=Th, _diag_is_nonzero=false, _close=false)->graph();
+  //myblockGraph(0,1) = stencil(_test=Th,_trial=Th, _diag_is_nonzero=false, _close=false)->graph();
   auto M = backend()->newBlockMatrix(_block=myblockGraph);
 
   BlocksBaseVector<double> myblockVec(1);
@@ -190,7 +190,7 @@ int main(int argc, char**argv )
 	  }
 #endif
 
-    auto M01 = form2( _trial=Th, _test=Th ,_matrix=M, _rowstart=0, _colstart=1 );
+    //auto M01 = form2( _trial=Th, _test=Th ,_matrix=M, _rowstart=0, _colstart=1 );
     auto F0 = form1( _test=Th, _vector=F, _rowstart=0 );
       
     for( auto const& pairMat : M_materials )
@@ -209,8 +209,8 @@ int main(int argc, char**argv )
 			      _expr = inner( gradt(T),grad(T) ) );
 
       //heat
-	    M01  += integrate(_range=markedelements(mesh, material.meshMarkers()),
-			      _expr = cst(0.) );
+	    //M01  += integrate(_range=markedelements(mesh, material.meshMarkers()),
+			//      _expr = cst(0.) );
 
       //heat
 	    F0 += integrate(_range=markedelements(mesh, material.meshMarkers()),
@@ -233,6 +233,7 @@ int main(int argc, char**argv )
 		      std::string marker = exAtMarker.marker();
 		      auto f = expr(exAtMarker.expression());
 		      f.setParameterValues({{"t", mybdfT->time()}});
+          Feel::cout << "T VolumicForces[" << marker << "] : " << exAtMarker.expression() << ", f=" << f << std::endl;
 	        F0 += integrate(_range=markedelements(mesh, marker),
 			                    _expr = id(T) * f );
 		    }
@@ -245,7 +246,7 @@ int main(int argc, char**argv )
 		      std::string marker = exAtMarker.marker();
 		      auto g = expr(exAtMarker.expression());
 		      g.setParameterValues({{"t", mybdfT->time()}});
-		      //Feel::cout << "A Dirichlet[" << marker << "] : " << exAtMarker.expression() << ", g=" << g << std::endl;
+		      Feel::cout << "T Dirichlet[" << marker << "] : " << exAtMarker.expression() << ", g=" << g << std::endl;
 		      M00 += on(_range=markedfaces(mesh,marker), _rhs=F, _element=*T, _expr= g);
 		    }
 	    }
@@ -259,7 +260,7 @@ int main(int argc, char**argv )
 	        g.setParameterValues({{"t", t}});
 	       	Feel::cout << "Neuman[" << marker << "] : " << exAtMarker.expression() << std::endl;
 	        M00 += integrate(_range=markedfaces(mesh,marker), 
-                           _expr= g * id(T) );
+                           _expr= - g * id(T) );
 	     	}
       }
 
@@ -273,7 +274,8 @@ int main(int argc, char**argv )
 	     		auto Tw = expr(exAtMarker.expression2());
 	        Tw.setParameterValues({{"t", t}});
           h.setParameterValues({{"t", t}});
-	       	Feel::cout << "Robin[" << marker << "] : " << exAtMarker.expression() << std::endl;
+	       	Feel::cout << "Robin[" << marker << "] : " << exAtMarker.expression1() << std::endl;
+           Feel::cout << "Robin[" << marker << "] : " << exAtMarker.expression2() << std::endl;
 		      for( auto const& pairMat : M_materials )
 	        {
 	          auto name = pairMat.first;
@@ -281,48 +283,10 @@ int main(int argc, char**argv )
 
 	          auto k = material.getScalar("k");
 	          M00 += integrate(_range=markedfaces(mesh,marker), 
-                             _expr= h / k * (idt(T)-Tw) * id(T) );
+                             _expr= -h / k * (idt(T)-Tw) * id(T) );
 	     	  }
         }
-      }
-#if 0      
-	    itType = mapField.find( "DirichletX" );
-	    if ( itType != mapField.end() )
-	    {
-	      for ( auto const& exAtMarker : (*itType).second )
-		    {
-		      std::string marker = exAtMarker.marker();
-		      auto g = expr(exAtMarker.expression());
-		      g.setParameterValues({{"t", mybdfT->time()}});
-		      //Feel::cout << "A DirichletX[" << marker << "] : " << exAtMarker.expression() << ", g=" << g << std::endl;
-		      M00 += on(_range=markedfaces(mesh,marker), _rhs=F, _element=(*T)[Component::X], _expr= g);
-		    }
-	    }
-	    itType = mapField.find( "DirichletY" );
-	    if ( itType != mapField.end() )
-	    {
-	      for ( auto const& exAtMarker : (*itType).second )
-		    {
-		      std::string marker = exAtMarker.marker();
-		      auto g = expr(exAtMarker.expression());
-		      g.setParameterValues({{"t",mybdfT->time()}});
-		      //Feel::cout << "A DirichletY[" << marker << "] : " << exAtMarker.expression() << ", g=" << g << std::endl;
-		      M00 += on(_range=markedfaces(mesh,marker), _rhs=F, _element=(*T)[Component::Y], _expr= g);
-		    }
-	    }
-	    itType = mapField.find( "DirichletZ" );
-	    if ( itType != mapField.end() )
-	    {
-	      for ( auto const& exAtMarker : (*itType).second )
-		    {
-		      std::string marker = exAtMarker.marker();
-		      auto g = expr(exAtMarker.expression());
-		      g.setParameterValues({{"t", mybdfT->time()}});
-		      //Feel::cout << "A DirichletZ[" << marker << "] : " << exAtMarker.expression() << ", g=" << g << std::endl;
-		      M00 += on(_range=markedfaces(mesh,marker), _rhs=F, _element=(*T)[Component::Z], _expr= g);
-		    }
-	    }
-#endif      
+      }    
 	  }
                
     toc("boundary conditions", (M_verbose > 0));
@@ -330,8 +294,8 @@ int main(int argc, char**argv )
     /* Solve */
     tic();
     auto result = mybackend->solve( _matrix=M, _rhs=F, _solution=U, _rebuild=true);
-    std::string msg = (boost::format("[MQS %2%] t=%1% NbIter=%3% Residual=%4%") % mybdfT->time()
-			 % soption("mqs.pc-type")
+    std::string msg = (boost::format("[HEAT %2%] t=%1% NbIter=%3% Residual=%4%") % mybdfT->time()
+			 % soption("heat.pc-type")
 			 % result.nIterations()
 			 % result.residual()).str();
     if (result.isConverged())
