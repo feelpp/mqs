@@ -3,33 +3,34 @@
 == The heat equation
 
 Let's consider a domain stem:[\Omega], and note stem:[\Gamma] the edge of the domain. 
-Let's assume that stem:[\Gamma] is divided into 3 sub-domains, stem:[Gamma_D], stem:[Gamma_N], and stem:[Gamma_R].
+Let's assume that stem:[\Gamma] is divided into 3 sub-domains, stem:[\Gamma_D], stem:[\Gamma_N], and stem:[\Gamma_R].
 The heat equation is expressed as follows :
 
 [stem]
 ++++
 \begin{align}
-Cp\rho\frac{\partial T}{\partial t} - \Delta T = f \qquad \text{on \Omega \times \mathbb{R}^+} \\
+\rho Cp\frac{\partial T}{\partial t} - \Delta T = f \qquad \text{on $\Omega \times \mathbb{R}^+$} \\
 T(x,t=0) = T_0 \\
-T(x,t) = g(x,t) \qquad \text{on \Gamma_D \times \mathbb{R}^+} \\
-\frac{\partial T}{\partial n} = m(x,t) \qquad \text{on \Gamma_N \times \mathbb{R}^+} \\
--k\frac{\partial T}{\partial n} = h(T-T_w) \qquad \text{on \Gamma_R \times \mathbb{R}^+} \\
+T(x,t) = g(x,t) \qquad \text{on $\Gamma_D \times \mathbb{R}^+$} \\
+\frac{\partial T}{\partial n} = m(x,t) \qquad \text{on $\Gamma_N \times \mathbb{R}^+$} \\
+-k\frac{\partial T}{\partial n} = h(T-T_w) \qquad \text{on $\Gamma_R \times \mathbb{R}^+$} \\
 \end{align}
 ++++
 
 Where :
-* stem:[T] is the temperature
-* stem:[T_0] is the initial temperature
-* stem:[f] is the source temperature
-* stem:[g] and stem:[m] are Dirichlet and Neumann conditions
-* stem:[Cp] is the specific heat capacity
-* stem:[\rho] is the density of the material 
-* stem:[h] and stem:[T_w] are two parameters.
+
+* stem:[T] is the temperature 
+* stem:[T_0] is the initial temperature 
+* stem:[f] is the source temperature 
+* stem:[g] and stem:[m] are Dirichlet and Neumann conditions 
+* stem:[Cp] is the specific heat capacity 
+* stem:[\rho] is the density of the material  
+* stem:[h] and stem:[T_w] are two parameters. 
 
 == Weak formulation
 
-Let's note stem:[V = \{v \in H^1(\Omega) | v = g \text{ on \Gamma_D}\}] 
-and stem:[V_0 = \{v \in H^1(\Omega) | v = 0 \text{ on \Gamma_D}\}].
+Let's note stem:[V = \{v \in H^1(\Omega) | v = g \text{ on $\Gamma_D$}\}] 
+and stem:[V_0 = \{v \in H^1(\Omega) | v = 0 \text{ on $\Gamma_D$}\}].
 
 Let's take stem:[T \in V] and stem:[v \in V_0]. 
 By multiplying our equation by v and integrating we have :
@@ -37,7 +38,7 @@ By multiplying our equation by v and integrating we have :
 [stem]
 ++++
 \begin{equation*}
-\int_{\Omega} \frac{\partial T}{\partial t} \dot v - \int_{\Omega} \Delta T \cdot v = \int_{\Omega} f \cdot v
+\int_{\Omega} \rho C_p \frac{\partial T}{\partial t} \cdot v - \int_{\Omega} \Delta T \cdot v = \int_{\Omega} f \cdot v
 \end{equation*}
 ++++
 
@@ -46,7 +47,7 @@ By using Green theorem we have :
 [stem]
 ++++
 \begin{equation*}
-\int_{\Omega} \frac{\partial T}{\partial t} \dot v + \int_{\Omega} \nabla T \cdot \nabla v - \int_{\Gamma} \frac{\partial T}{\partial n} \cdot v = \int_{\Omega} f \cdot v
+\int_{\Omega} \rho C_p \frac{\partial T}{\partial t} \cdot v + \int_{\Omega} \nabla T \cdot \nabla v - \int_{\Gamma} \frac{\partial T}{\partial n} \cdot v = \int_{\Omega} f \cdot v
 \end{equation*}
 ++++
 
@@ -55,9 +56,9 @@ Or :
 [stem]
 ++++
 \begin{align}
-v = 0 \qquad \text{on \Gamma_D } \\
-\frac{\partial T}{\partial n} = m(x,t) \qquad \text{on \Gamma_N} \\
--k\frac{\partial T}{\partial n} = h(T-T_w) \qquad \text{on \Gamma_R } \\
+v = 0 \qquad \text{on $\Gamma_D$ } \\
+\frac{\partial T}{\partial n} = m(x,t) \qquad \text{on $\Gamma_N$} \\
+-k\frac{\partial T}{\partial n} = h(T-T_w) \qquad \text{on $\Gamma_R$ } \\
 \end{align}
 ++++
 
@@ -66,7 +67,7 @@ so finally we have :
 [stem]
 ++++
 \begin{equation*}
-\int_{\Omega} \frac{\partial T}{\partial t} \dot v + \int_{\Omega} \nabla T \cdot \nabla v - \int_{\Gamma_N} m \cdot v + \int_{\Gamma_R} \frac{h}{k} (Tw-T) \cdot v = \int_{\Omega} f \cdot v
+\int_{\Omega} \rho C_p \frac{\partial T}{\partial t} \cdot v + \int_{\Omega} \nabla T \cdot \nabla v - \int_{\Gamma_N} m \cdot v + \int_{\Gamma_R} \frac{h}{k} (Tw-T) \cdot v = \int_{\Omega} f \cdot v
 \end{equation*}
 ++++
 
