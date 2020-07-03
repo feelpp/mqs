@@ -132,7 +132,7 @@ Now, adding the weak formulation of the formulation section with the heat weak f
 \begin{align*}
 \int_{\Omega} \frac{1}{\mu} \, (\nabla \times \phi) \cdot (\nabla \times A) - \int_{\Gamma_D} \frac{1}{\mu} A_D \cdot (\nabla \times A) = - \int_{\Omega_C} \sigma \phi \cdot (\nabla V + \frac{\partial A}{\partial t}) \\
 - \int_{\Omega_C} \sigma ( -\nabla V -\frac{\partial A}{\partial t}) \cdot \nabla \psi = 0 \\
-\int_{\Omega} \rho C_p \frac{\partial T}{\partial t} \cdot v + \int_{\Omega} \nabla T \cdot \nabla v - \int_{\Gamma_N} m \cdot v + \int_{\Gamma_R} \frac{h}{k} (T-T_w) \cdot v = \int_{\Omega} \sigma^3 ( \nabla V \cdot \nabla V + 2 \nabla V \cdot \frac{\partial A}{\partial t} + \frac{\partial A}{\partial t} \cdot \frac{\partial A}{\partial t}) \cdot v
+\int_{\Omega} \rho C_p \frac{\partial T}{\partial t} \cdot v + \int_{\Omega} \nabla T \cdot \nabla v - \int_{\Gamma_N} m \cdot v + \int_{\Gamma_R} \frac{h}{k} (T-T_w) \cdot v = \int_{\Omega_C} \sigma^3 ( \nabla V \cdot \nabla V + 2 \nabla V \cdot \frac{\partial A}{\partial t} + \frac{\partial A}{\partial t} \cdot \frac{\partial A}{\partial t}) \cdot v
 \end{align*}
 ++++
 
