@@ -67,7 +67,7 @@ so finally we have :
 [stem]
 ++++
 \begin{equation*}
-\int_{\Omega} \rho C_p \frac{\partial T}{\partial t} \cdot v + \int_{\Omega} \nabla T \cdot \nabla v - \int_{\Gamma_N} m \cdot v + \int_{\Gamma_R} \frac{h}{k} (T_w-T) \cdot v = \int_{\Omega} f \cdot v
+\int_{\Omega} \rho C_p \frac{\partial T}{\partial t} \cdot v + \int_{\Omega} \nabla T \cdot \nabla v - \int_{\Gamma_N} m \cdot v + \int_{\Gamma_R} \frac{h}{k} (T-T_w) \cdot v = \int_{\Omega} f \cdot v
 \end{equation*}
 ++++
 
