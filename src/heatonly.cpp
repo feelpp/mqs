@@ -275,7 +275,7 @@ int main(int argc, char**argv )
 	        Tw.setParameterValues({{"t", t}});
           h.setParameterValues({{"t", t}});
 	       	Feel::cout << "Robin[" << marker << "] : " << exAtMarker.expression1() << std::endl;
-           Feel::cout << "Robin[" << marker << "] : " << exAtMarker.expression2() << std::endl;
+          Feel::cout << "Robin[" << marker << "] : " << exAtMarker.expression2() << std::endl;
 		      for( auto const& pairMat : M_materials )
 	        {
 	          auto name = pairMat.first;
@@ -283,8 +283,10 @@ int main(int argc, char**argv )
 
 	          auto k = material.getScalar("k");
 	          M00 += integrate(_range=markedfaces(mesh,marker), 
-                             _expr= -h / k * (idt(T)-Tw) * id(T) );
-	     	  }
+                             _expr= h / k * idt(T) * id(T) );
+            F0 += integrate(_range=markedfaces(mesh,marker), 
+                             _expr= h / k * Tw * id(T) );
+           }
         }
       }    
 	  }
