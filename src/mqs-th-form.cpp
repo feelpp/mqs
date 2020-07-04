@@ -27,8 +27,12 @@ int main(int argc, char**argv )
   po::options_description options( "MQS Th options" );
   options.add_options()
     ( "model-file", Feel::po::value<std::string>()->default_value( "" ), "file describing model properties")
-    ( "adaptive", po::value<bool>()->default_value( false ), "activate dt apdative scheme" )
+    ( "epsNL", po::value<double>()->default_value( 1.e-3 ), "eps for picard" )
+    ( "epsNL-Th", po::value<double>()->default_value( 1.e-5 ), "eps for Heat equation picard" )
+    ( "itermaxNL", po::value<int>()->default_value( 10 ), "max iteration number for picard" )
+    ( "epstime", po::value<double>()->default_value( 0. ), "eps for force time step detection" )
     ( "dttol", po::value<double>()->default_value( 0. ), "dt tolerance" )
+    ( "adaptive", po::value<bool>()->default_value( false ), "activate dt apdative scheme" )
     ( "forced-sequence", po::value< std::vector<double> >()->default_value(std::vector<double>()), "list of forced times" )
     ( "verbosity", po::value<int>()->default_value( 0 ), "set verbosisity level" )
     ( "weakdir", po::value<bool>()->default_value( "false" ), "use Dirichlet weak formulation" )
@@ -171,10 +175,6 @@ int main(int argc, char**argv )
   auto mybackend = backend(_name="mqs");
 
   double t = 0;
-  double epsNL = 1.e-3, epsNL_th = 1.e-5;
-
-  double errorNL, normA;
-  double errorNL_th, normT;
   double Residual;
   int nIterations;
   
@@ -228,7 +228,6 @@ int main(int argc, char**argv )
   Feel::cout << "t=" << t << ", ";
   Feel::cout << "B(" << pt[0] << "," << pt[1] << "," << pt[2] << ") = {" << Bx << "," << By << "," << Bz << "}, ";
   //Feel::cout << "V(" << pt[0] << "," << pt[1] << "," << pt[2] << ")=" << Vval(0,0,0);
-  toc("compute induction field", (M_verbose > 0));
 
   auto Tm = minmax( _range=elements(support(Th)), _pset=_Q<2>(), _expr=idv(Heat_T));
   double Heat_Tmax = Tm.max();
@@ -246,6 +245,7 @@ int main(int argc, char**argv )
   Feel::cout << "Tstd_dev=" << Tstd_dev << ", ";
 
   Feel::cout << std::endl;
+  toc("some stats", (M_verbose > 0));
   
   tic();
   auto e = exporter( _mesh=mesh );
@@ -316,6 +316,22 @@ int main(int argc, char**argv )
 	  break;
 	}
     }
+  Feel::cout << "nonlinear=" << nonlinear << ", Tdepend=" << Tdepend << std::endl;
+  
+  double epsNL = doption("epsNL");
+  double epsNL_th = doption("epsNL-Th");
+  int maxiterNL = ioption("itermaxNL");
+  if ( nonlinear )
+    {
+      Feel::cout << "*** NonLinear problem detected ***" << std::endl;
+      Feel::cout << "maxiterNL=" << maxiterNL << std::endl;
+      Feel::cout << "epsNL=" << epsNL << std::endl;
+      Feel::cout << "epsNL-Th=" << epsNL_th << std::endl;
+      Feel::cout << "**********************************" << std::endl;
+    }
+  
+  double errorNL, normA;
+  double errorNL_th, normT;
 
   // Feel::cout << "Compute Current density" << std::endl;
   auto J_cond = Jh->element();
@@ -326,25 +342,23 @@ int main(int argc, char**argv )
       auto material = pairMat.second;
 
       auto sigma = material.getScalar("sigma", "heat_T", idv(Heat_T) );
-      // if ( sigma.expression().hasSymbol( "heat_T" ) )
-      // 	{
-      // 	  auto sExpr = material.getScalar("sigma", "heat_T", idv(Heat_T) );
-      // 	  M_sigma.on(_range=markedelements(cond_mesh, material.meshMarkers()),_expr=sExpr );
-      // 	}
-      // Feel::cout << "Material:" << material.meshMarkers() << " ";
+      Feel::cout << "Material:" << material.meshMarkers() << " ";
 	  
       J_cond += vf::project( _space=Jh, _range=markedelements(cond_mesh, material.meshMarkers()),
   			     _expr=-sigma * trans(gradv(V)) );
-      // Feel::cout << "J_cond:" << material.meshMarkers() << " ";
+      Feel::cout << "J_cond:" << material.meshMarkers() << " ";
 	  
       J_induct += vf::project( _space=Jh, _range=markedelements(cond_mesh, material.meshMarkers()),
   			       _expr=-sigma * (idv(A)-idv(Aold))/dt );
-      // Feel::cout << "J_induct:" << material.meshMarkers() << std::endl;
+      Feel::cout << "J_induct:" << material.meshMarkers() << std::endl;
     }
   e->step(t)->add( "Jcond", J_cond );
   e->step(t)->add( "Jinduct", J_induct );
+  Feel::cout << "export Jcond and Jinduct" << std::endl;
   e->step(t)->add( "J", idv(J_cond)+idv(J_induct) );
+  Feel::cout << "export J" << std::endl;
 
+  Feel::cout << "Create Fields for Physical properties" << std::endl;
   auto M_sigma = Th->element();
   auto M_k = Th->element();
   auto M_rho = Th->element();
@@ -352,6 +366,7 @@ int main(int argc, char**argv )
 
   if ( Tdepend )
     {
+      Feel::cout << "export sigma, " << std::flush;
       auto M_sigma = Th->element();
       for( auto const& pairMat : M_materials )
 	{
@@ -362,7 +377,8 @@ int main(int argc, char**argv )
 	  M_sigma.on(_range=markedelements(cond_mesh, material.meshMarkers()),_expr=sigma );
 	}
       e->step(t)->add( "sigma", M_sigma );
-      
+
+      Feel::cout << "k, rho, Cp " << std::flush;
       for( auto const& pairMat : M_th_materials )
 	{
 	  auto name = pairMat.first;
@@ -380,7 +396,8 @@ int main(int argc, char**argv )
       e->step(t)->add( "k", M_k );
       e->step(t)->add( "rho", M_rho );
       e->step(t)->add( "Cp", M_Cp );
-
+      
+      Feel::cout << "... Done" << std::endl;;
     }
   e->save();
   toc("export init solution", (M_verbose > 0));
@@ -395,11 +412,10 @@ int main(int argc, char**argv )
   int firstStep = 0;
 
   int iterNL = 0;
-  int maxiterNL = 10;
   double initResidual;
 
   // define sequence of forced time steps
-  double epstime = 1.e-3;
+  double epstime = doption("epstime");
   bool reached = false;
   std::vector<double> forced_times = vdoption("forced-sequence");;
   forced_times.push_back(tmax);
@@ -720,14 +736,14 @@ int main(int argc, char**argv )
 	    normA = normL2(_range = elements(mesh), _expr = idv(A) );
 	    Feel::cout << "iterNL=" << iterNL << " ,";
 	    Feel::cout << "errorNL=" << errorNL << " ,";
-	    Feel::cout << "nomrA=" << normA << ", ";
+	    Feel::cout << "normA=" << normA << ", ";
 	    Feel::cout << "epsNL*normA=" << epsNL*normA << ", ";
 	    // Feel::cout << std::endl;
 
 	    errorNL_th = normL2(_range = elements(th_mesh), _expr = (idv(Heat_T)-idv(Tnl)) );
 	    normT = normL2(_range = elements(th_mesh), _expr = idv(Heat_T) );
 	    Feel::cout << "errorNL_th=" << errorNL_th << " ,";
-	    Feel::cout << "nomrT=" << normT << ", ";
+	    Feel::cout << "normT=" << normT << ", ";
 	    Feel::cout << "epsNL_th*normT=" << epsNL_th*normT << ", ";
 	    Feel::cout << std::endl;
 
@@ -737,6 +753,16 @@ int main(int argc, char**argv )
       } while ( (nonlinear==true) && (errorNL > epsNL*normA) &&  (errorNL_th > epsNL_th*normT) && (iterNL < maxiterNL) );
       toc("non-linear step", ( (M_verbose > 0) && nonlinear) );
 
+      if ( nonlinear )
+	   {
+	     if ( iterNL >=  maxiterNL )
+	       throw std::logic_error( "NL: max picard iteration reached" );
+	     if ( errorNL > epsNL*normA )
+	       throw std::logic_error( "NL: picard on A failed" );
+	     if ( Tdepend && (errorNL_th > epsNL_th*normT) )
+	       throw std::logic_error( "NL: picard on T failed" );
+	   }
+	
       // reset NL counter
       iterNL = 0;
     
