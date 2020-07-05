@@ -39,7 +39,7 @@ int main(int argc, char**argv )
     ( "penalty-coeff", po::value<double>()->default_value( 1.e+3 ), "penalty coefficient for weak Dirichlet" )
     ( "A0", po::value<std::string>()->default_value( "{0,0,0}" ), "initial A" )
     ( "V0", po::value<std::string>()->default_value( "0" ), "initial V" )
-    ( "T0", po::value<std::string>()->default_value( "273.15" ), "initial T" )
+    ( "T0", po::value<std::string>()->default_value( "293.15" ), "initial T" )
     ( "Aexact", po::value<std::string>()->default_value( "" ), "exact A" )
     ( "Vexact", po::value<std::string>()->default_value( "" ), "exact V" );
 
@@ -407,12 +407,35 @@ int main(int argc, char**argv )
   auto mu0 = 4.e-7 * M_PI ; // SI Unit : H/m = m.kg/s2/A2
 
   Table mqs;
-  std::string Vname[12];
-  std::string Vfirst[12];
-  std::string Bname;
-  int ii = 0;
-  int firstStep = 0;
+  std::vector<std::variant<std::string, Table>> Vfirst; //[12];
 
+  for (auto const& field : {"t","NbIter","Residual"})
+    {
+      Vfirst.push_back(field);
+    }
+  auto itField = M_modelProps->boundaryConditions().find( "electric-potential");
+  if ( itField != M_modelProps->boundaryConditions().end() )
+    {
+      auto mapField = (*itField).second;
+      auto itType = mapField.find( "Dirichlet" );
+      if ( itType != mapField.end() )
+	{
+	  for ( auto const& exAtMarker : (*itType).second )
+	    {
+	      std::string marker = exAtMarker.marker();
+	      Vfirst.push_back("V[" + marker + "]");
+	      Vfirst.push_back("I[" + marker + "]");
+	    }
+	}
+    }
+  Vfirst.push_back("Bz("+std::to_string(pt[0]) + "," + std::to_string(pt[1]) + "," + std::to_string(pt[2]) + ")");
+
+  for (auto const& field : {"Tmin", "Tmean", "Tmax", "Tstd_dev"})
+    {
+      Vfirst.push_back(field);
+    }
+  mqs.add_row(Vfirst);
+  
   int iterNL = 0;
   double initResidual;
 
@@ -538,7 +561,7 @@ int main(int argc, char**argv )
      
 	tic();
 	// Implement Dirichlet fort
-	auto itField = M_modelProps->boundaryConditions().find( "magnetic-potential");
+	itField = M_modelProps->boundaryConditions().find( "magnetic-potential");
 	if ( itField != M_modelProps->boundaryConditions().end() )
 	  {
 	    auto mapField = (*itField).second;
@@ -985,7 +1008,12 @@ int main(int argc, char**argv )
 
 	    }
 
-	  auto itField = M_modelProps->boundaryConditions().find( "electric-potential");
+	  std::vector<std::variant<std::string, Table>> exported_data;
+	  exported_data.push_back(std::to_string(t));
+	  exported_data.push_back(std::to_string(nIterations));
+	  exported_data.push_back(std::to_string(Residual));
+	  
+	  itField = M_modelProps->boundaryConditions().find( "electric-potential");
 	  if ( itField != M_modelProps->boundaryConditions().end() )
 	    {
 	      auto mapField = (*itField).second;
@@ -998,18 +1026,11 @@ int main(int argc, char**argv )
 		      auto g = expr(exAtMarker.expression());
 		      g.setParameterValues({{"t", t}});
 		      Feel::cout << "V[" << marker << "]=" << g.evaluate()(0,0) << ", ";
-		      Vname[ii] = std::to_string(g.evaluate()(0,0));
-		      ii ++;
+		      exported_data.push_back( std::to_string(g.evaluate()(0,0)) );
 		      
 		      double I = integrate( markedfaces( cond_mesh, marker ), inner(idv(J_induct),N()) + inner(idv(J_cond),N()) ).evaluate()(0,0);
 		      Feel::cout << "I[" << marker << "]=" << I << ", ";
-		      Vname[ii] = std::to_string(I);
-		      ii ++;
-		      if (firstStep == 0)
-			{
-			  Vfirst[ii-2] = "V[" + marker + "]";
-			  Vfirst[ii-1] = "I[" + marker + "]";;
-			}
+		      exported_data.push_back( std::to_string(I) );
 		    }
 		}
 	    }
@@ -1017,37 +1038,13 @@ int main(int argc, char**argv )
 	  Feel::cout << " B(" << pt[0] << "," << pt[1] << "," << pt[2] << ") = {" << Bx << "," << By << "," << Bz << "}";
 	  Feel::cout << std::endl;
 
-	  if(firstStep == 0)
-	    {
-	      Bname = "Bz("+std::to_string(pt[0]) + "," + std::to_string(pt[1]) + "," + std::to_string(pt[2]) + ")";
-	      if (ii == 4)
-		{
-		  mqs.add_row({"t","NbIter","Residual",Vfirst[0],Vfirst[1],Vfirst[2],Vfirst[3],Bname, "Tmin", "Tmean", "Tmax", "Tstd_dev"});
-		}
-	      else
-		{
-		  mqs.add_row({"t","NbIter","Residual",Vfirst[0],Vfirst[1],Vfirst[2],Vfirst[3]
-			       ,Vfirst[4],Vfirst[5],Vfirst[6],Vfirst[7],Bname, "Tmin", "Tmean", "Tmax", "Tstd_dev"});
-		}
-	      firstStep = 1;
-	    }
-
-
 	  //Bname = "{"+std::to_string(Bx) + "," + std::to_string(By) + "," + std::to_string(Bz) + "}";
-	  Bname = std::to_string(Bz);
-	  if (ii == 4)
-	    {
-	      mqs.add_row({std::to_string(t),std::to_string(nIterations),
-			   std::to_string(Residual),
-			   Vname[0],Vname[1],Vname[2],Vname[3],Bname, std::to_string(Heat_Tmin), std::to_string(Tmean), std::to_string(Heat_Tmax), std::to_string(Tstd_dev)});
-	    }
-	  else
-	    {
-	      mqs.add_row({std::to_string(t),std::to_string(nIterations),
-			   std::to_string(Residual),
-			   Vname[0],Vname[1],Vname[2],Vname[3],Vname[4],Vname[5],Vname[6],Vname[7],Bname, std::to_string(Heat_Tmin), std::to_string(Tmean), std::to_string(Heat_Tmax), std::to_string(Tstd_dev)});
-	    }
-	  ii = 0;
+	  exported_data.push_back( std::to_string(Bz) );
+	  exported_data.push_back( std::to_string(Heat_Tmin) );
+	  exported_data.push_back( std::to_string(Tmean) );
+	  exported_data.push_back( std::to_string(Heat_Tmax) );
+	  exported_data.push_back( std::to_string(Tstd_dev) );
+	  mqs.add_row(exported_data);
 
 	  if ( Uexact )
 	    {
