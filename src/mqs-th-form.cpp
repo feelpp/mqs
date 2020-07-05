@@ -27,7 +27,7 @@ int main(int argc, char**argv )
   po::options_description options( "MQS Th options" );
   options.add_options()
     ( "model-file", Feel::po::value<std::string>()->default_value( "" ), "file describing model properties")
-    ( "epsNL", po::value<double>()->default_value( 1.e-3 ), "eps for picard" )
+    ( "relax", po::value<double>()->default_value( 0 ), "relaxation parameter for picard" )
     ( "epsNL-Th", po::value<double>()->default_value( 1.e-5 ), "eps for Heat equation picard" )
     ( "itermaxNL", po::value<int>()->default_value( 10 ), "max iteration number for picard" )
     ( "epstime", po::value<double>()->default_value( 0. ), "eps for force time step detection" )
@@ -318,6 +318,7 @@ int main(int argc, char**argv )
     }
   Feel::cout << "nonlinear=" << nonlinear << ", Tdepend=" << Tdepend << std::endl;
   
+  double relax = doption("relax");
   double epsNL = doption("epsNL");
   double epsNL_th = doption("epsNL-Th");
   int maxiterNL = ioption("itermaxNL");
@@ -327,6 +328,7 @@ int main(int argc, char**argv )
       Feel::cout << "maxiterNL=" << maxiterNL << std::endl;
       Feel::cout << "epsNL=" << epsNL << std::endl;
       Feel::cout << "epsNL-Th=" << epsNL_th << std::endl;
+      Feel::cout << "relax=" << relax << std::endl;
       Feel::cout << "**********************************" << std::endl;
     }
   
@@ -424,6 +426,7 @@ int main(int argc, char**argv )
   int n_forced = 0;
   double forced_t = forced_times[n_forced];
   
+  auto Trelax = (*Heat_T);
   for(t = dt; t <= tmax+1e-10; )
     {
 
@@ -431,7 +434,7 @@ int main(int argc, char**argv )
       do {
 	auto Anl = (*A);
 	auto Vnl = (*V);
-	auto Tnl = (*Heat_T);
+	auto Tnl = Trelax; //(*Heat_T);
 
 	tic();
 
@@ -740,8 +743,13 @@ int main(int argc, char**argv )
 	    Feel::cout << "epsNL*normA=" << epsNL*normA << ", ";
 	    // Feel::cout << std::endl;
 
-	    errorNL_th = normL2(_range = elements(th_mesh), _expr = (idv(Heat_T)-idv(Tnl)) );
-	    normT = normL2(_range = elements(th_mesh), _expr = idv(Heat_T) );
+	    // relaxation
+	    Trelax.zero();
+	    Trelax.add( 1-relax, (*Heat_T) );
+	    Trelax.add( relax, Tnl );
+    
+	    errorNL_th = normL2(_range = elements(th_mesh), _expr = (idv(Trelax)-idv(Tnl)) );
+	    normT = normL2(_range = elements(th_mesh), _expr = idv(Trelax) );
 	    Feel::cout << "errorNL_th=" << errorNL_th << " ,";
 	    Feel::cout << "normT=" << normT << ", ";
 	    Feel::cout << "epsNL_th*normT=" << epsNL_th*normT << ", ";
