@@ -79,7 +79,7 @@ int main(int argc, char**argv )
   tic();
   auto Th = Pch<1>( mesh );
 
-#if 1 // ??????
+#if 1
   if (Environment::worldComm().isMasterRank())
   {
     std::cout << "mesh->numGlobalElements() "<< mesh->numGlobalElements() << std::endl;
@@ -178,15 +178,15 @@ int main(int argc, char**argv )
     auto bdfT_poly = mybdfT->polyDeriv();
     tic();
     auto M00 = form2( _trial=Th, _test=Th ,_matrix=M, _rowstart=0, _colstart=0 ); 
-#if 0    
+#if 1   
     for( auto const& pairMat : M_modelProps->materials() )
 	  {
 	    auto name = pairMat.first;
 	    auto material = pairMat.second;
   
-      //heat
+      //heat 
 	    M00 += integrate( _range=markedelements(mesh, material.meshMarkers()),
-			      _expr = trans(gradt(T))*grad(T) );
+			      _expr = inner( gradt(T),grad(T) ) );
 	  }
 #endif
 
@@ -205,8 +205,8 @@ int main(int argc, char**argv )
 	    M00 += integrate( _range=markedelements(mesh, material.meshMarkers()),
 			      _expr = Cp * rho * mybdfT->polyDerivCoefficient(0) * id(T) * idt(T) );
 
-	    M00 += integrate( _range=markedelements(mesh, material.meshMarkers()),
-			      _expr = inner( gradt(T),grad(T) ) );
+	    //M00 += integrate( _range=markedelements(mesh, material.meshMarkers()),
+			//      _expr = inner( gradt(T),grad(T) ) );
 
       //heat
 	    //M01  += integrate(_range=markedelements(mesh, material.meshMarkers()),
