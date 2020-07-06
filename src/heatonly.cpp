@@ -183,10 +183,13 @@ int main(int argc, char**argv )
 	  {
 	    auto name = pairMat.first;
 	    auto material = pairMat.second;
+
+      auto k = material.getScalar("k");
   
       //heat 
 	    M00 += integrate( _range=markedelements(mesh, material.meshMarkers()),
-			      _expr = inner( gradt(T),grad(T) ) );
+			      _expr = k * inner( gradt(T),grad(T) ) );
+
 	  }
 #endif
 
