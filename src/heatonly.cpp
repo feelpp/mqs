@@ -262,16 +262,8 @@ int main(int argc, char**argv )
 	     		auto g = expr(exAtMarker.expression());
 	        g.setParameterValues({{"t", t}});
 	       	Feel::cout << "Neuman[" << marker << "] : " << exAtMarker.expression() << std::endl;
-          for( auto const& pairMat : M_materials )
-	        {
-	          auto name = pairMat.first;
-	          auto material = pairMat.second;
-
-	          auto k = material.getScalar("k");
-            Feel::cout << "Neuman[" << marker << "] material: " << k << std::endl;
-	          M00 += integrate(_range=markedfaces(mesh,marker), 
-                             _expr= - k * g * id(T) );
-          }
+	        M00 += integrate(_range=markedfaces(mesh,marker), 
+                           _expr= - g * id(T) );
         }
       }
 
@@ -287,16 +279,10 @@ int main(int argc, char**argv )
           h.setParameterValues({{"t", t}});
 	       	Feel::cout << "Robin[" << marker << "] : " << exAtMarker.expression1() << std::endl;
           Feel::cout << "Robin[" << marker << "] : " << exAtMarker.expression2() << std::endl;
-          for( auto const& pairMat : M_materials )
-	        {
-	          auto name = pairMat.first;
-	          auto material = pairMat.second;
-
-	          M00 += integrate(_range=markedfaces(mesh,marker), 
-                             _expr= h * idt(T) * id(T) );
-            F0 += integrate(_range=markedfaces(mesh,marker), 
-                             _expr= h * Tw * id(T) );
-          }
+	        M00 += integrate(_range=markedfaces(mesh,marker), 
+                           _expr= h * idt(T) * id(T) );
+          F0 += integrate(_range=markedfaces(mesh,marker), 
+                          _expr= h * Tw * id(T) );
         }
       }    
 	  }
