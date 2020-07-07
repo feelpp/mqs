@@ -23,7 +23,7 @@
     {
         "temperature":
         {
-            "VolumicForces":
+            "SourceTerm":
             {
                 "Omega":
                 {
@@ -41,23 +41,23 @@
             {
                 "Neumann1":
                 {
-                    "expr":"-x*x*z*t*393:x:y:z:t"
+                    "expr":"x*x*z*t*393:x:y:z:t"
                 },
                 "Neumann2":
                 {
-                    "expr":"2*x*y*z*t*393:x:y:z:t"
+                    "expr":"-2*x*y*z*t*393:x:y:z:t"
                 },
                 "Neumann3":
                 {
-                    "expr":"x*x*z*t*393:x:y:z:t"
+                    "expr":"-x*x*z*t*393:x:y:z:t"
                 },
                 "Neumann4":
                 {
-                    "expr":"-2*x*y*z*t*393:x:y:z:t"
+                    "expr":"2*x*y*z*t*393:x:y:z:t"
                 },
                 "Neumann5":
                 {
-                    "expr":"x*x*y*t*393:x:y:z:t"
+                    "expr":"-x*x*y*t*393:x:y:z:t"
                 }
             }
         }
