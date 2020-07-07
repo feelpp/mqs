@@ -9,7 +9,12 @@ feelpp_add_application(form SRCS mqs-form.cpp
   LINK_LIBRARIES ${FEELPP_LIBRARIES} feelpp_modelcore feelpp_modelalg feelpp_toolbox_thermoelectric_lib_3dP1G1_3dP1G1 libfeelpp_toolbox_maxwell_lib_3dP1G1.so
   INSTALL)
 
-feelpp_add_application(th-form SRCS mqs-th-form.cpp
+feelpp_add_application(th-sform SRCS mqs-th-form.cpp
+  LINK_LIBRARIES ${FEELPP_LIBRARIES} feelpp_modelcore feelpp_modelalg libfeelpp_toolbox_maxwell_lib_3dP1G1.so
+  DEFS STRONGCOUPLING
+  INSTALL)
+
+feelpp_add_application(th-wform SRCS mqs-th-form.cpp
   LINK_LIBRARIES ${FEELPP_LIBRARIES} feelpp_modelcore feelpp_modelalg libfeelpp_toolbox_maxwell_lib_3dP1G1.so
   INSTALL)
 
