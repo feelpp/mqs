@@ -228,7 +228,7 @@ int main(int argc, char**argv )
 	  {
 	    auto mapField = (*itField).second;
 
-      auto itType = mapField.find( "VolumicForces" );
+      auto itType = mapField.find( "SourceTerm" );
       if ( itType != mapField.end() )
 	    {
 	      for ( auto const& exAtMarker : (*itType).second )
@@ -236,7 +236,7 @@ int main(int argc, char**argv )
 		      std::string marker = exAtMarker.marker();
 		      auto f = expr(exAtMarker.expression());
 		      f.setParameterValues({{"t", mybdfT->time()}});
-          Feel::cout << "T VolumicForces[" << marker << "] : " << exAtMarker.expression() << ", f=" << f << std::endl;
+          Feel::cout << "T SourceTerm[" << marker << "] : " << exAtMarker.expression() << ", f=" << f << std::endl;
 	        F0 += integrate(_range=markedelements(mesh, marker),
 			                    _expr = id(T) * f );
 		    }
