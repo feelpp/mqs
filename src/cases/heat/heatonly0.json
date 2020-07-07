@@ -39,27 +39,20 @@
             },
             "Neumann":
             {
-                "Neumann1":
+                "Neumann":
                 {
-                    "expr":"-x*x*z*t*393:x:y:z:t"
-                },
-                "Neumann2":
+                    "expr":"x*x*y*t:x:y:z:t"
+                }
+            },
+            "Robin":
+            {
+                "Robin":
                 {
-                    "expr":"2*x*y*z*t*393:x:y:z:t"
-                },
-                "Neumann3":
-                {
-                    "expr":"x*x*z*t*393:x:y:z:t"
-                },
-                "Neumann4":
-                {
-                    "expr":"-2*x*y*z*t*393:x:y:z:t"
-                },
-                "Neumann5":
-                {
-                    "expr":"x*x*y*t*393:x:y:z:t"
+                    "expr1":"4.35e-03", //hcoef
+                    "expr2":"x*x*y*t*(-393+z*4.35e-03)/4.35e-03:x:y:z:t" //temp ext
                 }
             }
+
         }
     },
     "PostProcess":
