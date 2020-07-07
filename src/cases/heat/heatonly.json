@@ -27,7 +27,7 @@
             {
                 "Omega":
                 {
-                    "expr":"y*z*(386.e+06*8.94e-09*x*x-393*2*t):x:y:z:t"
+                    "expr":"y*z*((386.e+06)*(8.94e-09)*x*x-393*2*t):x:y:z:t"
                 }
             },
             "Dirichlet":
@@ -41,7 +41,7 @@
             {
                 "Neumann":
                 {
-                    "expr":"-x*x*y*t:x:y:z:t"
+                    "expr":"x*x*y*t:x:y:z:t"
                 }
             },
             "Robin":
@@ -49,7 +49,7 @@
                 "Robin":
                 {
                     "expr1":"4.35e-03", //hcoef
-                    "expr2":"x*x*y*t*(393+z*4.35e-03)/4.35e-03:x:y:z:t" //temp ext
+                    "expr2":"x*x*y*t*(-393+z*4.35e-03)/4.35e-03:x:y:z:t" //temp ext
                 }
             }
 
