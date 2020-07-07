@@ -9,7 +9,7 @@ The heat equation is expressed as follows :
 [stem]
 ++++
 \begin{align}
-\rho Cp\frac{\partial T}{\partial t} - \Delta T = f \qquad \text{on $\Omega \times \mathbb{R}^+$} \\
+\rho Cp\frac{\partial T}{\partial t} - \nabla \cdot ( k \nabla T) = f \qquad \text{on $\Omega \times \mathbb{R}^+$} \\
 T(x,t=0) = T_0 \\
 T(x,t) = g(x,t) \qquad \text{on $\Gamma_D \times \mathbb{R}^+$} \\
 \frac{\partial T}{\partial n} = m(x,t) \qquad \text{on $\Gamma_N \times \mathbb{R}^+$} \\
@@ -38,16 +38,25 @@ By multiplying our equation by v and integrating we have :
 [stem]
 ++++
 \begin{equation*}
-\int_{\Omega} \rho C_p \frac{\partial T}{\partial t} \cdot v - \int_{\Omega} \Delta T \cdot v = \int_{\Omega} f \cdot v
+\int_{\Omega} \rho C_p \frac{\partial T}{\partial t} \cdot v - \int_{\Omega} \nabla \cdot ( k \nabla T) \cdot v = \int_{\Omega} f \cdot v
 \end{equation*}
 ++++
 
-By using Green theorem we have :
+Using the relationship: 
+
+[stem]
+++++
+\nabla \cdot (u \cdot v) = v \cdot \nabla u + u \nabla \cdot v
+++++
+
+and using the divergence theorem we get : 
+
+
 
 [stem]
 ++++
 \begin{equation*}
-\int_{\Omega} \rho C_p \frac{\partial T}{\partial t} \cdot v + \int_{\Omega} \nabla T \cdot \nabla v - \int_{\Gamma} \frac{\partial T}{\partial n} \cdot v = \int_{\Omega} f \cdot v
+\int_{\Omega} \rho C_p \frac{\partial T}{\partial t} \cdot v + \int_{\Omega} k \nabla T \cdot \nabla v - \int_{\Gamma} k \frac{\partial T}{\partial n} \cdot v = \int_{\Omega} f \cdot v
 \end{equation*}
 ++++
 
@@ -67,7 +76,7 @@ so finally we have :
 [stem]
 ++++
 \begin{equation*}
-\int_{\Omega} \rho C_p \frac{\partial T}{\partial t} \cdot v + \int_{\Omega} \nabla T \cdot \nabla v - \int_{\Gamma_N} m \cdot v + \int_{\Gamma_R} \frac{h}{k} (T-T_w) \cdot v = \int_{\Omega} f \cdot v
+\int_{\Omega} \rho C_p \frac{\partial T}{\partial t} \cdot v + \int_{\Omega} k \nabla T \cdot \nabla v - \int_{\Gamma_N} k m \cdot v + \int_{\Gamma_R} h (T-T_w) \cdot v = \int_{\Omega} f \cdot v
 \end{equation*}
 ++++
 
@@ -110,7 +119,7 @@ so the heat part will be :
 [stem]
 ++++
 \begin{equation*}
-\rho Cp\frac{\partial T}{\partial t} - \Delta T = \sigma ( \nabla V \cdot \nabla V + 2 \nabla V \cdot \frac{\partial A}{\partial t} + \frac{\partial A}{\partial t} \cdot \frac{\partial A}{\partial t})
+\rho Cp\frac{\partial T}{\partial t} - \nabla \cdot (k \nabla T) = \sigma ( \nabla V \cdot \nabla V + 2 \nabla V \cdot \frac{\partial A}{\partial t} + \frac{\partial A}{\partial t} \cdot \frac{\partial A}{\partial t})
 \end{equation*}
 ++++
 
@@ -121,7 +130,7 @@ Finally we have the system :
 \begin{align*}
 \nabla \times (\frac{1}{\mu}\,\nabla \times A) + \sigma  \frac{\partial A}{\partial t} = -\sigma \, \nabla V \\
 \nabla \cdot (\sigma ( -\nabla V -\frac{\partial A}{\partial t})) = 0 \\
-\rho Cp\frac{\partial T}{\partial t} - \Delta T = \sigma ( \nabla V \cdot \nabla V + 2 \nabla V \cdot \frac{\partial A}{\partial t} + \frac{\partial A}{\partial t} \cdot \frac{\partial A}{\partial t})
+\rho Cp\frac{\partial T}{\partial t} - \nabla \cdot (k \nabla T) = \sigma ( \nabla V \cdot \nabla V + 2 \nabla V \cdot \frac{\partial A}{\partial t} + \frac{\partial A}{\partial t} \cdot \frac{\partial A}{\partial t})
 \end{align*}
 ++++
 
@@ -132,7 +141,7 @@ Now, adding the weak formulation of the formulation section with the heat weak f
 \begin{align*}
 \int_{\Omega} \frac{1}{\mu} \, (\nabla \times \phi) \cdot (\nabla \times A) - \int_{\Gamma_D} \frac{1}{\mu} A_D \cdot (\nabla \times A) = - \int_{\Omega_C} \sigma \phi \cdot (\nabla V + \frac{\partial A}{\partial t}) \\
 - \int_{\Omega_C} \sigma ( -\nabla V -\frac{\partial A}{\partial t}) \cdot \nabla \psi = 0 \\
-\int_{\Omega} \rho C_p \frac{\partial T}{\partial t} \cdot v + \int_{\Omega} \nabla T \cdot \nabla v - \int_{\Gamma_N} m \cdot v + \int_{\Gamma_R} \frac{h}{k} (T-T_w) \cdot v = \int_{\Omega_C} \sigma ( \nabla V \cdot \nabla V + 2 \nabla V \cdot \frac{\partial A}{\partial t} + \frac{\partial A}{\partial t} \cdot \frac{\partial A}{\partial t}) \cdot v
+\int_{\Omega} \rho C_p \frac{\partial T}{\partial t} \cdot v + \int_{\Omega} k \nabla T \cdot \nabla v - \int_{\Gamma_N} k m \cdot v + \int_{\Gamma_R} h (T-T_w) \cdot v = \int_{\Omega_C} \sigma ( \nabla V \cdot \nabla V + 2 \nabla V \cdot \frac{\partial A}{\partial t} + \frac{\partial A}{\partial t} \cdot \frac{\partial A}{\partial t}) \cdot v
 \end{align*}
 ++++
 
