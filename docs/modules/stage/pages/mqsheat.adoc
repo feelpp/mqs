@@ -109,8 +109,8 @@ For this, the source term of the heat equation will be joule losses, defined by 
 \begin{align*}
 f 
 & = J \cdot E \\
-& = \sigma ||E||^2
-& = \sigma ||(\nabla V +\frac{\partial A}{\partial t})||^2 \\
+& = \sigma ||E||^2 \\
+& = \sigma ||(\nabla V +\frac{\partial A}{\partial t})||^2 
 \end{align*}
 ++++
 
