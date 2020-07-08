@@ -241,18 +241,6 @@ int main(int argc, char**argv )
 			                    _expr = id(T) * f );
 		    }
 	    }
-	    itType = mapField.find( "Dirichlet" );
-	    if ( itType != mapField.end() )
-	    {
-	      for ( auto const& exAtMarker : (*itType).second )
-		    {
-		      std::string marker = exAtMarker.marker();
-		      auto g = expr(exAtMarker.expression());
-		      g.setParameterValues({{"t", mybdfT->time()}});
-		      Feel::cout << "T Dirichlet[" << marker << "] : " << exAtMarker.expression() << ", g=" << g << std::endl;
-		      M00 += on(_range=markedfaces(mesh,marker), _rhs=F, _element=*T, _expr= g);
-		    }
-	    }
       itType = mapField.find( "Neumann" );
 	    if ( itType != mapField.end() )
 	    {
@@ -263,7 +251,7 @@ int main(int argc, char**argv )
 	        g.setParameterValues({{"t", t}});
 	       	Feel::cout << "Neuman[" << marker << "] : " << exAtMarker.expression() << std::endl;
 	        F0 += integrate(_range=markedfaces(mesh,marker), 
-                           _expr= - g * id(T) );
+                           _expr=  - g * id(T) );
         }
       }
 
@@ -284,8 +272,21 @@ int main(int argc, char**argv )
           F0 += integrate(_range=markedfaces(mesh,marker), 
                           _expr= h * Tw * id(T) );
         }
-      }    
+      }
+	    itType = mapField.find( "Dirichlet" );
+	    if ( itType != mapField.end() )
+	    {
+	      for ( auto const& exAtMarker : (*itType).second )
+		    {
+		      std::string marker = exAtMarker.marker();
+		      auto g = expr(exAtMarker.expression());
+		      g.setParameterValues({{"t", mybdfT->time()}});
+		      Feel::cout << "T Dirichlet[" << marker << "] : " << exAtMarker.expression() << ", g=" << g << std::endl;
+		      M00 += on(_range=markedfaces(mesh,marker), _rhs=F, _element=*T, _expr= g);
+		    }
+	    }      
 	  }
+
                
     toc("boundary conditions", (M_verbose > 0));
     
