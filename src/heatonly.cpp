@@ -248,7 +248,7 @@ int main(int argc, char**argv )
 	     	{
 	     		std::string marker = exAtMarker.marker();
 	     		auto g = expr(exAtMarker.expression());
-	        g.setParameterValues({{"t", t}});
+	        g.setParameterValues({{"t", mybdfT->time()}});
 	       	Feel::cout << "Neuman[" << marker << "] : " << exAtMarker.expression() << std::endl;
 	        F0 += integrate(_range=markedfaces(mesh,marker), 
                            _expr=  - g * id(T) );
@@ -263,8 +263,8 @@ int main(int argc, char**argv )
 	     		std::string marker = exAtMarker.marker();
           auto h = expr(exAtMarker.expression1());
 	     		auto Tw = expr(exAtMarker.expression2());
-	        Tw.setParameterValues({{"t", t}});
-          h.setParameterValues({{"t", t}});
+	        Tw.setParameterValues({{"t", mybdfT->time()}});
+          h.setParameterValues({{"t", mybdfT->time()}});
 	       	Feel::cout << "Robin[" << marker << "] : " << exAtMarker.expression1() << std::endl;
           Feel::cout << "Robin[" << marker << "] : " << exAtMarker.expression2() << std::endl;
 	        M00 += integrate(_range=markedfaces(mesh,marker), 
