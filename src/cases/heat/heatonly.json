@@ -41,23 +41,23 @@
             {
                 "Neumann1":
                 {
-                    "expr":"x*x*z*t*393:x:y:z:t"
+                    "expr":"-393*(2*x*y*z*t*nx+x*x*z*t*ny+x*x*y*t*nz):x:y:z:t:nx:ny:nz"
                 },
                 "Neumann2":
                 {
-                    "expr":"-2*x*y*z*t*393:x:y:z:t"
+                    "expr":"-393*(2*x*y*z*t*nx+x*x*z*t*ny+x*x*y*t*nz):x:y:z:t:nx:ny:nz"
                 },
                 "Neumann3":
                 {
-                    "expr":"-x*x*z*t*393:x:y:z:t"
+                    "expr":"-393*(2*x*y*z*t*nx+x*x*z*t*ny+x*x*y*t*nz):x:y:z:t:nx:ny:nz"
                 },
                 "Neumann4":
                 {
-                    "expr":"2*x*y*z*t*393:x:y:z:t"
+                    "expr":"-393*(2*x*y*z*t*nx+x*x*z*t*ny+x*x*y*t*nz):x:y:z:t:nx:ny:nz"
                 },
                 "Neumann5":
                 {
-                    "expr":"-x*x*y*t*393:x:y:z:t"
+                    "expr":"-393*(2*x*y*z*t*nx+x*x*z*t*ny+x*x*y*t*nz):x:y:z:t:nx:ny:nz"
                 }
             }
         }
