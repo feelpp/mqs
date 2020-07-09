@@ -3,21 +3,22 @@ Mesh.OptimizeNetgen=0; // otherwise it crashes when IsFull=1
 
 IsFull=0;
 Unit=1.e-3;
-h = 5*Unit;
+h = 5.e-3;
+//h = 5*Unit;
 h_inf = 10*h;
 h_ext = 10*h;
-Print("h=%g", h);
-Print("h_inf=%g", h_inf);
-Print("h_ext=%g", h_ext);
+Printf("h=%g", h);
+Printf("h_inf=%g", h_inf);
+Printf("h_ext=%g", h_ext);
 
-r1=61.2*0.5*Unit;
-r2=106.4*0.5*Unit;
-L=4.61/2.*Unit;
+r1=75*Unit;
+r2=100*Unit;
+L=50/2.*Unit;
 
 r_ext=5*r2;
 r_inf=1.2*r_ext;
-Print("r_ext=%g", r_ext);
-Print("r_inf=%g", r_inf);
+Printf("r_ext=%g", r_ext);
+Printf("r_inf=%g", r_inf);
 
 // Define torus section
 P0= newp; Point(P0) = {0,0,0, h/4.};
