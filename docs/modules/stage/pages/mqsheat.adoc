@@ -145,4 +145,16 @@ Now, adding the weak formulation of the formulation section with the heat weak f
 \end{align*}
 ++++
 
+== Resolution Strategy
 
+As we can see, the second member of the heat equation is non-linear. 
+Therefore, a different resolution strategy must be adopted than previously. 
+
+The first possibility is to first solve the MQS equations and then solve the heat equation. 
+This can be interesting in the case where the parameters of the equations do not depend on temperature.
+
+Another option is to solve the two equations again separately, but by approaching the non-linear terms of the heat equation with a fixed point method, e.g. picard.
+Alternatively, a relaxation parameter can be added,stem:[\alpha]. 
+If stem:[T_{new}] is the solution obtain with picard, and stem:[T_{old}] the old one, we evaluate the equation in stem:[(1-\alpha)T_{new}+\alpha T_{old}].
+
+The last possibility is to solve the three equations at the same time, as a block, by adding a time loop to apply a fixed point and relaxation method on the heat part.
