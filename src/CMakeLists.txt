@@ -9,9 +9,16 @@ feelpp_add_application(form SRCS mqs-form.cpp
   LINK_LIBRARIES ${FEELPP_LIBRARIES} feelpp_modelcore feelpp_modelalg feelpp_toolbox_thermoelectric_lib_3dP1G1_3dP1G1 libfeelpp_toolbox_maxwell_lib_3dP1G1.so
   INSTALL)
 
+# Joule losses in Heat block rhs
 feelpp_add_application(th-sform SRCS mqs-th-form.cpp
   LINK_LIBRARIES ${FEELPP_LIBRARIES} feelpp_modelcore feelpp_modelalg libfeelpp_toolbox_maxwell_lib_3dP1G1.so
   DEFS STRONGCOUPLING
+  INSTALL)
+
+# form1: Joule losses in Heat block lhs 
+feelpp_add_application(th-sform1 SRCS mqs-th-form.cpp
+  LINK_LIBRARIES ${FEELPP_LIBRARIES} feelpp_modelcore feelpp_modelalg libfeelpp_toolbox_maxwell_lib_3dP1G1.so
+  DEFS STRONGCOUPLING FORM1
   INSTALL)
 
 feelpp_add_application(th-wform SRCS mqs-th-form.cpp

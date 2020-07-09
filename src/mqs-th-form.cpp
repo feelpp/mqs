@@ -7,6 +7,7 @@ using namespace tabulate;
 
 #include <feel/feeldiscr/pch.hpp>
 #include <feel/feeldiscr/pchv.hpp>
+#include <feel/feeldiscr/pdh.hpp>
 #include <feel/feeldiscr/pdhv.hpp>
 #include <feel/feelfilters/loadmesh.hpp>
 #include <feel/feelfilters/exporter.hpp>
@@ -32,7 +33,7 @@ int main(int argc, char**argv )
     ( "epsNL-V", po::value<double>()->default_value( 1.e-5 ), "eps for V picard" )
     ( "epsNL-Th", po::value<double>()->default_value( 1.e-5 ), "eps for Heat equation picard" )
     ( "itermaxNL", po::value<int>()->default_value( 10 ), "max iteration number for picard" )
-    ( "epstime", po::value<double>()->default_value( 0. ), "eps for force time step detection" )
+    ( "epstime", po::value<double>()->default_value( 1.e-10 ), "eps for force time step detection" )
     ( "dttol", po::value<double>()->default_value( 0. ), "dt tolerance" )
     ( "adaptive", po::value<bool>()->default_value( false ), "activate dt apdative scheme" )
     ( "forced-sequence", po::value< std::vector<double> >()->default_value(std::vector<double>()), "list of forced times" )
@@ -125,8 +126,10 @@ int main(int argc, char**argv )
   auto Vh = Pch<1>( mesh, markedelements(mesh, conductors) );
   auto Th = Pch<1>( mesh, markedelements(mesh, thdomains) );
 
-  auto Jh = Pdhv<0>( mesh, markedelements(mesh, conductors) );
+  auto Jh = Pchv<1>( mesh, markedelements(mesh, conductors) );
+  auto Eh = Pdhv<0>( mesh, markedelements(mesh, conductors) );
   auto Bh = Pdhv<0>( mesh );
+  auto Qh = Pdh<0>( mesh, markedelements(mesh, conductors) );
   toc("define space functions", (M_verbose > 0));
 
   auto cond_mesh = Vh->mesh();
@@ -143,7 +146,11 @@ int main(int argc, char**argv )
   auto A = Ah->elementPtr(); //Ah->element(A0); // how to init A to A0?;
   auto V = Vh->elementPtr(); //Vh->element(V0);
   Feel::cout << "define A,V fields pointers" << std::endl;
+#ifdef STRONGCOUPLING
   auto Heat_T = Th->elementPtr(); //Vh->element(V0);
+#else
+  auto Heat_T = Th->element(); //Vh->element(V0);
+#endif
   Feel::cout << "define T field pointer" << std::endl;
   toc("define fields pointers", (M_verbose > 0));
 
@@ -156,12 +163,20 @@ int main(int argc, char**argv )
   A->on(_range=elements(mesh), _expr=A0); //(*A) = project(_space = Ah, _expr = A0);
   V->on(_range=elements(support(Vh)), _expr=V0); //(*V) = project(_space = Vh, _expr = V0);
   Feel::cout << "int A,V T field pointer" << std::endl;
+#ifdef STRONGCOUPLING
   Heat_T->on(_range=elements(support(Th)), _expr=T0); //(*Heat_T) = project(_space = Th, _expr = T0);
+#else
+  Heat_T.on(_range=elements(support(Th)), _expr=T0); //(*Heat_T) = project(_space = Th, _expr = T0);
+#endif
   Feel::cout << "int A,V T field pointer" << std::endl;
 
   auto Aold = (*A);
   auto Vold = (*V);
+#ifdef STRONGCOUPLING
   auto Heat_Told = (*Heat_T);
+#else
+  auto Heat_Told = Heat_T;
+#endif
   Feel::cout << "old A,V T field pointer" << std::endl;
   toc("init solutions", (M_verbose > 0));
     
@@ -183,7 +198,7 @@ int main(int argc, char**argv )
   myblockGraph(2,1) = stencil(_test=Th,_trial=Vh, _diag_is_nonzero=false, _close=false)->graph();
   myblockGraph(2,2) = stencil(_test=Th,_trial=Th, _diag_is_nonzero=false, _close=false)->graph();
 #else
-  auto Mth = backend()->newMatrix(_test=Vh,_trial=Vh);
+  auto Mth = backend()->newMatrix(_test=Th,_trial=Th);
 #endif
   auto M = backend()->newBlockMatrix(_block=myblockGraph);
   Feel::cout << "create [block]matrix" << std::endl;
@@ -298,11 +313,6 @@ int main(int argc, char**argv )
   e->step(t)->add("T", Heat_T);
   e->step(t)->add("B", M_B);
   
-  // Feel::cout << "Compute Electric Field" << std::endl;
-  // auto M_gradV = Jh->element(); 
-  // M_gradV = vf::project(_space=Jh, _range=elements(cond_mesh), _expr=trans(gradv(V))); // breaks in // why?
-  // e->step(t)->add("E", M_gradV);
-
   if ( Uexact )
     {
       e->step(t)->add("Aexact", Aexact);
@@ -311,8 +321,11 @@ int main(int argc, char**argv )
 
   Aold = (*A);
   Vold = (*V);
+#ifdef STRONGCOUPLING
   Heat_Told = (*Heat_T);
-
+#else
+  Heat_Told = Heat_T;
+#endif
   // if BiotSavart Bc shall loop until ||A-Aold||<eps
   bool nonlinear = true;
   bool Tdepend = false;
@@ -358,12 +371,12 @@ int main(int argc, char**argv )
       Feel::cout << "*** NonLinear problem detected ***" << std::endl;
       Feel::cout << "maxiterNL=" << maxiterNL << std::endl;
       Feel::cout << "epsNL=" << epsNL << std::endl;
+      Feel::cout << "epsNL-V=" << epsNL_V << std::endl;
       Feel::cout << "epsNL-Th=" << epsNL_th << std::endl;
       Feel::cout << "relax=" << relax << std::endl;
       Feel::cout << "**********************************" << std::endl;
     }
   
-  //double rtol=1.e-8, atol=1.e-50, stol=1.e-8;
   double rtol = doption("mqs.ksp-rtol");
   double atol = doption("mqs.ksp-atol");
   double stol = doption("mqs.snes-stol");
@@ -376,9 +389,11 @@ int main(int argc, char**argv )
   double errorNL_th, normT;
 
   // Feel::cout << "Compute Current density" << std::endl;
-  auto Efield = Jh->element();
-  auto J_cond = Jh->element();
+  auto Efield = Eh->element();
+  auto J_cond = Eh->element();
   auto J_induct = Jh->element();
+  auto J = Eh->element();
+  auto Qth = Qh->element();
   for( auto const& pairMat : M_materials )
     {
       auto name = pairMat.first;
@@ -387,23 +402,31 @@ int main(int argc, char**argv )
       auto sigma = material.getScalar("sigma", "heat_T", idv(Heat_T) );
       Feel::cout << "Material:" << material.meshMarkers() << " ";
 	  
-      Efield += vf::project( _space=Jh, _range=markedelements(cond_mesh, material.meshMarkers()),
+      Efield += vf::project( _space=Eh, _range=markedelements(cond_mesh, material.meshMarkers()),
   			     _expr=-trans(gradv(V)) );
-      J_cond += vf::project( _space=Jh, _range=markedelements(cond_mesh, material.meshMarkers()),
+      Efield += vf::project( _space=Eh, _range=markedelements(cond_mesh, material.meshMarkers()),
+  			       _expr=-(idv(A)-idv(Aold))/dt );
+
+      J_cond += vf::project( _space=Eh, _range=markedelements(cond_mesh, material.meshMarkers()),
   			     _expr=-sigma * trans(gradv(V)) );
       Feel::cout << "J_cond:" << material.meshMarkers() << " ";
 	  
-      Efield += vf::project( _space=Jh, _range=markedelements(cond_mesh, material.meshMarkers()),
-  			       _expr=-(idv(A)-idv(Aold))/dt );
       J_induct += vf::project( _space=Jh, _range=markedelements(cond_mesh, material.meshMarkers()),
   			       _expr=-sigma * (idv(A)-idv(Aold))/dt );
       Feel::cout << "J_induct:" << material.meshMarkers() << std::endl;
+      
+      J += vf::project( _space=Eh, _range=markedelements(cond_mesh, material.meshMarkers()),
+  			       _expr= sigma * idv(Efield) );
+      Qth += vf::project( _space=Qh, _range=markedelements(cond_mesh, material.meshMarkers()),
+			  _expr= inner(idv(J),idv(Efield)) );
     }
   e->step(t)->add( "Jcond", J_cond );
   e->step(t)->add( "Jinduct", J_induct );
   Feel::cout << "export Jcond and Jinduct" << std::endl;
-  e->step(t)->add( "J", idv(J_cond)+idv(J_induct) );
+  e->step(t)->add( "J", J );
   Feel::cout << "export J" << std::endl;
+  e->step(t)->add( "Qth", Qth );
+  Feel::cout << "export Qth" << std::endl;
 
   Feel::cout << "Create Fields for Physical properties" << std::endl;
   auto M_sigma = Th->element();
@@ -489,22 +512,28 @@ int main(int argc, char**argv )
   // define sequence of forced time steps
   double epstime = doption("epstime");
   bool reached = false;
+  bool allmost = false;
   std::vector<double> forced_times = vdoption("forced-sequence");;
   forced_times.push_back(tmax);
   Feel::cout << "Forced sequence:" << forced_times << std::endl;
+  Feel::cout << "epstime:" << epstime << std::endl;
 
   int n_forced = 0;
   double forced_t = forced_times[n_forced];
 
   bool converged = false;
-  auto Trelax = (*Heat_T);
+#ifdef STRONGCOUPLING
+  auto Trelax = (*Heat_T); // use deepCopy??
+#else
+  auto Trelax = Heat_T;
+#endif
   for(t = dt; t <= tmax+1e-10; )
     {
 
       tic();
       do {
-	auto Anl = (*A);
-	auto Vnl = (*V);
+	auto Anl = (*A); // use deepCopy??
+	auto Vnl = (*V); // use deepCopy??
 	auto Tnl = Trelax; //(*Heat_T);
 
 	tic();
@@ -599,17 +628,22 @@ int main(int argc, char**argv )
 #ifndef STRONGCOUPLING
 	    Feel::cout << "weak coupling F2 with Joules(n-1)" << std::endl;
 	    F2 += integrate( _range=markedelements(th_mesh, material.meshMarkers()),
-	    		     _expr = sigma * inner(idv(Efield), idv(Efield)) * id(Heat_T) );
+	    		     _expr = idv(Qth) * id(Heat_T) );
 #else
-	    Feel::cout << "strong coupling M20" << std::endl;
+#ifdef FORM1
+	    // Feel::cout << "strong coupling M20" << std::endl;
 	    M20 += integrate( _range=markedelements(th_mesh, material.meshMarkers()),
-	     		      _expr = sigma * inner(id(A), idv(Efield)) * idt(Heat_T) /dt );
-	    Feel::cout << "strong coupling M21" << std::endl;
-	    M21 += integrate( _range=markedelements(mesh, material.meshMarkers()),
-	    		      _expr = sigma * inner(trans(grad(V)), idv(Efield)) * idt(Heat_T) );
-	    Feel::cout << "strong coupling F2" << std::endl;
-	    F2 += integrate( _range=markedelements(mesh, material.meshMarkers()),
-	     		     _expr = sigma * inner(idv(Aold), idv(Efield))/dt * id(Heat_T) );
+	     		      _expr = inner(id(A), idv(J)) * idt(Heat_T) /dt );
+	    // Feel::cout << "strong coupling M21" << std::endl;
+	    M21 += integrate( _range=markedelements(th_mesh, material.meshMarkers()),
+	    		      _expr = inner(trans(grad(V)), idv(J)) * idt(Heat_T) );
+	    // Feel::cout << "strong coupling F2" << std::endl;
+	    F2 += integrate( _range=markedelements(th_mesh, material.meshMarkers()),
+	     		     _expr = inner(idv(Aold), idv(J))/dt * id(Heat_T) );
+#else
+	    F2 += integrate( _range=markedelements(th_mesh, material.meshMarkers()),
+	     		     _expr = idv(Qth) * id(Heat_T) );
+#endif
 #endif
 	  }
 
@@ -635,6 +669,58 @@ int main(int argc, char**argv )
      
 	tic();
 	// Implement Dirichlet fort
+	itField = M_modelProps->boundaryConditions().find( "temperature");
+	if ( itField != M_modelProps->boundaryConditions().end() )
+	  {
+	    auto mapField = (*itField).second;
+	    auto itType = mapField.find( "Dirichlet" );
+	    if ( itType != mapField.end() )
+	      {
+		for ( auto const& exAtMarker : (*itType).second )
+		  {
+		    std::string marker = exAtMarker.marker();
+		    auto g = expr(exAtMarker.expression());
+		    g.setParameterValues({{"t", t}});
+		    //Feel::cout << "T Dirichlet[" << marker << "] : " << exAtMarker.expression() << ", g=" << g << std::endl;
+#ifdef STRONGCOUPLING
+		    M22 += on(_range=markedfaces(th_mesh, marker), _rhs=F, _element=*Heat_T, _expr= g);
+#else
+		    M22 += on(_range=markedfaces(th_mesh, marker), _rhs=Fth, _element=Heat_T, _expr= g);
+#endif
+		  }
+	      }
+	    itType = mapField.find( "Neumann" );
+	    if ( itType != mapField.end() )
+	      {
+		for ( auto const& exAtMarker : (*itType).second )
+		  {
+		    std::string marker = exAtMarker.marker();
+		    auto g = expr(exAtMarker.expression());
+		    g.setParameterValues({{"t", t}});
+		    //Feel::cout << "T Neumann[" << marker << "] : " << exAtMarker.expression() << ", g=" << g << std::endl;
+		    F2 += integrate( markedfaces(th_mesh, marker), g*id(Heat_T) );
+		  }
+	      }
+	    itType = mapField.find( "Robin" );
+	    if ( itType != mapField.end() )
+	      {
+		for ( auto const& exAtMarker : (*itType).second )
+		  {
+		    std::string marker = exAtMarker.marker();
+		    auto h = expr(exAtMarker.expression1());
+		    auto Tw = expr(exAtMarker.expression2());
+
+		    h.setParameterValues({{"t", t}});
+		    Tw.setParameterValues({{"t", t}});
+
+		    //Feel::cout << "T Robin[" << marker << "] : ";
+		    //Feel::cout << "h=" << exAtMarker1.expression() << ", h=" << h << ", ";
+		    //Feel::cout << "Tw=" << exAtMarker1.expression() << ", Tw=" << Tw << ", "<< std::endl;
+		    M22 += integrate( markedfaces(th_mesh, marker), h*idt(Heat_T)*id(Heat_T) );
+		    F2 += integrate( markedfaces(th_mesh, marker), h*Tw*id(Heat_T) );
+		  }
+	      }
+	  }
 	itField = M_modelProps->boundaryConditions().find( "magnetic-potential");
 	if ( itField != M_modelProps->boundaryConditions().end() )
 	  {
@@ -699,7 +785,7 @@ int main(int argc, char**argv )
 		    markers.insert(marker);
 		    
 		    auto As = BiotSavart<3>(mesh, markers);
-		    auto jEx = idv(J_cond)+idv(J_induct);
+		    auto jEx = idv(J);
 
 		    As.compute(jEx, false, true, conductors);
 		    
@@ -736,56 +822,6 @@ int main(int argc, char**argv )
 		    g.setParameterValues({{"t", t}});
 		    // Feel::cout << "V[" << marker << "]=" << g.evaluate()(0,0) << ", ";
 		    M11 += on(_range=markedfaces(cond_mesh,marker), _rhs=F, _element=*V, _expr= g);
-		  }
-	      }
-	  }
-	itField = M_modelProps->boundaryConditions().find( "temperature");
-	if ( itField != M_modelProps->boundaryConditions().end() )
-	  {
-	    auto mapField = (*itField).second;
-	    auto itType = mapField.find( "Dirichlet" );
-	    if ( itType != mapField.end() )
-	      {
-		for ( auto const& exAtMarker : (*itType).second )
-		  {
-		    std::string marker = exAtMarker.marker();
-		    auto g = expr(exAtMarker.expression());
-		    g.setParameterValues({{"t", t}});
-		    //Feel::cout << "T Dirichlet[" << marker << "] : " << exAtMarker.expression() << ", g=" << g << std::endl;
-		    #ifdef STRONGCOUPLING
-		    M22 += on(_range=markedfaces(mesh,marker), _rhs=F, _element=*Heat_T, _expr= g);
-		    #else
-		    M22 += on(_range=markedfaces(mesh,marker), _rhs=Fth, _element=*Heat_T, _expr= g);
-		    #endif
-		  }
-	      }
-	    itType = mapField.find( "Neumann" );
-	    if ( itType != mapField.end() )
-	      {
-		for ( auto const& exAtMarker : (*itType).second )
-		  {
-		    std::string marker = exAtMarker.marker();
-		    auto g = expr(exAtMarker.expression());
-		    g.setParameterValues({{"t", t}});
-		    //Feel::cout << "T Neumann[" << marker << "] : " << exAtMarker.expression() << ", g=" << g << std::endl;
-		    F2 += integrate( markedfaces(th_mesh, marker), g*id(Heat_T) );
-		  }
-	      }
-	    itType = mapField.find( "Robin" );
-	    if ( itType != mapField.end() )
-	      {
-		for ( auto const& exAtMarker : (*itType).second )
-		  {
-		    std::string marker = exAtMarker.marker();
-		    auto h = expr(exAtMarker.expression1());
-		    auto Tw = expr(exAtMarker.expression2());
-
-		    h.setParameterValues({{"t", t}});
-		    Tw.setParameterValues({{"t", t}});
-
-		    //Feel::cout << "T Robin[" << marker << "] : " << exAtMarker.expression() << ", g=" << g << std::endl;
-		    M22 += integrate( markedfaces(th_mesh, marker), h*idt(Heat_T)*id(Heat_T) );
-		    F2 += integrate( markedfaces(th_mesh, marker), h*Tw*id(Heat_T) );
 		  }
 	      }
 	  }
@@ -838,21 +874,27 @@ int main(int argc, char**argv )
 	Efield.zero();
 	J_cond.zero();
 	J_induct.zero();
+	J.zero();
+	Qth.zero();
 	for( auto const& pairMat : M_materials )
 	  {
 	    auto name = pairMat.first;
 	    auto material = pairMat.second;
 
 	    auto sigma = material.getScalar("sigma", "heat_T", idv(Heat_T));
-	    J_cond += vf::project( _space=Jh, _range=markedelements(cond_mesh, material.meshMarkers()),
+	    J_cond += vf::project( _space=Eh, _range=markedelements(cond_mesh, material.meshMarkers()),
 				   _expr=-sigma * trans(gradv(V)) );
 	    J_induct += vf::project( _space=Jh, _range=markedelements(cond_mesh, material.meshMarkers()),
 				     _expr=-sigma * (idv(A)-idv(Aold))/dt );
 	    
-	    Efield += vf::project( _space=Jh, _range=markedelements(cond_mesh, material.meshMarkers()),
+	    Efield += vf::project( _space=Eh, _range=markedelements(cond_mesh, material.meshMarkers()),
 				   _expr= -trans(gradv(V)) );
-	    Efield += vf::project( _space=Jh, _range=markedelements(cond_mesh, material.meshMarkers()),
+	    Efield += vf::project( _space=Eh, _range=markedelements(cond_mesh, material.meshMarkers()),
 				   _expr= -(idv(A)-idv(Aold))/dt );
+	    J += vf::project( _space=Eh, _range=markedelements(cond_mesh, material.meshMarkers()),
+			      _expr= sigma * idv(Efield) );
+	    Qth += vf::project( _space=Qh, _range=markedelements(cond_mesh, material.meshMarkers()),
+				_expr= inner(idv(J),idv(Efield)) );
 	  }
 
 	// compute errorNL (see V. Chabannes comment for more precise handling)
@@ -877,7 +919,11 @@ int main(int argc, char**argv )
 
 	    // relaxation
 	    Trelax.zero();
-	    Trelax.add( 1-relax, (*Heat_T) );
+#ifdef STRONGCOUPLING
+	    Trelax.add( 1-relax, (*Heat_T) ); // use deepCopy??
+#else
+	    Trelax.add( 1-relax, Heat_T );
+#endif
 	    Trelax.add( relax, Tnl );
     
 	    errorNL_th = normL2(_range = elements(support(Th)), _expr = (idv(Trelax)-idv(Tnl)) );
@@ -917,9 +963,6 @@ int main(int argc, char**argv )
 	       throw std::logic_error( "NL: picard on T failed" );
 	   }
 	
-      // reset NL counter
-      iterNL = 0;
-    
       bool do_export=true;
       
       /* Solve */
@@ -937,7 +980,11 @@ int main(int argc, char**argv )
 			};
 	  auto Apost = (*A);
 	  auto Vpost = (*V);
+#ifdef STRONGCOUPLING
 	  auto Heat_Tpost = (*Heat_T);
+#else
+	  auto Heat_Tpost = Heat_T;
+#endif
 	  filter( A, Aold, Apost );
 	  filter( V, Vold, Vpost );
 	  filter( Heat_T, Heat_Told, Heat_Tpost );
@@ -955,7 +1002,7 @@ int main(int argc, char**argv )
 	  Feel::cout << "forced_time=" << forced_t << ", ";
 	  Feel::cout << "t=" << t << ", ";
 	  Feel::cout << "allmost=" << fabs(1-forced_t/t) << " (" << (fabs(1-forced_t/t) <= epstime) << ") ";
-	  Feel::cout << "reached" << reached << std::endl;
+	  Feel::cout << "reached=" << reached << std::endl;
 	  if ( est > dttol )
 	    {  
 	      //Feel::cout << "reject (>dttol): dt estimate: " << 0.7 * dt * sqrt(dttol/est);
@@ -985,12 +1032,15 @@ int main(int argc, char**argv )
 
 	      Aold = (*A);
 	      Vold = (*V);
+#ifdef STRONGCOUPLING
 	      Heat_Told = (*Heat_T);
-
+#else
+	      Heat_Told = Heat_T;
+#endif
 	      // export
 	      do_export=true; //false;
 
-	      bool allmost = ( fabs(1-forced_t/t) <= epstime );
+	      allmost = ( fabs(1-forced_t/t) <= epstime );
 	      if ( !allmost )
 		{
 		  if ( est <= dttol/8. )
@@ -1029,13 +1079,14 @@ int main(int argc, char**argv )
         }
       else
 	{
-	  bool allmost = ( fabs(1-forced_t/t) <= epstime );
+	  allmost = ( fabs(1-forced_t/t) <= epstime );
+
+	  Feel::cout << "forced_time=" << forced_t << ", ";
+	  Feel::cout << "t=" << t << ", ";
+	  Feel::cout << "allmost=" << fabs(1-forced_t/t) << " (" << (fabs(1-forced_t/t) <= epstime) << ") ";
+	  Feel::cout << "reached=" << reached << std::endl;
 	  if ( reached || allmost )
 	    {
-	      Feel::cout << "reached[" << forced_t << "]: ";
-	      Feel::cout << "allmost=" << allmost << ", ";
-	      Feel::cout << "reached=" << reached << ", ";
-	      Feel::cout << ( n_forced < forced_times.size()-1 ) << std::endl;
 	      if ( n_forced < forced_times.size()-1 )
 		{
 		  n_forced++;
@@ -1047,7 +1098,11 @@ int main(int argc, char**argv )
 	    }
 	  Aold = (*A);
 	  Vold = (*V);
+#ifdef STRONGCOUPLING
 	  Heat_Told = (*Heat_T);
+#else
+	  Heat_Told = Heat_T;
+#endif
 	}
       
       
@@ -1064,6 +1119,9 @@ int main(int argc, char**argv )
 	  e->step(t)->add( "A", A);
 	  e->step(t)->add( "V", V);
 
+	  double P = integrate(_range=elements(support(Qh)), _expr=idv(Qth)).evaluate()(0,0);
+	  Feel::cout << "P[]=" << P << ", ";
+	  
 	  Tm = minmax( _range=elements(support(Th)), _pset=_Q<2>(), _expr=idv(Heat_T));
 	  Heat_Tmax = Tm.max();
 	  Heat_Tmin = Tm.min();
@@ -1082,7 +1140,8 @@ int main(int argc, char**argv )
 
 	  e->step(t)->add( "Jcond", J_cond );
 	  e->step(t)->add( "Jinduct", J_induct );
-	  e->step(t)->add( "J", idv(J_cond)+idv(J_induct) );
+	  e->step(t)->add( "J", J );
+	  e->step(t)->add( "Qth", Qth );
 
 	  if ( Tdepend )
 	    {
@@ -1093,15 +1152,6 @@ int main(int argc, char**argv )
 
 		  auto sigma = material.getScalar("sigma", "heat_T", idv(Heat_T) );
 		  M_sigma.on(_range=markedelements(cond_mesh, material.meshMarkers()),_expr=sigma );
-
-		  auto k = material.getScalar("k", "heat_T", idv(Heat_T) );
-		  M_k.on(_range=markedelements(th_mesh, material.meshMarkers()),_expr=k );
-
-		  auto rho = material.getScalar("rho", "heat_T", idv(Heat_T) );
-		  M_rho.on(_range=markedelements(th_mesh, material.meshMarkers()),_expr=rho );
-	  
-		  auto Cp = material.getScalar("Cp", "heat_T", idv(Heat_T) );
-		  M_Cp.on(_range=markedelements(th_mesh, material.meshMarkers()),_expr=Cp );
 		}
 	      e->step(t)->add( "sigma", M_sigma );
       
@@ -1146,9 +1196,9 @@ int main(int argc, char**argv )
 		      Feel::cout << "V[" << marker << "]=" << g.evaluate()(0,0) << ", ";
 		      exported_data.push_back( std::to_string(g.evaluate()(0,0)) );
 		      
-		      double I = integrate( markedfaces( cond_mesh, marker ), inner(idv(J_induct),N()) + inner(idv(J_cond),N()) ).evaluate()(0,0);
-		      Feel::cout << "I[" << marker << "]=" << I << ", ";
+		      double I = integrate( markedfaces( cond_mesh, marker ), inner(idv(J),N()) ).evaluate()(0,0);
 		      exported_data.push_back( std::to_string(I) );
+		      Feel::cout << "I[" << marker << "]=" << I << ", ";
 		    }
 		}
 	    }
@@ -1197,6 +1247,14 @@ int main(int argc, char**argv )
       M->zero();
       F->zero();
 
+#ifndef STRONGCOUPLING
+      Mth->zero();
+      Fth->zero();
+#endif
+      
+      // reset NL counter
+      iterNL = 0;
+    
       t += dt;
 
       // force time step
