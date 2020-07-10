@@ -1,0 +1,137 @@
+{
+    "Name": "CoupledCart",
+    "ShortName":"MSC",
+    "Models":
+    {
+	    "use-model-name":1,
+	    "solid":
+	    {
+	        "equations":"Elasticity"
+	    },
+        "maxwell":
+        {
+	        "equations":"magnetostatic-cart"
+	    }
+    },
+    "Parameters":
+    {
+	"Tau":"1",
+	"V0": "0",
+	"V1": "1*1/4."
+    },
+    "Materials":
+    {
+        "copper":
+        {
+            "markers":"coil",
+	    "physics":["heat","electric","solid","maxwell"],
+            "sigma":"58.e+6",
+            "mu_mag": "1",
+            "Cp":"385",
+            "rho":"8960",
+            "k":"386"
+
+        },
+        "air":
+        {
+            "markers":"air",
+	    "physics":["maxwell"],
+            "mu_mag": "1",
+            "Cp":"1004",
+            "k":"0.0262",
+            "rho":"1.292"
+
+        }
+    },
+    "BoundaryConditions":
+    {
+        "electric-potential":
+        {
+            "Dirichlet":
+            {
+                "V0":
+                {
+                    "expr":"0" 
+                },
+                "V1":
+                {
+                    "expr":"1/4.*t/(0.1*20)*(t<(0.1*20))+(1/4.*(t<(0.5*20))+0*(t>(0.5*20)))*(t>(0.1*20)):t"
+		}
+            }
+        },
+        "magnetic-potential":
+        {
+            "Dirichlet":
+            {
+                "Border":
+                {
+                    "expr":"{0,0,0}"
+                }
+            },
+            "DirichletX":
+            {
+                "V0":
+                {
+                    "expr":"0"
+                },
+		"OXOZ":
+                {
+                    "expr":"0"
+                }
+            },
+            "DirichletY":
+            {
+                "V1":
+                {
+                    "expr":"0"
+                },
+		"OYOZ":
+                {
+                    "expr":"0"
+                }
+            },
+            "DirichletZ":
+            {
+                "V0":
+                {
+                    "expr":"0"
+                },
+		"OXOZ":
+                {
+                    "expr":"0"
+                },
+                "V1":
+                {
+                    "expr":"0"
+                },
+		"OYOZ":
+                {
+                    "expr":"0"
+                }
+            }
+        },
+        "temperature":
+        {
+            "Robin":
+            {
+                "V0":
+                {
+                    "expr1":"80000", //h
+                    "expr2":"293" //TW
+                },
+                "V1":
+                {
+                    "expr1":"80000", //h
+                    "expr2":"293"
+                }
+            }
+        }
+    },
+    "PostProcess":
+    {
+	"Exports":
+	{
+	    "fields":["magneticPotential","magneticField","temperature"]
+	}
+    }
+}
