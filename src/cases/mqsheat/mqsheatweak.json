@@ -27,9 +27,9 @@
 	    "physics":["heat","electric","solid","maxwell"],
             "sigma":"58.e+6",
             "mu_mag": "1",
-            "Cp":"385",
-            "rho":"8960",
-            "k":"386"
+            "Cp":"380",
+            "rho":"10000",
+            "k":"380"
 
         },
         "air":
