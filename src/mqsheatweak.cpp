@@ -596,13 +596,12 @@ auto bdfA_poly = mybdfA->polyDeriv();
 
     if(firstStep == 0)
     {
-      Bname = "Bz("+std::to_string(pt[0]) + "," + std::to_string(pt[1]) + "," + std::to_string(pt[2]) + ")";
       if (ii == 4)
-      {
+      { 
         if (ofile)
         {
           ofile << std::setprecision(10) << "t,NbIter,Residual," << Vfirst[0] << "," 
-                << Vfirst[1] << "," << Vfirst[2] << "," << Vfirst[3] << "," << Bname << std::endl;
+                << Vfirst[1] << "," << Vfirst[2] << "," << Vfirst[3] << "," << "Bz," << "T" << std::endl;
         }
       }
       else
@@ -611,7 +610,7 @@ auto bdfA_poly = mybdfA->polyDeriv();
         {
           ofile << std::setprecision(10) << "t,NbIter,Residual," << Vfirst[0] << "," 
                  << Vfirst[1] << "," << Vfirst[2] << "," << Vfirst[3] << "," << Vfirst[4] 
-                 << "," << Vfirst[5] << "," << Vfirst[6] << "," << Vfirst[7] << "," << Bname << std::endl;
+                 << "," << Vfirst[5] << "," << Vfirst[6] << "," << Vfirst[7] << "," << "Bz,T" << std::endl;
         }
       }
       firstStep = 1;
@@ -626,7 +625,7 @@ auto bdfA_poly = mybdfA->polyDeriv();
       {
         ofile << std::setprecision(10) << mybdfA->time() << "," << result.nIterations() << "," << result.residual() 
              << "," << Vname[0] << "," << Vname[1] << "," << Vname[2] << "," << Vname[3] 
-             << "," << Bname << std::endl;
+             << "," << Bname;
       }
     }
     else
@@ -636,7 +635,7 @@ auto bdfA_poly = mybdfA->polyDeriv();
         ofile << std::setprecision(10) << mybdfA->time() << "," << result.nIterations() << "," << result.residual() 
              << "," << Vname[0] << "," << Vname[1] << "," << Vname[2] << "," << Vname[3] << ","
              << Vname[4] << "," << Vname[5] << "," << Vname[6] << "," << Vname[7] << "," 
-             << Bname << std::endl;
+             << Bname;
       }
     }
     ii = 0;
@@ -750,10 +749,16 @@ auto bdfA_poly = mybdfA->polyDeriv();
 
     a1.solve(_rhs = l1, _solution = T);
     e->step(mybdfT->time())->add("T",T);
+
     Tval = T(Tpt);
     Feel::cout << "t = " << mybdfT->time() << std::endl;
     Feel::cout << "T(" << Tpt[0] << "," << Tpt[1] << "," << Tpt[2] << ") = " << Tval(0,0,0) << std::endl;
     Feel::cout << "T(" << Tpt0[0] << "," << Tpt0[1] << "," << Tpt0[2] << ") = " << Tval0(0,0,0) << std::endl;
+
+    if (ofile)
+    {
+      ofile << "," << Tval(0,0,0) << std::endl;
+    }
 //*****************************************************
 
     e->save();
