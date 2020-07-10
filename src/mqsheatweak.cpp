@@ -32,8 +32,8 @@ int main(int argc, char**argv )
     ( "Vexact", po::value<std::string>()->default_value( "" ), "exact V" )
     ( "Texact", po::value<std::string>()->default_value( "" ), "exact T" );
 
-  Environment env( _argc=argc, _argv=argv,_desc=options.add(Feel::backend_options("mqs")),
-		   _about=about(_name="mqs",
+  Environment env( _argc=argc, _argv=argv,_desc=options.add(Feel::backend_options("mqsheat")),
+		   _about=about(_name="mqsheat",
 				_author="Feel++ Consortium",
 				_email="feelpp-devel@feelpp.org"));
 
@@ -112,6 +112,10 @@ int main(int argc, char**argv )
   auto V0 = expr(soption(_name="V0"));
   auto T0 = expr(soption(_name="T0"));
 
+  auto A = Ah->elementPtr(); //Ah->element(A0); // how to init A to A0?;
+  auto V = Vh->elementPtr(); //Vh->element(V0);
+  auto T = Th->element(T0);
+
   auto A0e = Ah->element();
   auto V0e = Vh->element();
   auto T0e = Th->element();
@@ -122,10 +126,6 @@ int main(int argc, char**argv )
   auto Aold = (*A);
   auto Vold = (*V);
   toc("init solutions", (M_verbose > 0));
-
-  auto A = Ah->elementPtr(); //Ah->element(A0); // how to init A to A0?;
-  auto V = Vh->elementPtr(); //Vh->element(V0);
-  auto T = Th->element(T0);
 
     
   // Vincent way
@@ -148,7 +148,7 @@ int main(int argc, char**argv )
   auto U = backend()->newBlockVector(_block=myblockVecSol, _copy_values=false);
   toc("create Algebric blockforms", (M_verbose > 0));
 
-  auto mybackend = backend(_name="mqs");
+  auto mybackend = backend(_name="mqsheat");
 
   //double t = 0;
 
@@ -253,6 +253,15 @@ int main(int argc, char**argv )
   vpt[0] = 0.; vpt[1] = 87.5e-3; vpt[2] = 0.;
   auto Vval = (*V)(vpt);
 #endif
+
+//test T(0,0,0)
+  node_type Tpt(3);
+  Tpt[0] = 0.; Tpt[1] = 87.5e-3; Tpt[2] = 0.;
+  node_type Tpt0(3);
+  Tpt0[0] = 0.; Tpt0[1] = 0; Tpt0[2] = 0.;
+  auto Tval = T(Tpt); 
+  auto Tval0 = T(Tpt0);
+//
   Feel::cout << "t=" << mybdfA->timeInitial() << ", ";
   Feel::cout << "B(" << pt[0] << "," << pt[1] << "," << pt[2] << ") = {" << Bx << "," << By << "," << Bz << "}, ";
   //Feel::cout << "V(" << pt[0] << "," << pt[1] << "," << pt[2] << ")=" << Vval(0,0,0);
@@ -311,7 +320,7 @@ auto bdfA_poly = mybdfA->polyDeriv();
   
   auto mu0 = 4.e-7 * M_PI ; // SI Unit : H/m = m.kg/s2/A2
 
-  Table mqs;
+
   std::string Vname[8];
   std::string Vfirst[8];
   std::string Bname;
@@ -496,7 +505,7 @@ auto bdfA_poly = mybdfA->polyDeriv();
     tic();
     auto result = mybackend->solve( _matrix=M, _rhs=F, _solution=U, _rebuild=true);
     std::string msg = (boost::format("[MQS %2%] t=%1% NbIter=%3% Residual=%4%") % mybdfA->time()
-			 % soption("mqs.pc-type")
+			 % soption("mqsheat.pc-type")
 			 % result.nIterations()
 			 % result.residual()).str();
     if (result.isConverged())
@@ -590,7 +599,6 @@ auto bdfA_poly = mybdfA->polyDeriv();
       Bname = "Bz("+std::to_string(pt[0]) + "," + std::to_string(pt[1]) + "," + std::to_string(pt[2]) + ")";
       if (ii == 4)
       {
-        mqs.add_row({"t","NbIter","Residual",Vfirst[0],Vfirst[1],Vfirst[2],Vfirst[3],Bname});
         if (ofile)
         {
           ofile << std::setprecision(10) << "t,NbIter,Residual," << Vfirst[0] << "," 
@@ -599,8 +607,6 @@ auto bdfA_poly = mybdfA->polyDeriv();
       }
       else
       {
-        mqs.add_row({"t","NbIter","Residual",Vfirst[0],Vfirst[1],Vfirst[2],Vfirst[3]
-                                        ,Vfirst[4],Vfirst[5],Vfirst[6],Vfirst[7],Bname});
         if (ofile)
         {
           ofile << std::setprecision(10) << "t,NbIter,Residual," << Vfirst[0] << "," 
@@ -616,9 +622,6 @@ auto bdfA_poly = mybdfA->polyDeriv();
     Bname = std::to_string(Bz);
     if (ii == 4)
     {
-      mqs.add_row({std::to_string(mybdfA->time()),std::to_string(result.nIterations()),
-                   std::to_string(result.residual()),
-                   Vname[0],Vname[1],Vname[2],Vname[3],Bname});
       if (ofile)
       {
         ofile << std::setprecision(10) << mybdfA->time() << "," << result.nIterations() << "," << result.residual() 
@@ -628,9 +631,6 @@ auto bdfA_poly = mybdfA->polyDeriv();
     }
     else
     {
-      mqs.add_row({std::to_string(mybdfA->time()),std::to_string(result.nIterations()),
-                    std::to_string(result.residual()),
-                    Vname[0],Vname[1],Vname[2],Vname[3],Vname[4],Vname[5],Vname[6],Vname[7],Bname});
       if (ofile)
       {
         ofile << std::setprecision(10) << mybdfA->time() << "," << result.nIterations() << "," << result.residual() 
@@ -670,20 +670,12 @@ auto bdfA_poly = mybdfA->polyDeriv();
 	    auto material = pairMat.second;
 
       auto k = material.getScalar("k");
-  
+	    auto rho = material.getScalar("rho");
+      auto Cp = material.getScalar("Cp");
+        
       //heat 
 	    a1 += integrate( _range=markedelements(mesh, material.meshMarkers()),
 			      _expr = k * inner( gradt(T),grad(T) ) );
-	  }
-
-    for( auto const& pairMat : M_materials )
-	  {
-	    auto name = pairMat.first;
-	    auto material = pairMat.second;
-
-	    auto rho = material.getScalar("rho");
-      auto Cp = material.getScalar("Cp");
-      auto sigma = material.getScalar("sigma");
 
 	    // heat
 	    a1 += integrate( _range=markedelements(mesh, material.meshMarkers()),
@@ -691,18 +683,26 @@ auto bdfA_poly = mybdfA->polyDeriv();
 
 	    l1 += integrate(_range=markedelements(mesh, material.meshMarkers()),
 			    _expr = Cp * rho * id(T) * idv(bdfT_poly) );
-
-      //source term from mqs sigma * ||B||^2
-	    l1 += integrate(_range=markedelements(mesh, marker),
-	                    _expr = sigma * id(T) * inner(M_B,M_B) );
 	  }
 
-    auto itField = M_modelProps->boundaryConditions().find( "temperature");
+    for( auto const& pairMat : M_materials )
+	  {
+	    auto name = pairMat.first;
+	    auto material = pairMat.second;
+
+      auto sigma = material.getScalar("sigma");
+
+      //source term from mqs sigma * ||E||^2 = 1/sigma ||J||^2
+	    l1 += integrate(_range=markedelements(mesh, material.meshMarkers()),
+	                    _expr = (1/sigma) * id(T) * inner(idv(J_cond)+idv(J_induct),idv(J_cond)+idv(J_induct)) );
+	  }
+
+    itField = M_modelProps->boundaryConditions().find( "temperature");
     if ( itField != M_modelProps->boundaryConditions().end() )
 	  {
 	    auto mapField = (*itField).second;
 
-      itType = mapField.find( "Neumann" );
+      auto itType = mapField.find( "Neumann" );
 	    if ( itType != mapField.end() )
 	    {
 	      for ( auto const& exAtMarker : (*itType).second )
@@ -726,8 +726,8 @@ auto bdfA_poly = mybdfA->polyDeriv();
 	     		auto Tw = expr(exAtMarker.expression2());
 	        Tw.setParameterValues({{"t", mybdfT->time()}});
           h.setParameterValues({{"t", mybdfT->time()}});
-	       	Feel::cout << "Robin[" << marker << "] : " << exAtMarker.expression1() << std::endl;
-          Feel::cout << "Robin[" << marker << "] : " << exAtMarker.expression2() << std::endl;
+	       	//Feel::cout << "Robin[" << marker << "] : " << exAtMarker.expression1() << std::endl;
+          //Feel::cout << "Robin[" << marker << "] : " << exAtMarker.expression2() << std::endl;
 	        a1 += integrate(_range=markedfaces(mesh,marker), 
                            _expr= h * idt(T) * id(T) );
           l1 += integrate(_range=markedfaces(mesh,marker), 
@@ -743,13 +743,17 @@ auto bdfA_poly = mybdfA->polyDeriv();
 		      auto g = expr(exAtMarker.expression());
 		      g.setParameterValues({{"t", mybdfT->time()}});
 		      Feel::cout << "T Dirichlet[" << marker << "] : " << exAtMarker.expression() << ", g=" << g << std::endl;
-		      a1 += on(_range=markedfaces(mesh,marker), _rhs=F, _element=*T, _expr= g);
+		      a1 += on(_range=markedfaces(mesh,marker), _rhs=F, _element=T, _expr= g);
 		    }
 	    }      
 	  }
 
     a1.solve(_rhs = l1, _solution = T);
     e->step(mybdfT->time())->add("T",T);
+    Tval = T(Tpt);
+    Feel::cout << "t = " << mybdfT->time() << std::endl;
+    Feel::cout << "T(" << Tpt[0] << "," << Tpt[1] << "," << Tpt[2] << ") = " << Tval(0,0,0) << std::endl;
+    Feel::cout << "T(" << Tpt0[0] << "," << Tpt0[1] << "," << Tpt0[2] << ") = " << Tval0(0,0,0) << std::endl;
 //*****************************************************
 
     e->save();
@@ -794,7 +798,4 @@ auto bdfA_poly = mybdfA->polyDeriv();
   }
   //std::cout << mqs << std::endl;
   ofile.close();
-  MarkdownExporter exporter;
-  auto markdown = exporter.dump(mqs);
-  std::cout << markdown << std::endl;
 }
