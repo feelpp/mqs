@@ -258,7 +258,7 @@ int main(int argc, char**argv )
   node_type Tpt(3);
   Tpt[0] = 0.; Tpt[1] = 87.5e-3; Tpt[2] = 0.;
   node_type Tpt0(3);
-  Tpt0[0] = 0.; Tpt0[1] = 0; Tpt0[2] = 0.;
+  Tpt0[0] = 87.5e-3; Tpt0[1] = 0; Tpt0[2] = 0.;
   auto Tval = T(Tpt); 
   auto Tval0 = T(Tpt0);
 //
@@ -751,6 +751,7 @@ auto bdfA_poly = mybdfA->polyDeriv();
     e->step(mybdfT->time())->add("T",T);
 
     Tval = T(Tpt);
+    Tval0 = T(Tpt0);
     Feel::cout << "t = " << mybdfT->time() << std::endl;
     Feel::cout << "T(" << Tpt[0] << "," << Tpt[1] << "," << Tpt[2] << ") = " << Tval(0,0,0) << std::endl;
     Feel::cout << "T(" << Tpt0[0] << "," << Tpt0[1] << "," << Tpt0[2] << ") = " << Tval0(0,0,0) << std::endl;
