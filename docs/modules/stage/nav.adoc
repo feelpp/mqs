@@ -3,7 +3,10 @@
 ** xref:front.adoc[Modeling the transient behavior of high field magnets]
 ** xref:index.adoc[Introduction]
 ** xref:formulation.adoc[Formulation]
+** xref:discretization.adoc[Discretization]
 ** xref:validation.adoc[Validations]
-** xref:results.adoc[Resuls]
+** xref:results.adoc[Results]
 ** xref:bdf.adoc[Backward differentiation formula]
+** xref:mqsheat.adoc[Add the heat equation]
+** xref:appendix.adoc[Appendix]
 

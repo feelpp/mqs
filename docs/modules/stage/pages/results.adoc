@@ -1,6 +1,6 @@
 = Results
 
-==  A solenoidl magnet
+==  A solenoidal magnet
 
 The normalized computed electric potential, current and magnetic field at the Origin are plotted bellow:
 

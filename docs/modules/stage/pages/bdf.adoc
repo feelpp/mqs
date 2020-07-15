@@ -103,7 +103,6 @@ We finally start our bdf right before the time loop.
       ...
 ----
 
-Below, we will use a scheme of order 1, but a scheme of higher order is possible.
 We define in the loop the polynomial derivate coefficients associeted to mybdfA, because only the derivate of A
 appear both equations.
 
@@ -172,3 +171,6 @@ At the end of the loop, we initialized next step of both bdf with :
     mybdfA->next(*A);
     mybdfV->next(*V);
 ----
+
+The default order is 1, if you want to do the simulation with a higher order, the option --bdf.order n, where n is the order, can be added before execution.
+You can also add the field "order = n", in the bdf part of the cfg file associated with the configuration.
