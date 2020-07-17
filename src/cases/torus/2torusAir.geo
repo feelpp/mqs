@@ -4,7 +4,7 @@ Unit=1.e-3;
 h = 5*Unit;
 
 r1=75.*Unit;
-r2=100.2*Unit;
+r2=100.*Unit;
 he=50/2.*Unit;
 eps=1*Unit;
 theta1=Asin( eps/(2*r1) );

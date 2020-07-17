@@ -2,9 +2,9 @@
 #
 #    
 #    	G N U P L O T
-#    	Version 5.2 patchlevel 2    last modified 2017-11-01 
+#    	Version 5.2 patchlevel 8    last modified 2019-12-01 
 #    
-#    	Copyright (C) 1986-1993, 1998, 2004, 2007-2017
+#    	Copyright (C) 1986-1993, 1998, 2004, 2007-2019
 #    	Thomas Williams, Colin Kelley and many others
 #    
 #    	gnuplot home:     http://www.gnuplot.info
@@ -77,11 +77,13 @@ set surface
 unset contour
 set cntrlabel  format '%8.3g' font '' start 5 interval 20
 set mapping cartesian
-set datafile separator whitespace
+set datafile separator "|"
 unset hidden3d
 set cntrparam order 4
 set cntrparam linear
-set cntrparam levels auto 5
+set cntrparam levels 5
+set cntrparam levels auto
+set cntrparam firstlinetype 0 unsorted
 set cntrparam points 5
 set size ratio 0 1,1
 set origin 0,0
@@ -116,34 +118,34 @@ set rtics axis in scale 1,0.5 nomirror norotate  autojustify
 set rtics  norangelimit autofreq 
 unset ttics
 set title "" 
-set title  font "" norotate
+set title  font "" textcolor lt -1 norotate
 set timestamp bottom 
 set timestamp "" 
-set timestamp  font "" norotate
+set timestamp  font "" textcolor lt -1 norotate
 set trange [ * : * ] noreverse nowriteback
 set urange [ * : * ] noreverse nowriteback
 set vrange [ * : * ] noreverse nowriteback
-set xlabel "" 
+set xlabel "t[s]" 
 set xlabel  font "" textcolor lt -1 norotate
 set x2label "" 
 set x2label  font "" textcolor lt -1 norotate
-set xrange [ * : * ] noreverse nowriteback
-set x2range [ * : * ] noreverse nowriteback
+set xrange [ 0.00000 : 1.00000 ] noreverse writeback
+set x2range [ * : * ] noreverse writeback
 set ylabel "" 
 set ylabel  font "" textcolor lt -1 rotate
 set y2label "" 
 set y2label  font "" textcolor lt -1 rotate
-set yrange [ * : * ] noreverse nowriteback
-set y2range [ * : * ] noreverse nowriteback
+set yrange [ -0.200000 : 1.20000 ] noreverse writeback
+set y2range [ * : * ] noreverse writeback
 set zlabel "" 
 set zlabel  font "" textcolor lt -1 norotate
-set zrange [ * : * ] noreverse nowriteback
+set zrange [ * : * ] noreverse writeback
 set cblabel "" 
 set cblabel  font "" textcolor lt -1 rotate
-set cbrange [ * : * ] noreverse nowriteback
+set cbrange [ * : * ] noreverse writeback
 set rlabel "" 
 set rlabel  font "" textcolor lt -1 norotate
-set rrange [ * : * ] noreverse nowriteback
+set rrange [ * : * ] noreverse writeback
 unset logscale
 unset jitter
 set zero 1e-08
@@ -151,7 +153,7 @@ set lmargin  -1
 set bmargin  -1
 set rmargin  -1
 set tmargin  -1
-set locale "C.UTF-8"
+set locale "en_US.UTF-8"
 set pm3d explicit at s
 set pm3d scansautomatic
 set pm3d interpolate 1,1 flush begin noftriangles noborder corners2color mean
@@ -166,13 +168,6 @@ set fontpath
 set psdir
 set fit brief errorvariables nocovariancevariables errorscaling prescale nowrap v5
 GNUTERM = "qt"
-Sym=1
-I0=135069
-B0=0.850698
-## Last datafile plotted: "test_MagDyn_I.pos"
-plot "test_MagDyn_U.pos" using 1:($2*(2*pi)) w lin lw 2 lc 1 title 'U1(t)', \
-     "test_MagDyn_I.pos" using 1:(-$2/(I0/Sym)) every 1 w linesp lw 1 pt 4 ps 1 title "Axi: I1(t)", \
-     "test_MagDyn_U.pos" using 1:($3*(2*pi)) w lin lw 2 lc 2 title 'U2(t)', \
-     "test_MagDyn_I.pos" using 1:(-$3/(I0/Sym)) every 1 w linesp lw 1 pt 4 ps 1 title "Axi: I2(t)", \
-     "test_MagDyn_bz.pos" using 2:($7/B0) every 1 w linesp lw 1 pt 2 ps 2 title "Axi: Bz(t)"
+## Last datafile plotted: "adapt-dt5e-3.log"
+plot "adapt-dt5e-3.log" using 2:(($6-$8)/2./135069.) w linespoints lw 3 title "I", "adapt-dt5e-3.log" using 2:($7/0.25) w linespoints lw 3 title 'V', "adapt-dt5e-3.log" using 2:(abs($9)/0/9438) w linespoints lw 3 title "Bz"
 #    EOF
