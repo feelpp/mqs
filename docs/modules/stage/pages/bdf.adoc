@@ -32,7 +32,7 @@ stem:[\alpha_k] and stem:[\beta] are chosen so that the method achieves order s,
 
 Starting from the formula stem:[y'(t_{n+s})=f(t_{n+s},y(t_{n+s}))] one approximates stem:[y(t_{n+s})=y_{n+s}]
 and stem:[y'(t_{n+s}) \approx p'_{n,s}(t_{n+s})] where stem:[p'_{n,s}(t)] is the Lagrange interpolation 
-polynomial for the points stem:[(t_n,y_n),\ldot,(t_{n+s},y_{n+s})].
+polynomial for the points stem:[(t_n,y_n),\ldots,(t_{n+s},y_{n+s})].
 Using that stem:[t_n=t_0+nh] and multiplying by h one arrives at the BDF method of order s.
 
 For exemple the BDF with order 1 is :
@@ -78,7 +78,6 @@ for (auto time : mybdfA -> priorTimes() )
     A0.setParameterValues({{"t",time.second}});
     A0e = project(_space=Ah, _expr=A0);
     mybdfA->setUnknown(time.first,A0e);
-    //mybdfA->setUnknown(time.first,*A);
   }
   for (auto time : mybdfV -> priorTimes() )
   {
@@ -104,7 +103,7 @@ We finally start our bdf right before the time loop.
 ----
 
 We define in the loop the polynomial derivate coefficients associeted to mybdfA, because only the derivate of A
-appear both equations.
+appear in both equations.
 
 [source,cpp]
 ----
@@ -174,3 +173,15 @@ At the end of the loop, we initialized next step of both bdf with :
 
 The default order is 1, if you want to do the simulation with a higher order, the option --bdf.order n, where n is the order, can be added before execution.
 You can also add the field "order = n", in the bdf part of the cfg file associated with the configuration.
+
+== Results
+
+To run a simulation, you can compile the mqs-form.cpp file in the bdf branch and use for example the command line :
+
+[source,cmd]
+----
+mpirun -np 4 feelpp_mqs_form --config-file cases/quart-turn/quart-turn.cfg --gmsh.hsize=0.05 --pc-type gasm --ksp-monitor=1 --bdf.order 2
+----
+
+If we run simulations on the two test cases we saw earlier, we get the same results. 
+The implementation of the bdf schema is therefore correct.
