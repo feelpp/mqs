@@ -29,7 +29,9 @@ mpirun -np 1 feelpp_mqs_form --config-file cases/quart-turn/quart-turn.cfg --gms
 
 This will produce a csv file in the feel folder associated with this case.
 
-To obtain these results, use the command :
+Below is the comparison between getdp and feelpp result :
+
+image:helix/turn.png[results,50%]
 
 == 2 solenoidal magnets
 
@@ -59,3 +61,7 @@ mpirun -np 1 feelpp_mqs_form --config-file cases/quart-turn/quart-turn2.cfg --gm
 ----
 
 This will produce a csv file in the feel folder associated with this case.
+
+Below is the comparison between getdp and feelpp result :
+
+image:helix/turn2.png[results,50%]
