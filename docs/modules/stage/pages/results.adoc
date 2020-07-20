@@ -64,4 +64,4 @@ This will produce a csv file in the feel folder associated with this case.
 
 Below is the comparison between getdp and feelpp result :
 
-image:helix/turn2.png[results,50%]
+image:2helix/turn2.png[results,50%]
