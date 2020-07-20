@@ -69,7 +69,7 @@ We must then initialize each bdf with the initial conditions :
 
 [source,cpp]
 ----
-for (auto time : mybdfA -> priorTimes() )
+  for (auto time : mybdfA -> priorTimes() )
   {
     if (Environment::worldComm().isMasterRank())
     {
