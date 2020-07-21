@@ -73,7 +73,7 @@ int main(int argc, char**argv )
   Feel::cout << "time-dttol=" << dttol << std::endl;
   double dtprev = dt;
 
-  double dt_min = dttol/100.;
+  double dt_min = std::max(dt/100., dttol);
   double dt_max = dt*100.;
   Feel::cout << "time-dtmin=" << dt_min << std::endl;
   Feel::cout << "time-dtmax=" << dt_max << std::endl;
@@ -283,12 +283,14 @@ int main(int argc, char**argv )
   Feel::cout << "Tmax=" << Heat_Tmax << ", ";
   
   auto Tmean = mean( _range=elements(support(Th)), _expr=idv(Heat_T))(0,0);
-  double measure = integrate( elements(support(Th)), cst(1.0) ).evaluate()(0,0);
+  double thmeasure = integrate( elements(support(Th)), cst(1.0) ).evaluate()(0,0);
+  double vhmeasure = integrate( elements(support(Vh)), cst(1.0) ).evaluate()(0,0);
+  double ahmeasure = integrate( elements(support(Ah)), cst(1.0) ).evaluate()(0,0);
   Feel::cout << "Tmean=" << Tmean << ", ";
-  Feel::cout << "measure=" << measure << ", ";
+  Feel::cout << "thmeasure=" << thmeasure << ", ";
 
   double Tstd_dev = normL2( elements(support(Th)), (idv(Heat_T)-cst(Tmean)) );
-  Tstd_dev = math::sqrt(Tstd_dev / measure);
+  Tstd_dev = math::sqrt(Tstd_dev / thmeasure);
   Feel::cout << "Tstd_dev=" << Tstd_dev << ", ";
 
   Feel::cout << std::endl;
@@ -483,10 +485,14 @@ int main(int argc, char**argv )
     }
   Vfirst.push_back("Bz("+std::to_string(pt[0]) + "," + std::to_string(pt[1]) + "," + std::to_string(pt[2]) + ")");
 
-  for (auto const& field : {"Tmin", "Tmean", "Tmax", "Tstd_dev"})
-    {
-      Vfirst.push_back(field);
-    }
+  for( auto const& mp : M_th_materials )
+    for (auto const& marker : mp.second.meshMarkers() )
+      for (auto const& field : {"Tmin", "Tmean", "Tmax", "Tstd_dev"})
+	{
+	  std::string sfield = field;
+	  sfield += "[" + marker + "]";
+	  Vfirst.push_back(sfield);
+	}
   mqs.add_row(Vfirst);
   
   int iterNL = 0;
@@ -979,12 +985,12 @@ int main(int argc, char**argv )
 	  auto estA = normL2( _range=elements(mesh), _expr=idv(A)-idv(Apost));
 	  auto estV = normL2( _range=elements(cond_mesh), _expr=idv(V)-idv(Vpost));
 	  auto estT = normL2( _range=elements(th_mesh), _expr=idv(Heat_T)-idv(Heat_Tpost));
-	  auto est = std::max( estA, estV );
-	  est = std::max( est, estT );
+	  auto est = std::max( estA, vhmeasure/ahmeasure*estV );
+	  est = std::max( est, thmeasure/ahmeasure*estT );
 	  Feel::cout << "est : " << std::scientific << std::setprecision(3) << est << " ";
 	  Feel::cout << "estA : " << std::scientific << std::setprecision(3) << estA << " ";
-	  Feel::cout << "estV : "  << std::scientific << std::setprecision(3) << estV << " ";
-	  Feel::cout << "estT : "  << std::scientific << std::setprecision(3) << estT << " ";
+	  Feel::cout << "estV : "  << std::scientific << std::setprecision(3) << vhmeasure/ahmeasure*estV << " ";
+	  Feel::cout << "estT : "  << std::scientific << std::setprecision(3) << thmeasure/ahmeasure*estT << " ";
 	  Feel::cout << "(dttol=" << std::scientific << std::setprecision(3) << dttol << "); ";// << std::endl;
 
 	  Feel::cout << "forced_time=" << forced_t << ", ";
@@ -993,28 +999,48 @@ int main(int argc, char**argv )
 	  Feel::cout << "reached=" << reached << std::endl;
 	  if ( est > dttol )
 	    {  
-	      //Feel::cout << "reject (>dttol): dt estimate: " << 0.7 * dt * sqrt(dttol/est);
-	      t -= dt;
-	      dt/=2.;
-	      adapt_msg = "refining(/2) the time step";
-	      if ( dt < dt_min )
+	      if ( dt == dt_min )
 		{
-		  dt = dt_min;
-		  adapt_msg = "refining the time step to dt_min";
-		}
-	      // no export
-	      do_export=false;
+		  dtprev=dt;
 
-	      // time rejected
-	      if ( reached )
+		  Aold = (*A);
+		  Vold = (*V);
+#ifdef STRONGCOUPLING
+		  Heat_Told = (*Heat_T);
+#else
+		  Heat_Told = Heat_T;
+#endif
+		  // export
+		  do_export=true; //false;
+
+		  allmost = ( fabs(1-forced_t/t) <= epstime );
+		  adapt_msg = "keeping the time step (dt_min)";
+		}
+	      else
 		{
-		  reached = false;
-		  Feel::cout << "***";
+		  //Feel::cout << "reject (>dttol): dt estimate: " << 0.7 * dt * sqrt(dttol/est);
+		  t -= dt;
+		  dt/=2.;
+		  adapt_msg = "refining(/2) the time step";
+		  if ( dt < dt_min )
+		    {
+		      dt = dt_min;
+		      adapt_msg = "refining the time step to dt_min";
+		    }
+		  // no export
+		  do_export=false;
+
+		  // time rejected
+		  if ( reached )
+		    {
+		      reached = false;
+		      Feel::cout << "***";
+		    }
 		}
 	    }
 	  else //if ( est < dttol )
 	    {
-	      //Feel::cout << "accepted (<ddtol): dt estimate: " << 0.9 * dt * sqrt(dttol/est);
+	      //Feel::cout << "accepted (<dttol): dt estimate: " << 0.9 * dt * sqrt(dttol/est);
 	      
 	      dtprev=dt;
 
@@ -1031,7 +1057,7 @@ int main(int argc, char**argv )
 	      allmost = ( fabs(1-forced_t/t) <= epstime );
 	      if ( !allmost )
 		{
-		  if ( est <= dttol/8. )
+		  if ( est <= dttol/8. && dt != dt_max )
 		    {
 		      dt*=2;
 		      adapt_msg = "increasing(x2) the time step";
@@ -1044,6 +1070,7 @@ int main(int argc, char**argv )
 		  else
 		    {
 		      adapt_msg = "keeping the time step";
+		      if ( dt == dt_max ) adapt_msg += " (dt_max)";
 		    }
 		}
 
@@ -1120,7 +1147,7 @@ int main(int argc, char**argv )
 	  Feel::cout << "Tmean=" << Tmean << ", ";
 
 	  double Tstd_dev = normL2( elements(support(Th)), (idv(Heat_T)-cst(Tmean)) );
-	  Tstd_dev = math::sqrt(Tstd_dev / measure);
+	  Tstd_dev = math::sqrt(Tstd_dev / thmeasure);
 
 	  e->step(t)->add( "T", Heat_T);
       
@@ -1196,10 +1223,26 @@ int main(int argc, char**argv )
 
 	  //Bname = "{"+std::to_string(Bx) + "," + std::to_string(By) + "," + std::to_string(Bz) + "}";
 	  exported_data.push_back( std::to_string(Bz) );
-	  exported_data.push_back( std::to_string(Heat_Tmin) );
-	  exported_data.push_back( std::to_string(Tmean) );
-	  exported_data.push_back( std::to_string(Heat_Tmax) );
-	  exported_data.push_back( std::to_string(Tstd_dev) );
+	  
+	  for( auto const& mp : M_th_materials )
+	    for (auto const& marker : mp.second.meshMarkers() )
+	      for (auto const& field : {"Tmin", "Tmean", "Tmax", "Tstd_dev"})
+		{
+		  Tm = minmax( _range=markedelements(support(Th), marker), _pset=_Q<2>(), _expr=idv(Heat_T));
+		  Heat_Tmax = Tm.max();
+		  Heat_Tmin = Tm.min();
+  
+		  Tmean = mean( _range=markedelements(support(Th), marker), _expr=idv(Heat_T))(0,0);
+		  double dthmeasure = integrate( markedelements(support(Th),marker), cst(1.0) ).evaluate()(0,0);
+		  
+		  Tstd_dev = normL2( elements(support(Th)), (idv(Heat_T)-cst(Tmean)) );
+		  Tstd_dev = math::sqrt(Tstd_dev / dthmeasure);
+		  
+		  exported_data.push_back( std::to_string(Heat_Tmin) );
+		  exported_data.push_back( std::to_string(Tmean) );
+		  exported_data.push_back( std::to_string(Heat_Tmax) );
+		  exported_data.push_back( std::to_string(Tstd_dev) );
+	}
 	  mqs.add_row(exported_data);
 
 	  if ( Uexact )
