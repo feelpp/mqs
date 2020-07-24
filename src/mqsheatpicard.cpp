@@ -350,8 +350,8 @@ auto bdfA_poly = mybdfA->polyDeriv();
 
 //picard variables
   auto prevT = Th->element(T0);
-  auto incrT = 10;
-  auto picardIter = 0;
+  double incrT = 10;
+  int picardIter = 0;
 //
 
   for (double t = dt; mybdfA->isFinished() == false; )
@@ -679,10 +679,11 @@ auto bdfA_poly = mybdfA->polyDeriv();
 //********************** T calcul *********************
 
 //********************** picard loop ******************
-    //prevT = T;
+
     picardIter = 0;
     while(incrT > tol )
     {
+      Feel::cout << "Picard iter num = " << picardIter+1 << std::endl;
       if (picardIter > maxiter)
       {
         Feel::cout << "Picard maxiter reach" << std::endl;
@@ -696,10 +697,10 @@ auto bdfA_poly = mybdfA->polyDeriv();
         auto name = pairMat.first;
         auto material = pairMat.second;
 
-        auto k = material.getScalar("k","T",idv(T));
+        auto k = material.getScalar("k","T",idv(prevT));
         auto rho = material.getScalar("rho");
         auto Cp = material.getScalar("Cp");
-        auto sigma = material.getScalar("sigma","T",idv(T));
+        auto sigma = material.getScalar("sigma","T",idv(prevT));
           
         //heat 
         a1 += integrate( _range=markedelements(mesh, material.meshMarkers()),
@@ -774,20 +775,14 @@ auto bdfA_poly = mybdfA->polyDeriv();
       a1.solve(_rhs = l1, _solution = T);
 
       //picard conditions update
-      //incrT = normL2(_range=elements(mesh),_expr=idv(T)-idv(prevT));//good mesh ?
-      //incrT /= normL2(_range=elements(mesh),_expr=idv(prevT)); //good mesh ?
       incrT = normL2(_range=elements(cond_mesh_T),_expr=idv(T)-idv(prevT));//good mesh ?
-      Feel::cout << "Iter num: " << picardIter+1 << " , Picard error  = " << incrT << std::endl;
-      incrT /= normL2(_range=elements(cond_mesh_T), _expr=idv(prevT)); //good mesh ?
-      Feel::cout << "Iter num: " << picardIter+1 << " , Picard error  = " << incrT << std::endl;
+      incrT /= normL2(_range=elements(cond_mesh_T),_expr=idv(prevT)); //good mesh ?
       picardIter ++;
       prevT = T;
-
+      Feel::cout << std::setprecision(10) << "Picard final error norm(T-Told)/norm(Told) = " << incrT << std::endl;
       l1.zero();
       a1.zero();
     }
-    Feel::cout << std::setprecision(10) << "Picard final error norm(T-Told)/norm(Told) = " << incrT << std::endl;
-    Feel::cout << "Picard Nbiter = " << picardIter << std::endl;
     incrT = 10;
 //end picard loop *************************************
 
