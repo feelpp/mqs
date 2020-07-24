@@ -89,7 +89,7 @@ int main(int argc, char**argv )
   tic();
   auto Ah = Pchv<1>( mesh );
   auto Vh = Pch<1>( mesh, markedelements(mesh, range) );
-  auto Th = Pch<1>( mesh );
+  auto Th = Pch<1>( mesh, markedelements(mesh, range) );
 
   auto cond_mesh = Vh->mesh();
   if (Environment::worldComm().isMasterRank())
@@ -258,7 +258,7 @@ int main(int argc, char**argv )
   node_type Tpt(3);
   Tpt[0] = 0.; Tpt[1] = 87.5e-3; Tpt[2] = 0.;
   node_type Tpt0(3);
-  Tpt0[0] = 87.5e-3; Tpt0[1] = 0; Tpt0[2] = 0.;
+  Tpt0[0] = 0; Tpt0[1] = 0.086109025458; Tpt0[2] = 0.;
   auto Tval = T(Tpt); 
   auto Tval0 = T(Tpt0);
 //
@@ -663,7 +663,8 @@ auto bdfA_poly = mybdfA->polyDeriv();
 //********************** T calcul *********************
     auto bdfT_poly = mybdfT->polyDeriv();
 
-    for( auto const& pairMat : M_modelProps->materials() )
+    //for( auto const& pairMat : M_modelProps->materials() )
+    for( auto const& pairMat : M_materials )
 	  {
 	    auto name = pairMat.first;
 	    auto material = pairMat.second;
@@ -692,7 +693,9 @@ auto bdfA_poly = mybdfA->polyDeriv();
       auto sigma = material.getScalar("sigma");
 
       //source term from mqs sigma * ||E||^2 = 1/sigma ||J||^2
-	    l1 += integrate(_range=markedelements(mesh, material.meshMarkers()),
+
+	    //l1 += integrate(_range=markedelements(mesh, material.meshMarkers()),
+      l1 += integrate(_range=markedelements(cond_mesh, material.meshMarkers()),
 	                    _expr = (1/sigma) * id(T) * inner(idv(J_cond)+idv(J_induct),idv(J_cond)+idv(J_induct)) );
 	  }
 
