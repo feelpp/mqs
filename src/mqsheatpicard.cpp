@@ -775,8 +775,8 @@ auto bdfA_poly = mybdfA->polyDeriv();
       a1.solve(_rhs = l1, _solution = T);
 
       //picard conditions update
-      incrT = normL2(_range=elements(cond_mesh_T),_expr=idv(T)-idv(prevT));//good mesh ?
-      incrT /= normL2(_range=elements(cond_mesh_T),_expr=idv(prevT)); //good mesh ?
+      incrT = normL2(_range=markedelements(mesh,range),_expr=idv(T)-idv(prevT));//good mesh ?
+      incrT /= normL2(_range=markedelements(mesh,range),_expr=idv(prevT)); //good mesh ?
       picardIter ++;
       prevT = T;
       Feel::cout << std::setprecision(10) << "Picard final error norm(T-Told)/norm(Told) = " << incrT << std::endl;
@@ -786,9 +786,10 @@ auto bdfA_poly = mybdfA->polyDeriv();
     incrT = 10;
 //end picard loop *************************************
 
+
     e->step(mybdfT->time())->add("T",T);
     
-    double meanT = mean(_range=elements(cond_mesh_T),_expr=idv(T))(0,0);
+    double meanT = mean(_range=markedelements(mesh,range),_expr=idv(T))(0,0);
     Tval = T(Tpt);
     Tval0 = T(Tpt0);
     Feel::cout << "t = " << mybdfT->time() << std::endl;
