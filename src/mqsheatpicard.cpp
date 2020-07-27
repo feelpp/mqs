@@ -617,7 +617,7 @@ auto bdfA_poly = mybdfA->polyDeriv();
         if (ofile)
         {
           ofile << std::setprecision(10) << "t,NbIter,Residual," << Vfirst[0] << "," 
-                << Vfirst[1] << "," << Vfirst[2] << "," << Vfirst[3] << "," << "Bz," << "T" << std::endl;
+                << Vfirst[1] << "," << Vfirst[2] << "," << Vfirst[3] << "," << "Bz," << "T,meanT" << std::endl;
         }
       }
       else
@@ -626,7 +626,7 @@ auto bdfA_poly = mybdfA->polyDeriv();
         {
           ofile << std::setprecision(10) << "t,NbIter,Residual," << Vfirst[0] << "," 
                  << Vfirst[1] << "," << Vfirst[2] << "," << Vfirst[3] << "," << Vfirst[4] 
-                 << "," << Vfirst[5] << "," << Vfirst[6] << "," << Vfirst[7] << "," << "Bz,T" << std::endl;
+                 << "," << Vfirst[5] << "," << Vfirst[6] << "," << Vfirst[7] << "," << "Bz,T,meanT" << std::endl;
         }
       }
       firstStep = 1;
@@ -787,16 +787,19 @@ auto bdfA_poly = mybdfA->polyDeriv();
 //end picard loop *************************************
 
     e->step(mybdfT->time())->add("T",T);
-
+    
+    double meanT = mean(_range=elements(cond_mesh_T),_expr=idv(T))(0,0);
     Tval = T(Tpt);
     Tval0 = T(Tpt0);
     Feel::cout << "t = " << mybdfT->time() << std::endl;
+    Feel::cout << "mean(T) = " << meanT << std::endl;
     Feel::cout << "T(" << Tpt[0] << "," << Tpt[1] << "," << Tpt[2] << ") = " << Tval(0,0,0) << std::endl;
     Feel::cout << "T(" << Tpt0[0] << "," << Tpt0[1] << "," << Tpt0[2] << ") = " << Tval0(0,0,0) << std::endl;
 
     if (ofile)
     {
-      ofile << "," << Tval(0,0,0) << std::endl;
+      ofile << "," << Tval0(0,0,0) << std::endl;
+      ofile << "," << meanT << std::endl;
     }
 //end T *****************************************************
 
