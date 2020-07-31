@@ -8,5 +8,7 @@
 ** xref:results.adoc[Results]
 ** xref:bdf.adoc[Backward differentiation formula]
 ** xref:mqsheat.adoc[Add the heat equation]
+** xref:resolution1.adoc[Linear resolution]
+** xref:resolution2.adoc[Non-linear resolution]
 ** xref:appendix.adoc[Appendix]
 
