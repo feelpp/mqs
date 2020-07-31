@@ -1,0 +1,409 @@
+= Linear resolution 
+
+As we have seen at the end of the previous paragraph,
+a first way to solve the problem is to first solve the mqs equations and then solve the heat equation, 
+assuming it is linear.
+
+== Theoretical results
+
+Let's go over our heat equation again :
+
+[stem]
+++++
+\begin{equation*}
+\rho Cp\frac{\partial T}{\partial t} - \nabla \cdot ( k \nabla T) = f 
+\end{equation*}
+++++
+
+Here we are only interested in the stationary solution in a hollow cylindrical area.  We
+Let us further assume that T is only a function of r .
+Let's note U the potential difference applied to the edges of the magnet.
+In this case, the second member becomes :
+
+[stem]
+++++
+f=\sigma (\frac{U}{2\pi r})^2
+++++
+
+So the equation becomes :
+
+[stem]
+++++
+\begin{equation*}
+ -\frac{1}{r}\frac{\partial}{\partial r}(rk \frac{\partial T}{\partial r}) = \sigma (\frac{U}{2\pi r})^2 
+\end{equation*}
+++++
+
+By integrating, we obtain :
+
+[stem]
+++++
+\begin{equation*}
+rk \frac{\partial T}{\partial r} = -\sigma (\frac{U}{2\pi})^2 \ln(r) + Ak
+\end{equation*}
+++++
+
+where stem:[A] is a constant.
+By reintegrating, we finally find :
+
+[stem]
+++++
+\begin{equation*}
+T = A \ln(r) - \frac{\sigma}{2k} (\frac{U}{2\pi})^2 \ln^2(r) + B
+\end{equation*}
+++++
+
+Where B is a constant. 
+The constants A and B will be determined by the boundary conditions applied to the internal radius r1 and external radius r2 of the magnet.
+
+Now let's look for the maximum temperature. 
+This is obtained when stem:[r] is such that stem:[\frac{\partial T}{\partial r}=0].
+We must therefore solve the equation :
+
+[stem]
+++++
+\begin{equation*}
+A - \frac{\sigma}{k} (\frac{U}{2\pi})^2 \ln(r) = 0
+\end{equation*}
+++++
+
+where the solution is :
+
+[stem]
+++++
+\begin{equation*}
+r=e^{\frac{Ak}{\sigma (\frac{U}{2\pi})^2}}
+\end{equation*}
+++++
+
+so :
+
+[stem]
+++++
+\begin{equation*}
+T_{max} = \frac{A^2k}/{2\sigma (\frac{U}{2\pi})^2 } + B = 0
+\end{equation*}
+++++
+
+Now, let's assume that the boundary conditions are Robin-type, that is:
+
+[stem]
+++++
+\begin{equation*}
+-k\frac{\partial T}{\partial n} = h(r)(T(r)-T_w(r))
+\end{equation*}
+++++
+
+with n the normal unit outside the magnet.
+In addition, let's note stem[h_1=h(r_1)], stem[h_2=h(r_2)], stem[T_1=T_w(r_1)] and stem[T_2=T_w(r_2)].
+
+Applying Robin's conditions to the previously found solution T, we obtain :
+
+[stem]
+++++
+\begin{align}
+A(-k-h_2r_2\ln(r_2))-Bh_2r_2 = - \frac{\sigma}{2k} (\frac{U}{2\pi})^2 \ln(r_2)(h_2r_2\ln(r_2) + 2k) -h_2r_2T_2 \\
+A(k-h_1r_1\ln(r_1))-Bh_1r_1 = - \frac{\sigma}{2k} (\frac{U}{2\pi})^2 \ln(r_1)(h_1r_1\ln(r_1) - 2k) -h_1r_2T_1   
+\end{align}
+++++
+
+So :
+
+[stem]
+++++
+\begin{equation*}
+A = \frac{\sigma}{2k} (\frac{U}{2\pi})^2 \frac{ \frac{1}{2} \ln(r_1r_2)\ln(\frac{r_1}{r_2}) + k(\frac{\ln(r_2)}{h_2r_2} + \frac{\ln(r_1)}{h_1r_1})}{ k(\frac{1}{h_2r_2} + \frac{1}{h_1r_1})+\ln(\frac{r_2}{r_1}) } + \frac{T_2 - T_1}{ k(\frac{1}{h_2r_2} + \frac{1}{h_1r_1})+\ln(\frac{r_2}{r_1}) }
+\end{equation*}
+++++
+
+So:
+
+[stem]
+++++
+\begin{equation*}
+T=B-\frac{\sigma}{2k} (\frac{U}{2\pi})^2 \ln^2(\frac{r}{r_0}) + \frac{T_2 - T_1}{ k(\frac{1}{h_2r_2} + \frac{1}{h_1r_1})+\ln(\frac{r_2}{r_1}) }\ln(r)
+\end{equation*}
+++++
+
+with 
+
+[stem]
+++++
+\begin{equation*}
+\ln(r_0) = \frac{ \frac{1}{2} \ln(r_1r_2)\ln(\frac{r_1}{r_2}) + k(\frac{\ln(r_2)}{h_2r_2} + \frac{\ln(r_1)}{h_1r_1})}{ k(\frac{1}{h_2r_2} + \frac{1}{h_1r_1})+\ln(\frac{r_2}{r_1}) }
+\end{equation*}
+++++
+
+If stem:[T_2=T_1] we have :
+
+[stem]
+++++
+\begin{equation*}
+T=B-\frac{\sigma}{2k} (\frac{U}{2\pi})^2 \ln^2(\frac{r}{r_0})
+\end{equation*}
+++++
+
+It can therefore be seen that stem:[B=T_{max}] and stem:[r_0=r_{max}]
+
+== Implementation under feelpp
+
+Now let's implement the first method, first solving the two equations mqs, 
+then solving the heat equation, assuming that stem:[k] and stem:[\sigma] are linear, 
+and with the source term stem:[f=\frac{1}{\sigma} ||J||^2].
+
+To do this, we will "assemble" the mqs bdf and heat codes.
+
+For the mqs part, it's exactly the same as in the BDF part.
+
+For the heat part, there are some changes.
+First, we define stem:[T] on the conductor.
+
+[source,cpp]
+----
+auto Th = Pch<1>( mesh, markedelements(mesh, range) );
+----
+
+Then, after solving the mqs equations and calculating the term J, 
+the heat equation is solved as in the heat part, using the source term J
+
+[source,cpp]
+----
+l1 += integrate(_range=markedelements(cond_mesh, material.meshMarkers()),
+	            _expr = (1/sigma) * id(T) * inner(idv(J_cond)+idv(J_induct),idv(J_cond)+idv(J_induct)) );
+----
+
+We then solve this second equation and start again at the following time step .
+
+All the code is available in the mqsheatweak.cpp file in the heat branch.
+
+== Results
+
+To verify the code, we will perform a simulation on the one solenoidal magnet case, 
+the same as in the validation part.
+
+After a simulation using the following command line :
+
+[source,cmd]
+----
+mpirun -np 8 feelpp_mqs_heatmqs --config-file cases/mqsheat/mqsheatweak.cfg --gmsh.hsize=2.5e-3 --pc-type gasm 
+---- 
+
+with the config file 
+
+[source,cfg]
+----
+directory=mqs/mqsheatweak
+
+#init solution
+A0={0,0,0}
+V0=0
+T0=293
+
+model-file=$cfgdir/mqsheatweak.json
+
+[gmsh]
+hsize=5.e-3
+filename=$cfgdir/mqsheatweak.geo
+partition=1
+
+[mqs]
+ksp-monitor=false
+#pc-type=gamg
+pc-type=fieldsplit
+fieldsplit-type=additive #additive, multiplicative, symmetric-multiplicative
+
+[mqs.fieldsplit-0]
+pc-type=gamg
+[mqs.fieldsplit-1]
+pc-type=gamg
+
+#[exporter]
+#geometry=static
+
+[ts]
+time-step=0.1
+time-final=22
+
+[bdf]
+time-step=0.1
+time-final=22
+----
+
+and the json file
+
+[source,cfg]
+----
+{
+    "Name": "CoupledCart",
+    "ShortName":"MSC",
+    "Models":
+    {
+	    "use-model-name":1,
+	    "solid":
+	    {
+	        "equations":"Elasticity"
+	    },
+        "maxwell":
+        {
+	        "equations":"magnetostatic-cart"
+	    }
+    },
+    "Parameters":
+    {
+	"Tau":"1",
+	"V0": "0",
+	"V1": "1*1/4."
+    },
+    "Materials":
+    {
+        "copper":
+        {
+            "markers":"coil",
+	    "physics":["heat","electric","solid","maxwell"],
+            "sigma":"58.e+6",
+            "mu_mag": "1",
+            "Cp":"380",
+            "rho":"10000",
+            "k":"380"
+
+        },
+        "air":
+        {
+            "markers":"air",
+	    "physics":["maxwell"],
+            "mu_mag": "1",
+            "Cp":"1004",
+            "k":"0.0262",
+            "rho":"1.292"
+
+        }
+    },
+    "BoundaryConditions":
+    {
+        "electric-potential":
+        {
+            "Dirichlet":
+            {
+                "V0":
+                {
+                    "expr":"0" 
+                },
+                "V1":
+                {
+                    "expr":"1/4.*t/(0.1*10)*(t<(0.1*10))+(1/4.*(t<(0.5*40))+0*(t>(0.5*40)))*(t>(0.1*10)):t"
+		}
+            }
+        },
+        "magnetic-potential":
+        {
+            "Dirichlet":
+            {
+                "Border":
+                {
+                    "expr":"{0,0,0}"
+                }
+            },
+            "DirichletX":
+            {
+                "V0":
+                {
+                    "expr":"0"
+                },
+		"OXOZ":
+                {
+                    "expr":"0"
+                }
+            },
+            "DirichletY":
+            {
+                "V1":
+                {
+                    "expr":"0"
+                },
+		"OYOZ":
+                {
+                    "expr":"0"
+                }
+            },
+            "DirichletZ":
+            {
+                "V0":
+                {
+                    "expr":"0"
+                },
+		"OXOZ":
+                {
+                    "expr":"0"
+                },
+                "V1":
+                {
+                    "expr":"0"
+                },
+		"OYOZ":
+                {
+                    "expr":"0"
+                }
+            }
+        },
+        "temperature":
+        {
+            "Robin":
+            {
+                "Rint":
+                {
+                    "expr1":"80000", //h
+                    "expr2":"293" //TW
+                },
+                "Rext":
+                {
+                    "expr1":"80000", //h
+                    "expr2":"293"
+                }
+            }
+        }
+    },
+    "PostProcess":
+    {
+	"Exports":
+	{
+	    "fields":["magneticPotential","magneticField","temperature"]
+	}
+    }
+}
+----
+
+This is what we get for stem:[Bz] and stem:[I] :
+
+image:mqsheat/weakbzi.png[geometry,50%]
+
+We are tending towards the same values as the resolution part.
+
+Now let's take a look at the temperature results.
+
+First, here's what we get for the temperature in the simulation, at the point stem:[(0,r_0,0)], 
+where stem:[r_0] is the same as in the theoretical part.
+We have stem:[r_1=0.075], stem:[r_2=0.1002], stem:[h_1=h_2=80000], stem:[k=380], so stem:[r_0 \approx 0.086109025458]
+
+Here is what we get for the temperature at point stem:[(0,r_0,0)]:
+
+image:mqsheat/weakT.png[geometry,50%]
+
+We can see that at the end of the plateau, which is equivalent to the stationary regime, 
+the temperature is approximately stem[363.4095126K].
+
+The expected theoretical result, calulated with the result in the theorical part is stem[T=363.702800489573K], 
+which is very close to what we have.
+
+Now let's compare the temperature according to the radius, at the end of the plateau in stationary mode.
+
+image:mqsheat/weakTr.png[geometry,50%]
+
+We can see that our results are very close to the theoretical result, 
+which shows that the code is working correctly.
+
+So we can see that, on the one hand, the results of the mqs part are satisfactory, 
+because they are the same as what we obtained at the beginning, 
+and the heat equation also gives the expected results.
+Now we can talk about the second case, namely the resolution of the mqs equations first, 
+and then the resolution of the non-linear heat equation using a fixed point method
+
