@@ -1,0 +1,88 @@
+= Non-linear resolution 
+
+We will now attempt a second approach. 
+In reality, the parameters stem:[\sigma] and stem:[k] depend on the temperature in the following way:
+
+[stem]
+++++
+\begin{align}
+\sigma(T) = \frac{\sigma_0}{1+\alpha(T-T_0)}
+k(T)=\frac{k_0}{1+\alpha(T-T_0)}\frac{T}{T_0}
+\end{align}
+++++
+
+It is therefore necessary to update them every step of the time.
+To do this we will proceed as follows :
+
+At time 0, stem:[\sigma_0] and stem:[k_0] are fixed and then the equations mqs are solved. 
+Then, a fixed point method, here picard, 
+is applied to approach the non-linear terms of the heat equation until a satisfactory relative error is obtained. 
+Finaly stem:[\sigma] and stem:[k] are updated for the following time step.
+
+== Implementation under feelpp
+
+The code is relatively close to that of the previous part, there are only a few small changes :
+
+We define the tolerance for picard iterations, as well as the maximum number of iterations tolerated.
+
+[source,cpp]
+----
+double dt = doption(_name = "ts.time-step");
+double tmax = doption(_name = "ts.time-final");
+----
+
+We define stem:[\sigma] in another way: We update the value of T at each time step with the previous value. 
+
+[source,cpp]
+----
+auto sigma = material.getScalar("sigma","T",idv(prevT));
+----
+
+where prevT is stem[T] at previous time.
+
+We also do the same for k in heat part :
+
+[source,cpp]
+----
+auto k = material.getScalar("k","T",idv(prevT));
+----
+
+Then, after solving the two mqs equations and calculating J, 
+we start the picard loop for the heat equation 
+
+[source,cpp]
+----
+picardIter = 0;
+while(incrT > tol )
+{
+    Feel::cout << "Picard iter num = " << picardIter+1 << std::endl;
+    if (picardIter > maxiter)
+    {
+        Feel::cout << "Picard maxiter reach" << std::endl;
+        break;
+    }
+    ...
+----
+
+After calculating T, the error L2 is calculated:
+
+[stem]
+++++
+\begin{equation*}
+err(T) = \frac{||T-prevT||_2}{||prevT||_2}
+\end{equation*}
+++++
+
+[source,cpp]
+----
+    incrT = normL2(_range=markedelements(mesh,range),_expr=idv(T)-idv(prevT));
+    incrT /= normL2(_range=markedelements(mesh,range),_expr=idv(prevT));
+----
+
+And we make this loop until the error is smaller than the set tolerance. 
+Note that ste:[\sigma] and stem:[k] are well updated at each iteration.
+
+After that, we go to the time t+1 and start again. 
+
+== Results 
+
