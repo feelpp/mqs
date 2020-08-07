@@ -507,7 +507,7 @@ int main(int argc, char**argv )
   double forced_t = forced_times[n_forced];
 
   bool converged = false;
-  for(t = dt; t <= tmax+1e-10; )
+  for(t = dt; t <= tmax; )
     {
 
       tic();
@@ -1163,6 +1163,8 @@ int main(int argc, char**argv )
 	  Feel::cout << "forced_time=" << forced_t << ", ";
 	  Feel::cout << "t=" << t << ", ";
 	  Feel::cout << "allmost=" << fabs(1-forced_t/t) << " (" << (fabs(1-forced_t/t) <= epstime) << ") ";
+	  Feel::cout << "n_forced=" << n_forced << ",";
+	  Feel::cout << "forced_times.size()=" << forced_times.size() << ",";
 	  Feel::cout << "reached=" << reached << std::endl;
 	  if ( reached || allmost )
 	    {
@@ -1171,9 +1173,9 @@ int main(int argc, char**argv )
 		  n_forced++;
 		  forced_t = forced_times[n_forced];
 		  reached = false;
-		  dt = doption(_name = "ts.time-step");
 		  Feel::cout << "go to next sequence" << std::endl;
 		}
+	      dt = doption(_name = "ts.time-step");
 	    }
 
 	  Aold = (*A);
@@ -1353,7 +1355,7 @@ int main(int argc, char**argv )
 	  if ( t >= forced_t )
 	    {
 	      reached = true;
-	      if ( fabs(1-forced_t/t) > epstime )
+	      if ( !allmost )
 		{
 		  dt -= t-forced_t;
 		  t = forced_t;
