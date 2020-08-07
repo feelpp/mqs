@@ -80,7 +80,7 @@ err(T) = \frac{||T-prevT||_2}{||prevT||_2}
 ----
 
 And we make this loop until the error is smaller than the set tolerance. 
-Note that ste:[\sigma] and stem:[k] are well updated at each iteration.
+Note that stem:[\sigma] and stem:[k] are well updated at each iteration.
 
 After that, we go to the time t+1 and start again. 
 
