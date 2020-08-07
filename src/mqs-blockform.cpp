@@ -24,6 +24,8 @@ int main(int argc, char**argv )
     ( "verbosity", po::value<int>()->default_value( 0 ), "set verbosisity level" )
     ( "weakdir", po::value<bool>()->default_value( "false" ), "use Dirichlet weak formulation" )
     ( "penalty-coeff", po::value<double>()->default_value( 1.e+3 ), "penalty coefficient for weak Dirichlet" )
+    ( "epstime", po::value<double>()->default_value( 1.e-10 ), "eps for force time step detection" )
+    ( "forced-sequence", po::value< std::vector<double> >()->default_value(std::vector<double>()), "list of forced times" )
     ( "A0", po::value<std::string>()->default_value( "{0,0,0}" ), "initial A" )
     ( "V0", po::value<std::string>()->default_value( "0" ), "initial V" )
     ( "Aexact", po::value<std::string>()->default_value( "" ), "exact A" )
@@ -42,6 +44,19 @@ int main(int argc, char**argv )
 
   double tmax = doption(_name = "ts.time-final");
   std::cout << "time-final=" << tmax << std::endl;
+
+  // define sequence of forced time steps
+  double epstime = doption("epstime");
+  bool reached = false;
+  bool allmost = false;
+  std::vector<double> forced_times = vdoption("forced-sequence");;
+  forced_times.push_back(tmax);
+  std::sort(forced_times.begin(), forced_times.end());
+  Feel::cout << "Forced sequence:" << forced_times << std::endl;
+  Feel::cout << "epstime:" << epstime << std::endl;
+
+  int n_forced = 0;
+  double forced_t = forced_times[n_forced];
 
   // Eventually get a solution
   bool Uexact = false;
@@ -203,7 +218,7 @@ int main(int argc, char**argv )
   auto mu0 = 4.e-7 * M_PI ; // SI Unit : H/m = m.kg/s2/A2
 
   
-  for (t = dt; t < tmax; t += dt)
+  for (t = dt; t < tmax+1e-10;)
     {
 
       tic();
@@ -429,6 +444,43 @@ int main(int argc, char**argv )
       e->save();
       toc("export",  (M_verbose > 0));
 
+      allmost = ( fabs(1-forced_t/t) <= epstime );
+
+      Feel::cout << "forced_time=" << forced_t << ", ";
+      Feel::cout << "t=" << t << ", ";
+      Feel::cout << "allmost=" << fabs(1-forced_t/t) << " (" << (fabs(1-forced_t/t) <= epstime) << ") ";
+      Feel::cout << "reached=" << reached << std::endl;
+      if ( reached || allmost )
+	{
+	  if ( n_forced < forced_times.size()-1 )
+	    {
+	      n_forced++;
+	      forced_t = forced_times[n_forced];
+	      reached = false;
+	      dt = doption(_name = "ts.time-step");
+	      Feel::cout << "go to next sequence" << std::endl;
+	    }
+	}
+      t += dt;
+
+      // force time step
+      if ( !forced_times.empty() && !reached )
+	{
+	  forced_t = forced_times[n_forced];
+	  if ( t >= forced_t )
+	    {
+	      reached = true;
+	      if ( fabs(1-forced_t/t) > epstime )
+		{
+		  dt -= t-forced_t;
+		  t = forced_t;
+		  Feel::cout << "forced_time=" << forced_t << ", ";
+		  Feel::cout << "forced_dt=" << dt << ", ";
+		  Feel::cout << "t=" << t << std::endl;
+		}
+	    }
+	}
+      
       A = U(0_c); 
       V = U(1_c);
       

@@ -275,6 +275,7 @@ int main(int argc, char**argv )
   bool reached = false;
   std::vector<double> forced_times = vdoption("forced-sequence");;
   forced_times.push_back(tmax);
+  std::sort(forced_times.begin(), forced_times.end());
   Feel::cout << "Forced sequence:" << forced_times << std::endl;
 
   int n_forced = 0;
