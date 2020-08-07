@@ -54,7 +54,7 @@ T = A \ln(r) - \frac{\sigma}{2k} (\frac{U}{2\pi})^2 \ln^2(r) + B
 ++++
 
 Where B is a constant. 
-The constants A and B will be determined by the boundary conditions applied to the internal radius r1 and external radius r2 of the magnet.
+The constants A and B will be determined by the boundary conditions applied to the internal radius stem:[r_1] and external radius stem:[r_2] of the magnet.
 
 Now let's look for the maximum temperature. 
 This is obtained when stem:[r] is such that stem:[\frac{\partial T}{\partial r}=0].
@@ -81,7 +81,7 @@ so :
 [stem]
 ++++
 \begin{equation*}
-T_{max} = \frac{A^2k}/{2\sigma (\frac{U}{2\pi})^2 } + B = 0
+T_{max} = \frac{A^2k}{2\sigma (\frac{U}{2\pi})^2 } + B = 0
 \end{equation*}
 ++++
 
@@ -95,7 +95,7 @@ Now, let's assume that the boundary conditions are Robin-type, that is:
 ++++
 
 with n the normal unit outside the magnet.
-In addition, let's note stem[h_1=h(r_1)], stem[h_2=h(r_2)], stem[T_1=T_w(r_1)] and stem[T_2=T_w(r_2)].
+In addition, let's note stem:[h_1=h(r_1)], stem:[h_2=h(r_2)], stem:[T_1=T_w(r_1)] and stem:[T_2=T_w(r_2)].
 
 Applying Robin's conditions to the previously found solution T, we obtain :
 
@@ -351,12 +351,12 @@ and the json file
             {
                 "Rint":
                 {
-                    "expr1":"80000", //h
-                    "expr2":"293" //TW
+                    "expr1":"80000", <1>
+                    "expr2":"293" <2>
                 },
                 "Rext":
                 {
-                    "expr1":"80000", //h
+                    "expr1":"80000", 
                     "expr2":"293"
                 }
             }
@@ -371,6 +371,9 @@ and the json file
     }
 }
 ----
+
+<1> k in robin condition
+<2> Tw in robin condition
 
 This is what we get for stem:[Bz] and stem:[I] :
 
@@ -389,9 +392,9 @@ Here is what we get for the temperature at point stem:[(0,r_0,0)]:
 image:mqsheat/weakT.png[geometry,50%]
 
 We can see that at the end of the plateau, which is equivalent to the stationary regime, 
-the temperature is approximately stem[363.4095126K].
+the temperature is approximately stem:[363.4095126K].
 
-The expected theoretical result, calulated with the result in the theorical part is stem[T=363.702800489573K], 
+The expected theoretical result, calulated with the result in the theorical part is stem:[T=363.702800489573K], 
 which is very close to what we have.
 
 Now let's compare the temperature according to the radius, at the end of the plateau in stationary mode.
