@@ -3,7 +3,8 @@ Mesh.OptimizeNetgen=0; // otherwise it crashes when IsFull=1
 
 IsFull=0;
 Unit=1.e-3;
-h = 5*Unit;
+h = 5.e-3;
+//h = 5*Unit;
 h_inf = 10*h;
 h_ext = 10*h;
 
