@@ -12,7 +12,7 @@ jobs:
         PIPELINE: "feelpp/cemosis-docs"
         COMMIT: "HEAD"
         BRANCH: "master"
-        MESSAGE: ":github: Triggered from a GitHub Action by MQS Project"
+        MESSAGE: ":github: [Triggered from a GitHub Action by MQS Project] ${{ github.event.head_commit.message }}"
   build_code:
     runs-on: self-hosted
     steps:
