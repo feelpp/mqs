@@ -49,7 +49,10 @@ The first equation name is test1, in the folder mqs/src.
 .geo and .cfg files are stored in mqs/src/cases/test1/
 To get the same simulation as implementation, type in build/src directory :
 
+----
 mpirun -np 1 feelpp_mqs_test1 --config-file cases/test1/test1.cfg 
+----
+
 You can also use the parameter --gmsh.hsize 0.01 and --pc-type gasm for exemple
 
 
@@ -57,11 +60,15 @@ The first equation name is test2, in the folder mqs/src.
 .geo and .cfg files are stored in mqs/src/cases/test2/
 To get the same simulation as implementation, type in build/src directory :
 
+----
 mpirun -np 1 feelpp_mqs_test2 --config-file cases/test2/test2.cfg 
+----
 
 for the first test, and 
 
+----
 mpirun -np 1 feelpp_mqs_test2 --config-file cases/test2/test22.cfg 
+----
 
 for the second test.
 
@@ -72,4 +79,26 @@ For the coupled equation, the name is mqs-blockform, in the folder mqs/src.
 
 To get a simulation (doesnt give good result for the moment), type in build/src directory :
 
+----
 mpirun -np 1 feelpp_mqs_mqs-blockform --config-file cases/mqs-blockform/const.cfg 
+----
+
+== Generate the documentation locally
+
+* [ ]  https://docs.antora.org/antora/2.3/install-and-run-quickstart/[install Antora]
+
+----
+cd docs
+antora site.yml
+----
+
+* [ ]  https://docs.antora.org/antora/2.3/preview-site/[install node-srv]
+
+To preview the documentation
+
+----
+cd docs
+node-srv -p 8000 public
+----
+
+then point your browser to http://localhost:8000
