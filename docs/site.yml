@@ -1,5 +1,5 @@
 site:
-  title: Project // Docs
+  title: Feel++ Maxwell Quasi Static Docs
   url: /
   start_page: mqs:ROOT:index.adoc
 content:
@@ -15,7 +15,7 @@ content:
     start_path: docs/toolboxes
 ui:
   bundle:
-    url: https://gitlab.com/antora/antora-ui-default/-/jobs/artifacts/master/raw/build/ui-bundle.zip?job=bundle-stable
+    url: https://gitlab.com/feelpp/antora-ui-default/-/jobs/artifacts/feelpp/raw/build/ui-bundle.zip?job=bundle-stable
     snapshot: true
   supplemental_files: supplemental-ui
 output:
@@ -28,6 +28,7 @@ asciidoc:
     numbered: true
     allow-uri-read: true
     hide-uri-scheme: true
+    cemosis: Cemosis
     feelpp: Feel++
     angiotk: AngioTK
     4fastsim: 4FastSim
