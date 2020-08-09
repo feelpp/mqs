@@ -1,6 +1,6 @@
 name: mqs
 title: Feel++ Maxwell Quasi Static
-version: '0.1.1'
+version: latest
 nav:
 - modules/ROOT/nav.adoc
 - modules/stage/nav.adoc
