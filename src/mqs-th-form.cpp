@@ -509,6 +509,28 @@ int main(int argc, char**argv )
   bool converged = false;
   for(t = dt; t <= tmax; )
     {
+      // force time step
+      if ( !forced_times.empty() && !reached )
+	{
+	  forced_t = forced_times[n_forced];
+	  allmost = ( fabs(1-forced_t/t) <= epstime );
+	  if ( t >= forced_t )
+	    {
+	      reached = true;
+	      if ( !allmost )
+		{
+		  dt -= t-forced_t;
+		  t = forced_t;
+		  Feel::cout << "forced_dt=" << dt <<  std::endl;
+		}
+	    }
+	}
+      Feel::cout << "forced_time=" << forced_t << ", ";
+      Feel::cout << "t=" << t << ", ";
+      Feel::cout << "allmost=" << fabs(1-forced_t/t) << " (" << (fabs(1-forced_t/t) <= epstime) << ") ";
+      Feel::cout << "n_forced=" << n_forced << ",";
+      Feel::cout << "forced_times.size()=" << forced_times.size() << ",";
+      Feel::cout << "reached=" << reached << std::endl;
 
       tic();
       do {
@@ -1031,7 +1053,17 @@ int main(int argc, char**argv )
 		  // export
 		  do_export=true; //false;
 
-		  allmost = ( fabs(1-forced_t/t) <= epstime );
+		  // time accepted
+		  if ( allmost )
+		    if ( n_forced < forced_times.size()-1 )
+		      {
+			reached = false;
+			n_forced++;
+			forced_t = forced_times[n_forced] ;
+			dt = doption(_name = "ts.time-step");
+			dtprev=dt;
+			Feel::cout << "go to next sequence" << std::endl;
+		      }
 		  adapt_msg = "keeping the time step (dt_min)";
 		}
 	      else
@@ -1095,28 +1127,24 @@ int main(int argc, char**argv )
 	      // export
 	      do_export=true; //false;
 
-	      allmost = ( fabs(1-forced_t/t) <= epstime );
-	      if ( !allmost )
+	      if ( est <= dttol/8. && dt != dt_max )
 		{
-		  if ( est <= dttol/8. && dt != dt_max )
+		  dt*=2;
+		  adapt_msg = "increasing(x2) the time step";
+		  if ( dt > dt_max )
 		    {
-		      dt*=2;
-		      adapt_msg = "increasing(x2) the time step";
-		      if ( dt > dt_max )
-			{
-			  dt = dt_max;
-			  adapt_msg = "increasing the time step to dt_max";
-			}
+		      dt = dt_max;
+		      adapt_msg = "increasing the time step to dt_max";
 		    }
-		  else
-		    {
-		      adapt_msg = "keeping the time step";
-		      if ( dt == dt_max ) adapt_msg += " (dt_max)";
-		    }
+		}
+	      else
+		{
+		  adapt_msg = "keeping the time step";
+		  if ( dt == dt_max ) adapt_msg += " (dt_max)";
 		}
 
 	      // time accepted
-	      if ( reached || allmost )
+	      if ( allmost )
 		if ( n_forced < forced_times.size()-1 )
 		  {
 		    reached = false;
@@ -1130,7 +1158,7 @@ int main(int argc, char**argv )
 	   
 	  std::string msg = (boost::format("[adapt dt=%1%] ") % dt).str();
 	  msg += adapt_msg;
-	Feel:cout << msg << std::endl;
+	  Feel:cout << msg << std::endl;
 	  toc( msg, (M_verbose > 0));
         }
       else
@@ -1158,24 +1186,17 @@ int main(int argc, char**argv )
 	      Qth.on( _range=markedelements(mesh, material.meshMarkers()), _expr= inner(idv(J_cond)+idv(J_induct),idv(Efield)+idv(dAdt)) );
 	    }
 
-	  allmost = ( fabs(1-forced_t/t) <= epstime );
-
-	  Feel::cout << "forced_time=" << forced_t << ", ";
-	  Feel::cout << "t=" << t << ", ";
-	  Feel::cout << "allmost=" << fabs(1-forced_t/t) << " (" << (fabs(1-forced_t/t) <= epstime) << ") ";
-	  Feel::cout << "n_forced=" << n_forced << ",";
-	  Feel::cout << "forced_times.size()=" << forced_times.size() << ",";
-	  Feel::cout << "reached=" << reached << std::endl;
-	  if ( reached || allmost )
+	  Feel::cout << " ** allmost (" << allmost << ") ** " << std::endl;
+	  if ( allmost )
 	    {
 	      if ( n_forced < forced_times.size()-1 )
 		{
 		  n_forced++;
 		  forced_t = forced_times[n_forced];
 		  reached = false;
+		  dt = doption(_name = "ts.time-step");
 		  Feel::cout << "go to next sequence" << std::endl;
 		}
-	      dt = doption(_name = "ts.time-step");
 	    }
 
 	  Aold = (*A);
@@ -1347,24 +1368,6 @@ int main(int argc, char**argv )
       iterNL = 0;
     
       t += dt;
-
-      // force time step
-      if ( !forced_times.empty() && !reached )
-	{
-	  forced_t = forced_times[n_forced];
-	  if ( t >= forced_t )
-	    {
-	      reached = true;
-	      if ( !allmost )
-		{
-		  dt -= t-forced_t;
-		  t = forced_t;
-		  Feel::cout << "forced_time=" << forced_t << ", ";
-		  Feel::cout << "forced_dt=" << dt << ", ";
-		  Feel::cout << "t=" << t << std::endl;
-		}
-	    }
-	}
     }
 
   // export as markdow table
