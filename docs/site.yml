@@ -17,7 +17,6 @@ ui:
   bundle:
     url: https://gitlab.com/feelpp/antora-ui-default/-/jobs/artifacts/feelpp/raw/build/ui-bundle.zip?job=bundle-stable
     snapshot: true
-  supplemental_files: supplemental-ui
 asciidoc:
   attributes:
     project_version: 0.108
