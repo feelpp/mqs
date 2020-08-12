@@ -2,6 +2,7 @@
 = {feelpp} mqs 
 
 image:https://github.com/feelpp/mqs/workflows/CI/badge.svg[CI]
+image:https://github.com/feelpp/mqs/workflows/Build%20and%20Deploy/badge.svg[Build and Deploy]
 
 This is a {feelpp} Template Project. It serves as a template for {feelpp} projects.
 
