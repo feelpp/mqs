@@ -30,20 +30,37 @@ Christophe PRUD'HOMME & Christophe TROPHIME
 . Introduction/Context
 .. Introduction
 .. Context
-. Formulation 
+. Maxwell’s equations and MQS approximation 
 .. Differential form of Maxwell's equations
 .. The magnetic vector and electric scalar potentials Formulation
 .. Weak formulation
-. Discretization
-. Implementation
-.. First equation
-.. Second equation
-.. Coupled system
+.. Discretization
 . Validations
 .. Introduction
 .. A solenoidal magnet
 .. 2 solenoidal magnets
+. End of the project, beginning and objective of the stage
+. Implementation of MQS equations and results
+.. Implementation
+.. Results
+. Backward differentiation formula
+.. General formula
+.. Derivation of the coefficients
+.. BDF in feelpp
+.. Results
+. Add the heat equation
+.. The heat equation
+.. Weak formulation 
+.. Implementation under feelpp
+.. MQS with heat equation
+.. Resolution strategy
+. Linear resolution
+.. Theorical results
+.. Implementation under feelpp
+.. Results
+. Non inear resolution
+.. Implementation under feelpp
+.. Results
 . Conclusion
 . Acknowledgments
-. Code
 . Bibliography
