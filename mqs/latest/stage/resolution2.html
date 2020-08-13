@@ -12,8 +12,6 @@
 
 
 
-
-
 <script type="text/x-mathjax-config">
 MathJax.Hub.Config({
   messageStyle: "none",
@@ -90,6 +88,8 @@ MathJax.Hub.Config({
 <!--<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.9.0/katex.min.css" integrity="sha384-TEMocfGvRuD1rIAacqrknm5BQZ7W7uWitoih+jMNFXQIbNl16bO8OZmylH/Vi/Ei" crossorigin="anonymous">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.9.0/katex.min.js" integrity="sha384-jmxIlussZWB7qCuB+PgKG1uLjjxbVVIayPJwi6cG6Zb4YKq0JIw+OMnkkEC7kYCq" crossorigin="anonymous"></script>-->
 
+
+<script type='text/javascript' src='https://platform-api.sharethis.com/js/sharethis.js#property=5f34e90f94876f0012457ea1&product=sop' async='async'></script>
   </head>
   <body class="article">
 <header class="header">
@@ -267,6 +267,9 @@ MathJax.Hub.Config({
     <a class="nav-link" href="resolution2.html">Non-linear resolution</a>
   </li>
   <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="conclusion.html">Conclusion</a>
+  </li>
+  <li class="nav-item" data-depth="2">
     <a class="nav-link" href="appendix.html">Appendix</a>
   </li>
 </ul>
@@ -351,14 +354,14 @@ In reality, the parameters \(\sigma\) and \(k\) depend on the temperature in the
 <div class="stemblock">
 <div class="content">
 \[\begin{align}
-\sigma(T) = \frac{\sigma_0}{1+\alpha(T-T_0)}
+\sigma(T) = \frac{\sigma_0}{1+\alpha(T-T_0)} \\
 k(T)=\frac{k_0}{1+\alpha(T-T_0)}\frac{T}{T_0}
 \end{align}\]
 </div>
 </div>
 <div class="paragraph">
 <p>It is therefore necessary to update them every step of the time.
-To do this we will proceed as follows :</p>
+To do this we will proceed as follows:</p>
 </div>
 <div class="paragraph">
 <p>At time 0, \(\sigma_0\) and \(k_0\) are fixed and then the equations mqs are solved.
@@ -392,7 +395,7 @@ double tmax = doption(_name = "ts.time-final");</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>where prevT is stem[T] at previous time.</p>
+<p>where prevT is \(T\) at previous time.</p>
 </div>
 <div class="paragraph">
 <p>We also do the same for k in heat part :</p>
@@ -448,7 +451,49 @@ Note that \(\sigma\) and \(k\) are well updated at each iteration.</p>
 <div class="sect1">
 <h2 id="_results"><a class="anchor" href="#_results"></a>2. Results</h2>
 <div class="sectionbody">
-
+<div class="paragraph">
+<p>We are interested in the same case as the linear model, i.e. the model with a single magnet. A simulation is carried out over a period of 12 seconds, by increasing the voltage \(U\) up to \(U_{max}=0.25\) at \(t=1\), then a plateau of 9 seconds before the voltage stops at \(t=10\).</p>
+</div>
+<div class="paragraph">
+<p>The cfg and json files can be found on the heat branch, in srs/cases/mqsheat/ and are named heatheatpicard.</p>
+</div>
+<div class="paragraph">
+<p>After simulation using \(dt = 0.1\), here are the results:</p>
+</div>
+<div class="paragraph">
+<p>Here is the evolution of the temperature versus time compared with the linear case :</p>
+</div>
+<div class="paragraph">
+<p><span class="image"><img src="_images/mqsheat/picardT.png" alt="geometry" width="50%"></span></p>
+</div>
+<div class="paragraph">
+<p>First, we find that the temperature at the end of the plateau in the linear case is higher than in the non-linear case.
+This is probably explained by the fact that the \(\sigma\) conductivity will decrease with temperature, as we can see from the \(\sigma\) formula, so the second member of the heat equation representing the joule losses will be lower, hence a decrease in temperature.</p>
+</div>
+<div class="paragraph">
+<p>Let&#8217;s display the temperature and the magnetic field in the non-linear case :</p>
+</div>
+<div class="paragraph">
+<p><span class="image"><img src="_images/mqsheat/nonlin.png" alt="geometry" width="50%"></span></p>
+</div>
+<div class="paragraph">
+<p>Let&#8217;s now compare this to the linear case :</p>
+</div>
+<div class="paragraph">
+<p><span class="image"><img src="_images/mqsheat/lin.png" alt="geometry" width="50%"></span></p>
+</div>
+<div class="paragraph">
+<p>We can see that in the non-linear case, a peak is formed in t=1 for the magnetic field. The magnetic field thus reaches its maximum at t=1, before falling back to a limit value. In the linear case, the limit value is read directly at the end of the plateau.</p>
+</div>
+<div class="paragraph">
+<p>Here is what we get if we display the shape of the T and B curves in the linear and non-linear cases on the same graph:</p>
+</div>
+<div class="paragraph">
+<p><span class="image"><img src="_images/mqsheat/both.png" alt="geometry" width="50%"></span></p>
+</div>
+<div class="paragraph">
+<p>One explanation for this phenomenon may be&#8230;&#8203;</p>
+</div>
 </div>
 </div>
 </article>
@@ -461,6 +506,7 @@ Note that \(\sigma\) and \(k\) are well updated at each iteration.</p>
 </div>
 <footer class="footer">
   <div class="container">
+    <div class="sharethis-inline-share-buttons"></div>
     <div class="footer-links">
       <div class="col">
         <div class="footer-logo">

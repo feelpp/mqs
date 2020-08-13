@@ -12,8 +12,6 @@
 
 
 
-
-
 <script type="text/x-mathjax-config">
 MathJax.Hub.Config({
   messageStyle: "none",
@@ -90,6 +88,8 @@ MathJax.Hub.Config({
 <!--<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.9.0/katex.min.css" integrity="sha384-TEMocfGvRuD1rIAacqrknm5BQZ7W7uWitoih+jMNFXQIbNl16bO8OZmylH/Vi/Ei" crossorigin="anonymous">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.9.0/katex.min.js" integrity="sha384-jmxIlussZWB7qCuB+PgKG1uLjjxbVVIayPJwi6cG6Zb4YKq0JIw+OMnkkEC7kYCq" crossorigin="anonymous"></script>-->
 
+
+<script type='text/javascript' src='https://platform-api.sharethis.com/js/sharethis.js#property=5f34e90f94876f0012457ea1&product=sop' async='async'></script>
   </head>
   <body class="article">
 <header class="header">
@@ -265,6 +265,9 @@ MathJax.Hub.Config({
   </li>
   <li class="nav-item" data-depth="2">
     <a class="nav-link" href="resolution2.html">Non-linear resolution</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="conclusion.html">Conclusion</a>
   </li>
   <li class="nav-item" data-depth="2">
     <a class="nav-link" href="appendix.html">Appendix</a>
@@ -657,6 +660,16 @@ The block structure consists of transforming our system of equations into the fo
 <div class="paragraph">
 <p><span class="image"><img src="_images/2helix/turn2.png" alt="results" width="50%"></span></p>
 </div>
+<div class="paragraph">
+<p>We can see that in the case with one magnet and in the case with two, there is a small difference between the result obtained with feelpp and the result obtained with getdp. This can be explained in several ways:
+A time step not small enough, which will degrade the approximation at each time step.
+A space step not small enough. Indeed, reducing the space step h will greatly improve the accuracy, but in return the computation time will be much longer.
+Values of constants, such as sigma, which are approximations, will increase the error at each time step.
+Finally the order chosen for the finite elements, which can impact the result as well.</p>
+</div>
+<div class="paragraph">
+<p>Translated with www.DeepL.com/Translator (free version)</p>
+</div>
 </div>
 </div>
 </div>
@@ -670,6 +683,7 @@ The block structure consists of transforming our system of equations into the fo
 </div>
 <footer class="footer">
   <div class="container">
+    <div class="sharethis-inline-share-buttons"></div>
     <div class="footer-links">
       <div class="col">
         <div class="footer-logo">
