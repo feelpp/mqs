@@ -6,13 +6,13 @@ In reality, the parameters stem:[\sigma] and stem:[k] depend on the temperature 
 [stem]
 ++++
 \begin{align}
-\sigma(T) = \frac{\sigma_0}{1+\alpha(T-T_0)}
+\sigma(T) = \frac{\sigma_0}{1+\alpha(T-T_0)} \\
 k(T)=\frac{k_0}{1+\alpha(T-T_0)}\frac{T}{T_0}
 \end{align}
 ++++
 
 It is therefore necessary to update them every step of the time.
-To do this we will proceed as follows :
+To do this we will proceed as follows:
 
 At time 0, stem:[\sigma_0] and stem:[k_0] are fixed and then the equations mqs are solved. 
 Then, a fixed point method, here picard, 
@@ -38,7 +38,7 @@ We define stem:[\sigma] in another way: We update the value of T at each time st
 auto sigma = material.getScalar("sigma","T",idv(prevT));
 ----
 
-where prevT is stem[T] at previous time.
+where prevT is stem:[T] at previous time.
 
 We also do the same for k in heat part :
 
@@ -85,4 +85,37 @@ Note that stem:[\sigma] and stem:[k] are well updated at each iteration.
 After that, we go to the time t+1 and start again. 
 
 == Results 
+
+We are interested in the same case as the linear model, i.e. the model with a single magnet. A simulation is carried out over a period of 12 seconds, by increasing the voltage stem:[U] up to stem:[U_{max}=0.25] at stem:[t=1], then a plateau of 9 seconds before the voltage stops at stem:[t=10].
+
+The cfg and json files can be found on the heat branch, in srs/cases/mqsheat/ and are named heatheatpicard.
+
+After simulation using stem:[dt = 0.1], here are the results:
+
+Here is the evolution of the temperature versus time compared with the linear case :
+
+image:mqsheat/picardT.png[geometry,50%]
+
+First, we find that the temperature at the end of the plateau in the linear case is higher than in the non-linear case.
+This is probably explained by the fact that the stem:[\sigma] conductivity will decrease with temperature, as we can see from the stem:[\sigma] formula, so the second member of the heat equation representing the joule losses will be lower, hence a decrease in temperature.
+
+Let's display the temperature and the magnetic field in the non-linear case :
+
+image:mqsheat/nonlin.png[geometry,50%]
+
+Let's now compare this to the linear case : 
+
+image:mqsheat/lin.png[geometry,50%]
+
+We can see that in the non-linear case, a peak is formed in t=1 for the magnetic field. The magnetic field thus reaches its maximum at t=1, before falling back to a limit value. In the linear case, the limit value is read directly at the end of the plateau.
+
+Here is what we get if we display the shape of the T and B curves in the linear and non-linear cases on the same graph:
+
+image:mqsheat/both.png[geometry,50%]
+
+One explanation for this phenomenon may be...
+
+
+
+
 
