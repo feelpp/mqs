@@ -10,5 +10,6 @@
 ** xref:mqsheat.adoc[Add the heat equation]
 ** xref:resolution1.adoc[Linear resolution]
 ** xref:resolution2.adoc[Non-linear resolution]
+** xref:conclusion.adoc[Conclusion]
 ** xref:appendix.adoc[Appendix]
 
