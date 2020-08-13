@@ -1,8 +1,9 @@
 = Conclusion
 
-After implementation, we can see that the algorithms that individually model the first and second 
-equations are very correct. We have obtained the expected results through error calculation and 
-visualization on paraview. In the case of the coupled system, the problem encountered in 
-the algorithm has not been solved for the moment, therefore no results could be obtained for 
-the system for the moment. Afterwards, the goal will be to fix the bug in order to complete the 
-implementation, and use the algorithm to solve the two test cases present in the validation part. 
+We can see that the transition between the project and the internship went rather well. The outstanding goal at the end of the project was to have a viable simulation of the two examples with one and two magnets, and to have a functional code to simulate these cases. As we have seen, the results are quite close to the results obtained with getdp, although with a slight discrepancy.
+The next two objectives of the course were the implementation of the BDF scheme and the coupling of the MQS equations with the heat equation. For the BDF part, we find well the results obtained with an implicit Euler scheme, which is satisfactory. 
+For the MQS and heat coupling, 3 methods of resolution have been considered, and two have been programmed. 
+With the first method, the linear resolution, we find on the one hand the results obtained previously on MQS, and we obtained for the temperature results very close to the theoretical result. 
+For the second method, ...
+In the future, it would be good to program the 3rd method, which is the resolution of the 3 equations at the same time, using a block structure for example.
+Moreover, although using the feelpp tools, the code is not implemented as a feelpp class, and a rewriting in this form must be strongly considered, in order to allow future implementation in feelpp.
