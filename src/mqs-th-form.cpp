@@ -34,8 +34,10 @@ int main(int argc, char**argv )
     ( "epsNL-Th", po::value<double>()->default_value( 1.e-5 ), "eps for Heat equation picard" )
     ( "itermaxNL", po::value<int>()->default_value( 10 ), "max iteration number for picard" )
     ( "epstime", po::value<double>()->default_value( 1.e-10 ), "eps for force time step detection" )
-    ( "dttol", po::value<double>()->default_value( 0. ), "dt tolerance" )
     ( "adaptive", po::value<bool>()->default_value( false ), "activate dt apdative scheme" )
+    ( "dttol", po::value<double>()->default_value( 0. ), "dt tolerance" )
+    ( "dt_min", po::value<double>()->default_value( 0. ), "dt min" )
+    ( "dt_max", po::value<double>()->default_value( 0. ), "dt max" )
     ( "forced-sequence", po::value< std::vector<double> >()->default_value(std::vector<double>()), "list of forced times" )
     ( "verbosity", po::value<int>()->default_value( 0 ), "set verbosisity level" )
     ( "weakdir", po::value<bool>()->default_value( "false" ), "use Dirichlet weak formulation" )
@@ -73,9 +75,14 @@ int main(int argc, char**argv )
   Feel::cout << "time-dttol=" << dttol << std::endl;
   double dtprev = dt;
 
-  double dt_min = std::max(dt/100., dttol);
-  double dt_max = dt*100.;
+  double dt_min = doption("dt_min");
+  if ( boption("adaptive") && dt_min == 0)
+    dt_min = std::max(dt/100., dttol);
   Feel::cout << "time-dtmin=" << dt_min << std::endl;
+  
+  double dt_max = std::min(dt*1000., tmax/10.);
+  if ( boption("adaptive") && dt_max == 0)
+    dt_max = std::min(dt*1000., tmax/10.);
   Feel::cout << "time-dtmax=" << dt_max << std::endl;
   
   // Eventually get a solution
@@ -227,8 +234,8 @@ int main(int argc, char**argv )
 #endif
   
   double t = 0;
-  double Residual;
-  int nIterations;
+  double Residual, Residual_Th;
+  int nIterations, nIterations_Th ;
   
   double L2Aexact, H1Aerror, L2Aerror;
   double L2Vexact, H1Verror, L2Verror;
@@ -348,7 +355,7 @@ int main(int argc, char**argv )
 	    }
 	}
     }
-  Feel::cout << "nonlinear=" << nonlinear << ", Tdepend=" << Tdepend << std::endl;
+  //Feel::cout << "nonlinear=" << nonlinear << ", Tdepend=" << Tdepend << std::endl;
   if ( !nonlinear ) nonlinear = Tdepend;
   
   double relax = doption("relax");
@@ -456,10 +463,17 @@ int main(int argc, char**argv )
   Table mqs;
   std::vector<std::variant<std::string, Table>> Vfirst; //[12];
 
-  for (auto const& field : {"t","NbIter","Residual"})
+#ifdef STRONGCOUPLING
+  for (auto const& field : {"t","NbIter[MQS+Th]","Residual[MQS+Th]"})
     {
       Vfirst.push_back(field);
     }
+#else
+  for (auto const& field : {"t","NbIter[MQS]","Residual[MQS]","NbIter[Th]","Residual[Th]"})
+    {
+      Vfirst.push_back(field);
+    }
+#endif  
   if ( nonlinear ) Vfirst.push_back("NLIter");
   
   auto itField = M_modelProps->boundaryConditions().find( "electric-potential");
@@ -488,10 +502,9 @@ int main(int argc, char**argv )
 	  Vfirst.push_back(sfield);
 	}
   mqs.add_row(Vfirst);
-  Feel::cout << "MQS table: " << Vfirst.size() << std::endl;
+  //Feel::cout << "MQS table: " << Vfirst.size() << std::endl;
   
   int iterNL = 0;
-  double initResidual;
 
   // define sequence of forced time steps
   double epstime = doption("epstime");
@@ -525,7 +538,7 @@ int main(int argc, char**argv )
 		}
 	    }
 	}
-      Feel::cout << "forced_time=" << forced_t << ", ";
+      Feel::cout << "** forced_time=" << forced_t << ", ";
       Feel::cout << "t=" << t << ", ";
       Feel::cout << "allmost=" << fabs(1-forced_t/t) << " (" << (fabs(1-forced_t/t) <= epstime) << ") ";
       Feel::cout << "n_forced=" << n_forced << ",";
@@ -534,6 +547,7 @@ int main(int argc, char**argv )
 
       tic();
       do {
+
 	auto Anl = (*A); // use deepCopy??
 	auto Vnl = (*V); // use deepCopy??	
 #ifdef STRONGCOUPLING
@@ -854,10 +868,17 @@ int main(int argc, char**argv )
 	/* Solve */
 	tic();
 	auto result = mqsbackend->solve( _matrix=M, _rhs=F, _solution=U, _rebuild=true);
+#ifdef STRONGCOUPLING
+	std::string msg = (boost::format("[MQS+Heat %2%] t=%1% NbIter=%3% Residual=%4%") % t
+			   % soption("mqs.pc-type")
+			   % result.nIterations()
+			   % result.residual()).str();
+#else
 	std::string msg = (boost::format("[MQS %2%] t=%1% NbIter=%3% Residual=%4%") % t
 			   % soption("mqs.pc-type")
 			   % result.nIterations()
 			   % result.residual()).str();
+#endif
 	if (result.isConverged())
 	  {
 	    Feel::cout << tc::green << msg << tc::reset << " "; // << std::endl;
@@ -893,6 +914,10 @@ int main(int argc, char**argv )
 	
 	Residual =  result.residual();
 	nIterations = result.nIterations();
+#ifndef STRONGCOUPLING
+	Residual_Th =  thresult.residual();
+	nIterations_Th = thresult.nIterations();
+#endif
 	toc("solve", (M_verbose > 0));
 
 	// update A and V pointers from U
@@ -906,17 +931,11 @@ int main(int argc, char**argv )
 	    bool cvgA =(errorNL <= std::max(epsNL*normA, atol));
 	    Feel::cout << "iterNL=" << iterNL << " ,";
 	    Feel::cout << "errorNL=" << errorNL << (cvgA? "*":"") << " ,";
-	    //Feel::cout << "normA=" << normA << ", ";
-	    //Feel::cout << "epsNL*normA=" << std::max(epsNL*normA, atol) << ", ";
-	    // Feel::cout << std::endl;
 
 	    errorNL_V = normL2(_range = elements(support(Vh)), _expr = (idv(V)-idv(Vnl)) );
 	    normV = normL2(_range = elements(support(Vh)), _expr = idv(V) );
 	    bool cvgV= (errorNL_V <= std::max(epsNL_V*normV, atol));
 	    Feel::cout << "errorNL_V=" << errorNL_V << (cvgV? "*":"") << " ,";
-	    //Feel::cout << "normV=" << normV << ", ";
-	    //Feel::cout << "epsNL*normV=" << std::max(epsNL_V*normV, atol) << ", ";
-	    // Feel::cout << std::endl;
 
 	    // 	    // relaxation
 	    // 	    Trelax.zero();
@@ -931,20 +950,9 @@ int main(int argc, char**argv )
 	    normT = normL2(_range = elements(support(Th)), _expr = idv(Heat_T) );
 	    bool cvgT = (errorNL_th <= std::max(epsNL_th*normT, atol));
 	    Feel::cout << "errorNL_th=" << errorNL_th << (cvgT? "*":"") << " ,";
-	    //Feel::cout << "normT=" << normT << ", ";
-	    //Feel::cout << "epsNL_th*normT=" << std::max(epsNL_th*normT, atol) << ", ";
 	    Feel::cout << std::endl;
 
 	    iterNL++;
-
-	    // // initResidual: residue a la 1ere iteration pas residue a 1ere iteration picard
-	    // Feel::cout << "Vincent criteria:" << Residual << " " << initResidual << std::endl;
-	    // Feel::cout << ( Residual < std::max(rtol*initResidual,atol) ) << ",";
-	    // Feel::cout << ( Residual < atol) << ", ";
-	    // Feel::cout << (errorNL < std::max(stol*normA,atol)) << ", ";
-	    // Feel::cout << (errorNL_V < std::max(stol*normV,atol)) << ", ";
-	    // Feel::cout << (errorNL_th < std::max(stol*normT,atol)) << ", ";
-	    // Feel::cout << std::endl;
 
 	    converged = cvgA && cvgV && cvgT;
 	  }
@@ -979,7 +987,7 @@ int main(int argc, char**argv )
       if ( boption( "adaptive") )
         {
 	  tic();
-	  Feel::cout << "adaptive time stepping t=" << t << std::endl;
+	  //Feel::cout << "adaptive time stepping t=" << t << std::endl;
 	  std::string adapt_msg;
 	  // time filtering , get order 2
 	  auto filter = [&dt, &dtprev]( auto const& in, auto const& inprev, auto& out ) { 
@@ -1010,16 +1018,19 @@ int main(int argc, char**argv )
 	  Feel::cout << "estT : "  << std::scientific << std::setprecision(3) << thmeasure/ahmeasure*estT << " ";
 	  Feel::cout << "(dttol=" << std::scientific << std::setprecision(3) << dttol << "); ";// << std::endl;
 
-	  Feel::cout << "forced_time=" << forced_t << ", ";
-	  Feel::cout << "t=" << t << ", ";
-	  Feel::cout << "allmost=" << fabs(1-forced_t/t) << " (" << (fabs(1-forced_t/t) <= epstime) << ") ";
-	  Feel::cout << "reached=" << reached << std::endl;
+	  //Feel::cout << "forced_time=" << forced_t << ", ";
+	  //Feel::cout << "t=" << t << ", ";
+	  //Feel::cout << "allmost=" << fabs(1-forced_t/t) << " (" << (fabs(1-forced_t/t) <= epstime) << ") " << "[" << allmost << "]";
+	  allmost = (fabs(1-forced_t/t) <= epstime);
+	  //Feel::cout << "nallmost=" << allmost << ",";
+	  //Feel::cout << "reached=" << reached;
+	  Feel::cout << std::endl;
 	  if ( est > dttol )
 	    {  
 	      if ( dt == dt_min )
 		{
 		  // Update current densities
-		  Feel::cout << "dt_min: update Qth" << std::endl;
+		  //Feel::cout << "dt_min: update Qth" << std::endl;
 		  Efield.zero();
 		  J_cond.zero();
 		  dAdt.zero();
@@ -1053,17 +1064,6 @@ int main(int argc, char**argv )
 		  // export
 		  do_export=true; //false;
 
-		  // time accepted
-		  if ( allmost )
-		    if ( n_forced < forced_times.size()-1 )
-		      {
-			reached = false;
-			n_forced++;
-			forced_t = forced_times[n_forced] ;
-			dt = doption(_name = "ts.time-step");
-			dtprev=dt;
-			Feel::cout << "go to next sequence" << std::endl;
-		      }
 		  adapt_msg = "keeping the time step (dt_min)";
 		}
 	      else
@@ -1084,16 +1084,14 @@ int main(int argc, char**argv )
 		  if ( reached )
 		    {
 		      reached = false;
-		      Feel::cout << "***";
+		      //Feel::cout << "***";
 		    }
 		}
 	    }
 	  else //if ( est < dttol )
 	    {
-	      //Feel::cout << "accepted (<dttol): dt estimate: " << 0.9 * dt * sqrt(dttol/est);
-	      
 	      // Update current densities
-	      Feel::cout << "est<dttol: update Qth" << std::endl;
+	      //Feel::cout << "est<dttol: update Qth" << std::endl;
 	      Efield.zero();
 	      J_cond.zero();
 	      J_induct.zero();
@@ -1143,21 +1141,24 @@ int main(int argc, char**argv )
 		  if ( dt == dt_max ) adapt_msg += " (dt_max)";
 		}
 
-	      // time accepted
-	      if ( allmost )
-		if ( n_forced < forced_times.size()-1 )
-		  {
-		    reached = false;
-		    n_forced++;
-		    forced_t = forced_times[n_forced] ;
-		    dt = doption(_name = "ts.time-step");
-		    dtprev=dt;
-		    Feel::cout << "go to next sequence" << std::endl;
-		  }
 	    }
 	   
 	  std::string msg = (boost::format("[adapt dt=%1%] ") % dt).str();
 	  msg += adapt_msg;
+
+	  // time accepted
+	  //Feel::cout << " xx allmost (" << allmost << ") xx " << std::endl;
+	  if ( reached && allmost )
+	    if ( n_forced < forced_times.size()-1 )
+	      {
+		reached = false;
+		n_forced++;
+		forced_t = forced_times[n_forced] ;
+		//dt = doption(_name = "ts.time-step");
+		std::string strdt = (boost::format(" - go to next sequence t=%1%") % forced_t).str();
+		msg += strdt;
+	      }
+	      
 	  Feel:cout << msg << std::endl;
 	  toc( msg, (M_verbose > 0));
         }
@@ -1165,7 +1166,7 @@ int main(int argc, char**argv )
 	{
 
 	  // Update current densities
-	  Feel::cout << "\nno adapt: update Qth" << std::endl;
+	  //Feel::cout << "\nno adapt: update Qth" << std::endl;
 	  Efield.zero();
 	  J_cond.zero();
 	  J_induct.zero();
@@ -1186,7 +1187,7 @@ int main(int argc, char**argv )
 	      Qth.on( _range=markedelements(mesh, material.meshMarkers()), _expr= inner(idv(J_cond)+idv(J_induct),idv(Efield)+idv(dAdt)) );
 	    }
 
-	  Feel::cout << " ** allmost (" << allmost << ") ** " << std::endl;
+	  //Feel::cout << " ** allmost (" << allmost << ") ** " << std::endl;
 	  if ( allmost )
 	    {
 	      if ( n_forced < forced_times.size()-1 )
@@ -1194,8 +1195,9 @@ int main(int argc, char**argv )
 		  n_forced++;
 		  forced_t = forced_times[n_forced];
 		  reached = false;
-		  dt = doption(_name = "ts.time-step");
-		  Feel::cout << "go to next sequence" << std::endl;
+		  //dt = doption(_name = "ts.time-step");
+		  std::string strdt = (boost::format(" - go to next sequence t=%1%") % forced_t).str();
+		  Feel::cout << strdt << std::endl;
 		}
 	    }
 
@@ -1282,7 +1284,11 @@ int main(int argc, char**argv )
 	  std::vector<std::variant<std::string, Table>> exported_data;
 	  exported_data.push_back(std::to_string(t));
 	  exported_data.push_back(std::to_string(nIterations));
-	  exported_data.push_back(std::to_string(Residual));
+	  exported_data.push_back((boost::format("%1%") % Residual).str());
+#ifndef STRONGCOUPLING
+	  exported_data.push_back(std::to_string(nIterations_Th));
+	  exported_data.push_back((boost::format("%1%") % Residual_Th).str());
+#endif
 	  if ( nonlinear) exported_data.push_back(std::to_string(iterNL));
 	  
 	  itField = M_modelProps->boundaryConditions().find( "electric-potential");
@@ -1332,7 +1338,7 @@ int main(int argc, char**argv )
 		exported_data.push_back( std::to_string(Heat_Tmax) );
 		exported_data.push_back( std::to_string(Tstd_dev) );
 	      }
-	  Feel::cout << "MQS table data: " << exported_data.size() << std::endl;
+	  //Feel::cout << "MQS table data: " << exported_data.size() << std::endl;
 	  mqs.add_row(exported_data);
 
 	  if ( Uexact )
@@ -1368,10 +1374,26 @@ int main(int argc, char**argv )
       iterNL = 0;
     
       t += dt;
+
+      // force final time if necessary
+      Feel::cout << "next t=" << t << " (reached=" << reached << ")" << std::endl;
+      if ( t>tmax && !reached)
+	{
+	  dt = t - tmax;
+	  t = tmax;
+	  Feel::cout <<  (boost::format(" ** force t to %1% and dt to %2%") % t % dt).str() << std::endl;
+	  reached = true;
+	}
     }
 
   // export as markdow table
+  std::ofstream tablefile;
+  tablefile.open("1Dmodel.adoc");
+  if (!tablefile)
+    throw std::logic_error( "1Dmodel.adoc: cannot create file" );
+
   MarkdownExporter exporter;
   auto markdown = exporter.dump(mqs);
-  Feel::cout << markdown << std::endl;
+  tablefile << markdown << std::endl;
+  tablefile.close();
 }
