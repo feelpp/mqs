@@ -355,6 +355,17 @@ int main(int argc, char**argv )
 	    }
 	}
     }
+  auto itField = M_modelProps->boundaryConditions().find( "magnetic-potential");
+  if ( itField != M_modelProps->boundaryConditions().end() )
+    {
+      auto mapField = (*itField).second;
+      auto itType = mapField.find( "BiotSavart" );
+      if ( itType != mapField.end() )
+	{
+	  nonlinear = true;
+	}
+    }
+
   //Feel::cout << "nonlinear=" << nonlinear << ", Tdepend=" << Tdepend << std::endl;
   if ( !nonlinear ) nonlinear = Tdepend;
   
@@ -476,7 +487,7 @@ int main(int argc, char**argv )
 #endif  
   if ( nonlinear ) Vfirst.push_back("NLIter");
   
-  auto itField = M_modelProps->boundaryConditions().find( "electric-potential");
+  itField = M_modelProps->boundaryConditions().find( "electric-potential");
   if ( itField != M_modelProps->boundaryConditions().end() )
     {
       auto mapField = (*itField).second;
@@ -502,7 +513,7 @@ int main(int argc, char**argv )
 	  Vfirst.push_back(sfield);
 	}
   mqs.add_row(Vfirst);
-  //Feel::cout << "MQS table: " << Vfirst.size() << std::endl;
+  Feel::cout << "MQS table: " << Vfirst.size() << std::endl;
   
   int iterNL = 0;
 
@@ -823,13 +834,20 @@ int main(int argc, char**argv )
 		    markers.insert(marker);
 		    
 		    auto As = BiotSavart<3>(mesh, markers);
-		    auto jEx = idv(J_cond) + idv(J_induct);
+		    // auto jEx = idv(J_cond);
+		    // auto jIn = idv(J_induct);
 
-		    As.compute(jEx, false, true, conductors);
+		    As.compute(idv(J_cond), false, true, conductors);
 		    
-		    LOG(INFO) << "A BiotSavart[" << marker << "] : " << std::endl;
-		    auto Abc = As.magneticPotential();
-		    M00 += on(_range=markedfaces(mesh,marker), _rhs=F, _element=(*A), _expr= idv(Abc) );
+		    LOG(INFO) << "A BiotSavart[" << marker << "] : conduction term" << std::endl;
+		    auto Abc0 = As.magneticPotential();
+		    M00 += on(_range=markedfaces(mesh,marker), _rhs=F, _element=(*A), _expr= idv(Abc0) );
+
+		    As.compute(idv(J_induct), false, true, conductors);
+		    
+		    LOG(INFO) << "A BiotSavart[" << marker << "] : induction term" << std::endl;
+		    auto Abc1 = As.magneticPotential();
+		    M00 += on(_range=markedfaces(mesh,marker), _rhs=F, _element=(*A), _expr= idv(Abc1) );
 		  }
 	      }
 	    // 	ItType = mapField.find( "Neumann" );
@@ -1012,10 +1030,10 @@ int main(int argc, char**argv )
 	  auto estT = normL2( _range=elements(support(Th)), _expr=idv(Heat_T)-idv(Heat_Tpost));
 	  auto est = std::max( estA, vhmeasure/ahmeasure*estV );
 	  est = std::max( est, thmeasure/ahmeasure*estT );
-	  Feel::cout << "est : " << std::scientific << std::setprecision(3) << est << " ";
-	  Feel::cout << "estA : " << std::scientific << std::setprecision(3) << estA << " ";
-	  Feel::cout << "estV : "  << std::scientific << std::setprecision(3) << vhmeasure/ahmeasure*estV << " ";
-	  Feel::cout << "estT : "  << std::scientific << std::setprecision(3) << thmeasure/ahmeasure*estT << " ";
+	  Feel::cout << "est: " << std::scientific << std::setprecision(3) << est << " ";
+	  Feel::cout << "estA: " << std::scientific << std::setprecision(3) << estA << " ";
+	  Feel::cout << "estV: "  << std::scientific << std::setprecision(3) << vhmeasure/ahmeasure*estV << " ";
+	  Feel::cout << "estT: "  << std::scientific << std::setprecision(3) << thmeasure/ahmeasure*estT << " ";
 	  Feel::cout << "(dttol=" << std::scientific << std::setprecision(3) << dttol << "); ";// << std::endl;
 
 	  //Feel::cout << "forced_time=" << forced_t << ", ";
@@ -1024,7 +1042,7 @@ int main(int argc, char**argv )
 	  allmost = (fabs(1-forced_t/t) <= epstime);
 	  //Feel::cout << "nallmost=" << allmost << ",";
 	  //Feel::cout << "reached=" << reached;
-	  Feel::cout << std::endl;
+	  //Feel::cout << std::endl;
 	  if ( est > dttol )
 	    {  
 	      if ( dt == dt_min )
@@ -1338,7 +1356,7 @@ int main(int argc, char**argv )
 		exported_data.push_back( std::to_string(Heat_Tmax) );
 		exported_data.push_back( std::to_string(Tstd_dev) );
 	      }
-	  //Feel::cout << "MQS table data: " << exported_data.size() << std::endl;
+	  Feel::cout << "MQS table data: " << exported_data.size() << std::endl;
 	  mqs.add_row(exported_data);
 
 	  if ( Uexact )
