@@ -239,3 +239,12 @@ This will produce a csv file in the feel folder associated with this case.
 Below is the comparison between getdp and feelpp result :
 
 image:2helix/turn2.png[results,50%]
+
+We can see that in the case with one magnet and in the case with two, there is a small difference between the result obtained with feelpp and the result obtained with getdp. This can be explained in several ways: 
+A time step not small enough, which will degrade the approximation at each time step.
+A space step not small enough. Indeed, reducing the space step h will greatly improve the accuracy, but in return the computation time will be much longer.
+Values of constants, such as sigma, which are approximations, will increase the error at each time step.
+Finally the order chosen for the finite elements, which can impact the result as well.
+
+
+Translated with www.DeepL.com/Translator (free version)
