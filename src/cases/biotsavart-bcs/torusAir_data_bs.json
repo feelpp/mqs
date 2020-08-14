@@ -1,0 +1,107 @@
+{
+    "Name": "CoupledCart",
+    "ShortName":"MSC",
+    "Models":
+    {
+	"use-model-name":1,
+	"solid":
+	{
+	    "equations":"Elasticity"
+	},
+        "maxwell":
+        {
+	    "equations":"magnetostatic-cart"
+	}
+    },
+    "Parameters":
+    {
+	"Tau":"1",
+	"V0": "0",
+	"V1": "1*1/4."
+    },
+    "Materials":
+    {
+        "copper0":
+        {
+            "markers":"Coil0",
+	    "physics":["heat","electric","solid","maxwell"],
+            "k":"380",
+            "sigma":"58.e+6",
+	    "rho": "9.2e+3",
+	    "Cp": "380.",
+            "mu_mag": "1"
+        },
+        "air":
+        {
+            "markers":["Air", "Coil1", "Screen0"],
+	    "physics":["maxwell"],
+            "mu_mag": "1"
+        }
+    },
+    "BoundaryConditions":
+    {
+        "temperature":
+        {
+            "Neumann":
+            {
+                "V0_0":
+                {
+                    "expr":"0" 
+                },
+                "V1_0":
+                {
+                    "expr":"0"
+		},
+                "BP_0":
+                {
+                    "expr":"0" 
+                },
+                "HP_0":
+                {
+                    "expr":"0"
+		}
+            },
+            "Robin":
+            {
+                "Rext_0":
+                {
+                    "expr1":"80000", 
+                    "expr2":"293." 
+                },
+                "Rint_0":
+                {
+                    "expr1":"80000",
+                    "expr2":"293." 
+		}
+            }
+        },
+        "electric-potential":
+        {
+            "Dirichlet":
+            {
+                "V0_0":
+                {
+                    "expr":"0" 
+                },
+                "V1_0":
+                {
+                    "expr":"1.*t/(0.100001)*(t<0.100001)+(1.*(t<5.00001)+0*(t>5.00001))*(t>0.100001):t"
+		}
+            }
+        },
+        "magnetic-potential":
+        {
+            "BiotSavart":
+            {
+                "Infty": {}
+            }
+        }
+    },
+    "PostProcess":
+    {
+	"Exports":
+	{
+	    "fields":["magneticPotential","magneticField"]
+	}
+    }
+}
