@@ -36,8 +36,8 @@ int main(int argc, char**argv )
     ( "epstime", po::value<double>()->default_value( 1.e-10 ), "eps for force time step detection" )
     ( "adaptive", po::value<bool>()->default_value( false ), "activate dt apdative scheme" )
     ( "dttol", po::value<double>()->default_value( 0. ), "dt tolerance" )
-    ( "dt_min", po::value<double>()->default_value( 0. ), "dt min" )
-    ( "dt_max", po::value<double>()->default_value( 0. ), "dt max" )
+    ( "dt-min", po::value<double>()->default_value( 0. ), "dt min" )
+    ( "dt-max", po::value<double>()->default_value( 0. ), "dt max" )
     ( "forced-sequence", po::value< std::vector<double> >()->default_value(std::vector<double>()), "list of forced times" )
     ( "verbosity", po::value<int>()->default_value( 0 ), "set verbosisity level" )
     ( "weakdir", po::value<bool>()->default_value( "false" ), "use Dirichlet weak formulation" )
@@ -75,12 +75,12 @@ int main(int argc, char**argv )
   Feel::cout << "time-dttol=" << dttol << std::endl;
   double dtprev = dt;
 
-  double dt_min = doption("dt_min");
+  double dt_min = doption("dt-min");
   if ( boption("adaptive") && dt_min == 0)
     dt_min = std::max(dt/100., dttol);
   Feel::cout << "time-dtmin=" << dt_min << std::endl;
   
-  double dt_max = std::min(dt*1000., tmax/10.);
+  double dt_max = doption("dt-max");
   if ( boption("adaptive") && dt_max == 0)
     dt_max = std::min(dt*1000., tmax/10.);
   Feel::cout << "time-dtmax=" << dt_max << std::endl;
