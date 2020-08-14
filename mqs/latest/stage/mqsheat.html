@@ -89,7 +89,6 @@ MathJax.Hub.Config({
 <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.9.0/katex.min.js" integrity="sha384-jmxIlussZWB7qCuB+PgKG1uLjjxbVVIayPJwi6cG6Zb4YKq0JIw+OMnkkEC7kYCq" crossorigin="anonymous"></script>-->
 
 
-<script type='text/javascript' src='https://platform-api.sharethis.com/js/sharethis.js#property=5f34e90f94876f0012457ea1&product=sop' async='async'></script>
   </head>
   <body class="article">
 <header class="header">
@@ -247,9 +246,6 @@ MathJax.Hub.Config({
   </li>
   <li class="nav-item" data-depth="2">
     <a class="nav-link" href="validation.html">Validations</a>
-  </li>
-  <li class="nav-item" data-depth="2">
-    <a class="nav-link" href="endimple.html">End of the project, beginning and objective of the stage</a>
   </li>
   <li class="nav-item" data-depth="2">
     <a class="nav-link" href="results.html">Implementation of MQS equations and results</a>
@@ -478,13 +474,12 @@ v = 0 \qquad \text{on $\Gamma_D$ } \\
     tic();
     auto M00 = form2( _trial=Th, _test=Th ,_matrix=M, _rowstart=0, _colstart=0 );
     for( auto const&amp; pairMat : M_modelProps-&gt;materials() )
-	  {
+	{
 	    auto name = pairMat.first;
 	    auto material = pairMat.second;
 
         auto k = material.getScalar("k");
 
-      //heat
 	    M00 += integrate( _range=markedelements(mesh, material.meshMarkers()),
 			              _expr = k * inner( gradt(T),grad(T) ) );
 
@@ -499,11 +494,9 @@ v = 0 \qquad \text{on $\Gamma_D$ } \\
 	    auto rho = material.getScalar("rho");
         auto Cp = material.getScalar("Cp");
 
-	    // heat
 	    M00 += integrate( _range=markedelements(mesh, material.meshMarkers()),
 			              _expr = Cp * rho * mybdfT-&gt;polyDerivCoefficient(0) * id(T) * idt(T) );
 
-        //heat
 	    F0 += integrate(_range=markedelements(mesh, material.meshMarkers()),
 			            _expr = Cp * rho * id(T) * idv(bdfT_poly) );
 	}
@@ -1112,7 +1105,6 @@ If \(T_{new}\) is the solution obtain with picard, and \(T_{old}\) the old one, 
 </div>
 <footer class="footer">
   <div class="container">
-    <div class="sharethis-inline-share-buttons"></div>
     <div class="footer-links">
       <div class="col">
         <div class="footer-logo">

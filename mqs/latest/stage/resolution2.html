@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>Non-linear resolution :: Feel++ Maxwell Quasi Static Docs</title>
+    <title>Resolution with non-linear parameter :: Feel++ Maxwell Quasi Static Docs</title>
     <meta name="generator" content="Antora 2.3.3">
     <link rel="stylesheet" href="../../../_/css/site.css">
 <link rel="icon" href="../../../_/img/favicon.ico" type="image/x-icon">    
@@ -89,7 +89,6 @@ MathJax.Hub.Config({
 <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.9.0/katex.min.js" integrity="sha384-jmxIlussZWB7qCuB+PgKG1uLjjxbVVIayPJwi6cG6Zb4YKq0JIw+OMnkkEC7kYCq" crossorigin="anonymous"></script>-->
 
 
-<script type='text/javascript' src='https://platform-api.sharethis.com/js/sharethis.js#property=5f34e90f94876f0012457ea1&product=sop' async='async'></script>
   </head>
   <body class="article">
 <header class="header">
@@ -249,9 +248,6 @@ MathJax.Hub.Config({
     <a class="nav-link" href="validation.html">Validations</a>
   </li>
   <li class="nav-item" data-depth="2">
-    <a class="nav-link" href="endimple.html">End of the project, beginning and objective of the stage</a>
-  </li>
-  <li class="nav-item" data-depth="2">
     <a class="nav-link" href="results.html">Implementation of MQS equations and results</a>
   </li>
   <li class="nav-item" data-depth="2">
@@ -344,7 +340,7 @@ MathJax.Hub.Config({
   </div>
   <div class="content">
 <article class="doc">
-<h1 class="page">Non-linear resolution</h1>
+<h1 class="page">Resolution with non-linear parameter</h1>
 <div id="preamble">
 <div class="sectionbody">
 <div class="paragraph">
@@ -486,13 +482,19 @@ This is probably explained by the fact that the \(\sigma\) conductivity will dec
 <p>We can see that in the non-linear case, a peak is formed in t=1 for the magnetic field. The magnetic field thus reaches its maximum at t=1, before falling back to a limit value. In the linear case, the limit value is read directly at the end of the plateau.</p>
 </div>
 <div class="paragraph">
-<p>Here is what we get if we display the shape of the T and B curves in the linear and non-linear cases on the same graph:</p>
+<p>Let&#8217;s further compare I in the linear and non-linear case :</p>
 </div>
 <div class="paragraph">
-<p><span class="image"><img src="_images/mqsheat/both.png" alt="geometry" width="50%"></span></p>
+<p><span class="image"><img src="_images/mqsheat/It.png" alt="geometry" width="50%"></span></p>
 </div>
 <div class="paragraph">
-<p>One explanation for this phenomenon may be&#8230;&#8203;</p>
+<p>In order to analyze, let&#8217;s additionally display I and B in the linear and non-linear cases, normalized with respect to the linear case</p>
+</div>
+<div class="paragraph">
+<p><span class="image"><img src="_images/mqsheat/all.png" alt="geometry" width="50%"></span></p>
+</div>
+<div class="paragraph">
+<p>We can see that the curves \(I(t)\) and \(B(t)\) correspond perfectly in the non-linear case when they are normalized to the values of the linear case.</p>
 </div>
 </div>
 </div>
@@ -506,7 +508,6 @@ This is probably explained by the fact that the \(\sigma\) conductivity will dec
 </div>
 <footer class="footer">
   <div class="container">
-    <div class="sharethis-inline-share-buttons"></div>
     <div class="footer-links">
       <div class="col">
         <div class="footer-logo">

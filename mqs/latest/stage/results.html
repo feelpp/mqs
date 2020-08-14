@@ -89,7 +89,6 @@ MathJax.Hub.Config({
 <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.9.0/katex.min.js" integrity="sha384-jmxIlussZWB7qCuB+PgKG1uLjjxbVVIayPJwi6cG6Zb4YKq0JIw+OMnkkEC7kYCq" crossorigin="anonymous"></script>-->
 
 
-<script type='text/javascript' src='https://platform-api.sharethis.com/js/sharethis.js#property=5f34e90f94876f0012457ea1&product=sop' async='async'></script>
   </head>
   <body class="article">
 <header class="header">
@@ -248,9 +247,6 @@ MathJax.Hub.Config({
   <li class="nav-item" data-depth="2">
     <a class="nav-link" href="validation.html">Validations</a>
   </li>
-  <li class="nav-item" data-depth="2">
-    <a class="nav-link" href="endimple.html">End of the project, beginning and objective of the stage</a>
-  </li>
   <li class="nav-item is-current-page" data-depth="2">
     <a class="nav-link" href="results.html">Implementation of MQS equations and results</a>
   </li>
@@ -408,14 +404,14 @@ The block structure consists of transforming our system of equations into the fo
   {
     auto M00 = form2( _trial=Ah, _test=Ah ,_matrix=M, _rowstart=0, _colstart=0 );
     for( auto const&amp; pairMat : M_modelProps-&gt;materials() )
-	  {
+	{
 	    auto name = pairMat.first;
 	    auto material = pairMat.second;
 	    auto mur = material.getScalar("mu_mag");
 
 	    M00 += integrate( _range=markedelements(mesh, material.meshMarkers()),
-			                  _expr = dt * 1/mur * trace(trans(gradt(A))*grad(A)) );
-	  }
+			              _expr = dt * 1/mur * trace(trans(gradt(A))*grad(A)) );
+	}
 
     auto M01 = form2( _trial=Vh, _test=Ah ,_matrix=M, _rowstart=0, _colstart=1 );
     auto F0 = form1( _test=Ah, _vector=F, _rowstart=0 );
@@ -424,7 +420,7 @@ The block structure consists of transforming our system of equations into the fo
     auto F1 = form1( _test=Vh ,_vector=F, _rowstart=1 );
 
     for( auto const&amp; pairMat : M_materials )
-	  {
+	{
 	    auto name = pairMat.first;
 	    auto material = pairMat.second;
 	    auto sigma = material.getScalar("sigma");
@@ -446,72 +442,72 @@ The block structure consists of transforming our system of equations into the fo
 
 	    F1 += integrate(_range=markedelements(cond_mesh, material.meshMarkers()),
 			                _expr = mu0 * sigma * inner(idv(Aold), trans(grad(V))) );
-	  }
+	}
     auto itField = M_modelProps-&gt;boundaryConditions().find( "magnetic-potential");
     if ( itField != M_modelProps-&gt;boundaryConditions().end() )
-	  {
+	{
 	    auto mapField = (*itField).second;
 	    auto itType = mapField.find( "Dirichlet" );
 	    if ( itType != mapField.end() )
 	    {
-	      for ( auto const&amp; exAtMarker : (*itType).second )
-		    {
-		      std::string marker = exAtMarker.marker();
-		      auto g = expr&lt;3,1&gt;(exAtMarker.expression());
-		      g.setParameterValues({{"t", t}});
-		      M00 += on(_range=markedfaces(mesh,marker), _rhs=F, _element=*A, _expr= g);
-		    }
+	    	for ( auto const&amp; exAtMarker : (*itType).second )
+			{
+				std::string marker = exAtMarker.marker();
+				auto g = expr&lt;3,1&gt;(exAtMarker.expression());
+				g.setParameterValues({{"t", t}});
+				M00 += on(_range=markedfaces(mesh,marker), _rhs=F, _element=*A, _expr= g);
+			}
 	    }
 	    itType = mapField.find( "DirichletX" );
 	    if ( itType != mapField.end() )
 	    {
-	      for ( auto const&amp; exAtMarker : (*itType).second )
-		    {
-		      std::string marker = exAtMarker.marker();
-		      auto g = expr(exAtMarker.expression());
-		      g.setParameterValues({{"t", t}});
-		      M00 += on(_range=markedfaces(mesh,marker), _rhs=F, _element=(*A)[Component::X], _expr= g);
-		    }
+			for ( auto const&amp; exAtMarker : (*itType).second )
+			{
+				std::string marker = exAtMarker.marker();
+				auto g = expr(exAtMarker.expression());
+				g.setParameterValues({{"t", t}});
+				M00 += on(_range=markedfaces(mesh,marker), _rhs=F, _element=(*A)[Component::X], _expr= g);
+			}
 	    }
 	    itType = mapField.find( "DirichletY" );
 	    if ( itType != mapField.end() )
 	    {
-	      for ( auto const&amp; exAtMarker : (*itType).second )
+	    	for ( auto const&amp; exAtMarker : (*itType).second )
 		    {
-		      std::string marker = exAtMarker.marker();
-		      auto g = expr(exAtMarker.expression());
-		      g.setParameterValues({{"t", t}});
-		      M00 += on(_range=markedfaces(mesh,marker), _rhs=F, _element=(*A)[Component::Y], _expr= g);
+				std::string marker = exAtMarker.marker();
+				auto g = expr(exAtMarker.expression());
+				g.setParameterValues({{"t", t}});
+				M00 += on(_range=markedfaces(mesh,marker), _rhs=F, _element=(*A)[Component::Y], _expr= g);
 		    }
 	    }
 	    itType = mapField.find( "DirichletZ" );
 	    if ( itType != mapField.end() )
 	    {
-	      for ( auto const&amp; exAtMarker : (*itType).second )
+	      	for ( auto const&amp; exAtMarker : (*itType).second )
 		    {
-		      std::string marker = exAtMarker.marker();
-		      auto g = expr(exAtMarker.expression());
-		      g.setParameterValues({{"t", t}});
-		      M00 += on(_range=markedfaces(mesh,marker), _rhs=F, _element=(*A)[Component::Z], _expr= g);
+				std::string marker = exAtMarker.marker();
+				auto g = expr(exAtMarker.expression());
+				g.setParameterValues({{"t", t}});
+				M00 += on(_range=markedfaces(mesh,marker), _rhs=F, _element=(*A)[Component::Z], _expr= g);
 		    }
 	    }
-	  }
+	}
     itField = M_modelProps-&gt;boundaryConditions().find( "electric-potential");
     if ( itField != M_modelProps-&gt;boundaryConditions().end() )
-	  {
+	{
 	    auto mapField = (*itField).second;
 	    auto itType = mapField.find( "Dirichlet" );
 	    if ( itType != mapField.end() )
 	    {
-	      for ( auto const&amp; exAtMarker : (*itType).second )
+	      	for ( auto const&amp; exAtMarker : (*itType).second )
 		    {
-		      std::string marker = exAtMarker.marker();
-		      auto g = expr(exAtMarker.expression());
-		      g.setParameterValues({{"t", t}})
-		      M11 += on(_range=markedfaces(cond_mesh,marker), _rhs=F, _element=*V, _expr= g);
+				std::string marker = exAtMarker.marker();
+				auto g = expr(exAtMarker.expression());
+				g.setParameterValues({{"t", t}})
+				M11 += on(_range=markedfaces(cond_mesh,marker), _rhs=F, _element=*V, _expr= g);
 		    }
 	    }
-	  }
+	}
     ...
   }</code></pre>
 </div>
@@ -683,7 +679,6 @@ Finally the order chosen for the finite elements, which can impact the result as
 </div>
 <footer class="footer">
   <div class="container">
-    <div class="sharethis-inline-share-buttons"></div>
     <div class="footer-links">
       <div class="col">
         <div class="footer-logo">
