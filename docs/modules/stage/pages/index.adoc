@@ -22,4 +22,10 @@ Models for the transient regime have developed in the frame of a collaboration b
 feelpp toolboxes. In this study, we will target the starting and stopping the magnets. We will focus on the electromagnetic model - namely 
 a formulation of Maxwell's equations, in the quasi-static case, i.e. the formulation in magnetic and electric potential.   
 
+== End of the project, beginning and objective of the stage
+
+At the end of the project, we had validated the tests on each of the equations individually, but we were not getting good results for the coupling. 
+At the beginning of the stage, I took a code created by Christophe Trophime, aiming at implementing the two equations as a block, and solving the associated matrix system. The functionning will be explained in next section.
+
+First, the objective of the stage is to complete and validate the resolution of the two MQS equations. Then, we look at another time scheme, the BDF scheme. Finally, the final objective is to add to our two equations the influence of temperature, through the heat equation, because some parameters actually depend on temperature. We will therefore see several methods of implementation of this equations
 
