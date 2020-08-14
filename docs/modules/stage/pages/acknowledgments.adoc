@@ -1,10 +1,8 @@
 = Acknowledgments 
 
-Above all, I would like to thank Christophe Trophime for having proposed this project, 
-for having supervised me during this one, for having been able to answer my questions 
-and for having been able to help me to understand the subject as well as the theoretical 
-bases necessary to the comprehension of this one. I would also like to thank Christophe Prud'homme, 
-for assigning me to this project, for supervising me throughout it, and for helping me learn the basics 
-of feelpp development. Finally, I also want to thank Romain Hild, for answering many of my questions about 
-feelpp development when I was in trouble.
+I would like to thank Christophe Trophime for having offered me this internship, and for having supervised me during this one, especially with the current situation.
+I thank him for having taken the time to answer my many questions, for having explained to me many things that I didn't understand, that I didn't know, and for having made me aware of the methodology and the rigour that one needs to have in order to move forward conscientiously in a project.
+I would also like to thank Christophe Prud'homme and Vincent Chabannes for helping me on issues related to feelpp and its understanding. 
+Finally, I would like to thank Romain Hild, for answering all my questions about the technical aspects of feelpp. 
+
 
