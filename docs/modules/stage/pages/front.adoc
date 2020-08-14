@@ -30,6 +30,7 @@ Christophe PRUD'HOMME & Christophe TROPHIME
 . Introduction/Context
 .. Introduction
 .. Context
+.. End of the project, beginning and objective of the stage
 . Maxwell’s equations and MQS approximation 
 .. Differential form of Maxwell's equations
 .. The magnetic vector and electric scalar potentials Formulation
@@ -39,7 +40,6 @@ Christophe PRUD'HOMME & Christophe TROPHIME
 .. Introduction
 .. A solenoidal magnet
 .. 2 solenoidal magnets
-. End of the project, beginning and objective of the stage
 . Implementation of MQS equations and results
 .. Implementation
 .. Results
@@ -54,11 +54,11 @@ Christophe PRUD'HOMME & Christophe TROPHIME
 .. Implementation under feelpp
 .. MQS with heat equation
 .. Resolution strategy
-. Linear resolution
+. Resolution with linear parameter
 .. Theorical results
 .. Implementation under feelpp
 .. Results
-. Non inear resolution
+. Resolution with non-linear parameter
 .. Implementation under feelpp
 .. Results
 . Conclusion
