@@ -4,7 +4,6 @@
 ** xref:index.adoc[Introduction]
 ** xref:formulation.adoc[Maxwell's equations and MQS approximation]
 ** xref:validation.adoc[Validations]
-** xref:endimple.adoc[End of the project, beginning and objective of the stage]
 ** xref:results.adoc[Implementation of MQS equations and results]
 ** xref:bdf.adoc[Backward differentiation formula]
 ** xref:mqsheat.adoc[Add the heat equation]
