@@ -1,4 +1,4 @@
-= Linear resolution 
+= Resolution with linear parameter
 
 As we have seen at the end of the previous paragraph,
 a first way to solve the problem is to first solve the mqs equations and then solve the heat equation, 
