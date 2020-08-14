@@ -57,14 +57,14 @@ We then implement our equations as well as the boundary conditions :
   {
     auto M00 = form2( _trial=Ah, _test=Ah ,_matrix=M, _rowstart=0, _colstart=0 ); 
     for( auto const& pairMat : M_modelProps->materials() )
-	  {
+	{
 	    auto name = pairMat.first;
 	    auto material = pairMat.second;
 	    auto mur = material.getScalar("mu_mag");
 	  
 	    M00 += integrate( _range=markedelements(mesh, material.meshMarkers()),
-			                  _expr = dt * 1/mur * trace(trans(gradt(A))*grad(A)) );
-	  }
+			              _expr = dt * 1/mur * trace(trans(gradt(A))*grad(A)) );
+	}
 
     auto M01 = form2( _trial=Vh, _test=Ah ,_matrix=M, _rowstart=0, _colstart=1 );
     auto F0 = form1( _test=Ah, _vector=F, _rowstart=0 );
@@ -73,7 +73,7 @@ We then implement our equations as well as the boundary conditions :
     auto F1 = form1( _test=Vh ,_vector=F, _rowstart=1 );
       
     for( auto const& pairMat : M_materials )
-	  {
+	{
 	    auto name = pairMat.first;
 	    auto material = pairMat.second;
 	    auto sigma = material.getScalar("sigma");
@@ -95,72 +95,72 @@ We then implement our equations as well as the boundary conditions :
 
 	    F1 += integrate(_range=markedelements(cond_mesh, material.meshMarkers()),
 			                _expr = mu0 * sigma * inner(idv(Aold), trans(grad(V))) );
-	  }
+	}
     auto itField = M_modelProps->boundaryConditions().find( "magnetic-potential");
     if ( itField != M_modelProps->boundaryConditions().end() )
-	  {
+	{
 	    auto mapField = (*itField).second;
 	    auto itType = mapField.find( "Dirichlet" );
 	    if ( itType != mapField.end() )
 	    {
-	      for ( auto const& exAtMarker : (*itType).second )
-		    {
-		      std::string marker = exAtMarker.marker();
-		      auto g = expr<3,1>(exAtMarker.expression());
-		      g.setParameterValues({{"t", t}});
-		      M00 += on(_range=markedfaces(mesh,marker), _rhs=F, _element=*A, _expr= g);
-		    }
+	    	for ( auto const& exAtMarker : (*itType).second )
+			{
+				std::string marker = exAtMarker.marker();
+				auto g = expr<3,1>(exAtMarker.expression());
+				g.setParameterValues({{"t", t}});
+				M00 += on(_range=markedfaces(mesh,marker), _rhs=F, _element=*A, _expr= g);
+			}
 	    }
 	    itType = mapField.find( "DirichletX" );
 	    if ( itType != mapField.end() )
 	    {
-	      for ( auto const& exAtMarker : (*itType).second )
-		    {
-		      std::string marker = exAtMarker.marker();
-		      auto g = expr(exAtMarker.expression());
-		      g.setParameterValues({{"t", t}});
-		      M00 += on(_range=markedfaces(mesh,marker), _rhs=F, _element=(*A)[Component::X], _expr= g);
-		    }
+			for ( auto const& exAtMarker : (*itType).second )
+			{
+				std::string marker = exAtMarker.marker();
+				auto g = expr(exAtMarker.expression());
+				g.setParameterValues({{"t", t}});
+				M00 += on(_range=markedfaces(mesh,marker), _rhs=F, _element=(*A)[Component::X], _expr= g);
+			}
 	    }
 	    itType = mapField.find( "DirichletY" );
 	    if ( itType != mapField.end() )
 	    {
-	      for ( auto const& exAtMarker : (*itType).second )
+	    	for ( auto const& exAtMarker : (*itType).second )
 		    {
-		      std::string marker = exAtMarker.marker();
-		      auto g = expr(exAtMarker.expression());
-		      g.setParameterValues({{"t", t}});
-		      M00 += on(_range=markedfaces(mesh,marker), _rhs=F, _element=(*A)[Component::Y], _expr= g);
+				std::string marker = exAtMarker.marker();
+				auto g = expr(exAtMarker.expression());
+				g.setParameterValues({{"t", t}});
+				M00 += on(_range=markedfaces(mesh,marker), _rhs=F, _element=(*A)[Component::Y], _expr= g);
 		    }
 	    }
 	    itType = mapField.find( "DirichletZ" );
 	    if ( itType != mapField.end() )
 	    {
-	      for ( auto const& exAtMarker : (*itType).second )
+	      	for ( auto const& exAtMarker : (*itType).second )
 		    {
-		      std::string marker = exAtMarker.marker();
-		      auto g = expr(exAtMarker.expression());
-		      g.setParameterValues({{"t", t}});
-		      M00 += on(_range=markedfaces(mesh,marker), _rhs=F, _element=(*A)[Component::Z], _expr= g);
+				std::string marker = exAtMarker.marker();
+				auto g = expr(exAtMarker.expression());
+				g.setParameterValues({{"t", t}});
+				M00 += on(_range=markedfaces(mesh,marker), _rhs=F, _element=(*A)[Component::Z], _expr= g);
 		    }
 	    }
-	  }   
+	}   
     itField = M_modelProps->boundaryConditions().find( "electric-potential");
     if ( itField != M_modelProps->boundaryConditions().end() )
-	  {
+	{
 	    auto mapField = (*itField).second;
 	    auto itType = mapField.find( "Dirichlet" );
 	    if ( itType != mapField.end() )
 	    {
-	      for ( auto const& exAtMarker : (*itType).second )
+	      	for ( auto const& exAtMarker : (*itType).second )
 		    {
-		      std::string marker = exAtMarker.marker();
-		      auto g = expr(exAtMarker.expression());
-		      g.setParameterValues({{"t", t}})
-		      M11 += on(_range=markedfaces(cond_mesh,marker), _rhs=F, _element=*V, _expr= g);
+				std::string marker = exAtMarker.marker();
+				auto g = expr(exAtMarker.expression());
+				g.setParameterValues({{"t", t}})
+				M11 += on(_range=markedfaces(cond_mesh,marker), _rhs=F, _element=*V, _expr= g);
 		    }
 	    }
-	  }  
+	}  
     ...
   } 
 ----
