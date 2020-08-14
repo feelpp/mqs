@@ -98,13 +98,12 @@ The other change is simply the implementation of the equation:
     tic();
     auto M00 = form2( _trial=Th, _test=Th ,_matrix=M, _rowstart=0, _colstart=0 );   
     for( auto const& pairMat : M_modelProps->materials() )
-	  {
+	{
 	    auto name = pairMat.first;
 	    auto material = pairMat.second;
 
         auto k = material.getScalar("k");
   
-      //heat 
 	    M00 += integrate( _range=markedelements(mesh, material.meshMarkers()),
 			              _expr = k * inner( gradt(T),grad(T) ) );
 
@@ -119,11 +118,9 @@ The other change is simply the implementation of the equation:
 	    auto rho = material.getScalar("rho");
         auto Cp = material.getScalar("Cp");
 
-	    // heat
 	    M00 += integrate( _range=markedelements(mesh, material.meshMarkers()),
 			              _expr = Cp * rho * mybdfT->polyDerivCoefficient(0) * id(T) * idt(T) );
 
-        //heat
 	    F0 += integrate(_range=markedelements(mesh, material.meshMarkers()),
 			            _expr = Cp * rho * id(T) * idv(bdfT_poly) );
 	}
