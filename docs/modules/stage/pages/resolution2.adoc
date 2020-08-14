@@ -117,7 +117,12 @@ In order to analyze, let's additionally display I and B in the linear and non-li
 
 image:mqsheat/all.png[geometry,50%]
 
-We can see that the curves stem:[I(t)] and stem:[B(t)] correspond perfectly in the non-linear case when they are normalized to the values of the linear case.
+From this comparison we can see two things.
+
+Firstly, the intensity and the magnetic field correspond perfectly in the linear and non-linear case, which is an expected result because I is linear with respect to B.
+Secondly, and most interestingly, we find a peak for the magnetic field and intensity in the non-linear case in stem:[t=1].
+This peak is explained by the fact that in the non-linear case, the expected intensity is lower which is confirmed on the graph, and therefore the resistance will be stronger. 
+The peak therefore represents the variation in resistance between the linear and non-linear case, which occurs in stem:[t=1], which is expected.
 
 
 
