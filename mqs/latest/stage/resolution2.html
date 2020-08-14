@@ -257,16 +257,19 @@ MathJax.Hub.Config({
     <a class="nav-link" href="mqsheat.html">Add the heat equation</a>
   </li>
   <li class="nav-item" data-depth="2">
-    <a class="nav-link" href="resolution1.html">Linear resolution</a>
+    <a class="nav-link" href="resolution1.html">Resolution with linear parameter</a>
   </li>
   <li class="nav-item is-current-page" data-depth="2">
-    <a class="nav-link" href="resolution2.html">Non-linear resolution</a>
+    <a class="nav-link" href="resolution2.html">Resolution with non-linear parameter</a>
   </li>
   <li class="nav-item" data-depth="2">
     <a class="nav-link" href="conclusion.html">Conclusion</a>
   </li>
   <li class="nav-item" data-depth="2">
     <a class="nav-link" href="appendix.html">Appendix</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="acknowledgments.html">Acknowledgments</a>
   </li>
 </ul>
   </li>
@@ -325,7 +328,7 @@ MathJax.Hub.Config({
     <li><a href="../index.html">Feel++ Maxwell Quasi Static</a></li>
     <li>MQS stage</li>
     <li>Outline of the project</li>
-    <li><a href="resolution2.html">Non-linear resolution</a></li>
+    <li><a href="resolution2.html">Resolution with non-linear parameter</a></li>
   </ul>
 </nav>
 <div class="page-versions">
@@ -494,7 +497,13 @@ This is probably explained by the fact that the \(\sigma\) conductivity will dec
 <p><span class="image"><img src="_images/mqsheat/all.png" alt="geometry" width="50%"></span></p>
 </div>
 <div class="paragraph">
-<p>We can see that the curves \(I(t)\) and \(B(t)\) correspond perfectly in the non-linear case when they are normalized to the values of the linear case.</p>
+<p>From this comparison we can see two things.</p>
+</div>
+<div class="paragraph">
+<p>Firstly, the intensity and the magnetic field correspond perfectly in the linear and non-linear case, which is an expected result because I is linear with respect to B.
+Secondly, and most interestingly, we find a peak for the magnetic field and intensity in the non-linear case in \(t=1\).
+This peak is explained by the fact that in the non-linear case, the expected intensity is lower which is confirmed on the graph, and therefore the resistance will be stronger.
+The peak therefore represents the variation in resistance between the linear and non-linear case, which occurs in \(t=1\), which is expected.</p>
 </div>
 </div>
 </div>
