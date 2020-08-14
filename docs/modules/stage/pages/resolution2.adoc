@@ -1,4 +1,4 @@
-= Non-linear resolution 
+= Resolution with non-linear parameter
 
 We will now attempt a second approach. 
 In reality, the parameters stem:[\sigma] and stem:[k] depend on the temperature in the following way:
@@ -109,11 +109,15 @@ image:mqsheat/lin.png[geometry,50%]
 
 We can see that in the non-linear case, a peak is formed in t=1 for the magnetic field. The magnetic field thus reaches its maximum at t=1, before falling back to a limit value. In the linear case, the limit value is read directly at the end of the plateau.
 
-Here is what we get if we display the shape of the T and B curves in the linear and non-linear cases on the same graph:
+Let's further compare I in the linear and non-linear case :
 
-image:mqsheat/both.png[geometry,50%]
+image:mqsheat/It.png[geometry,50%]
 
-One explanation for this phenomenon may be...
+In order to analyze, let's additionally display I and B in the linear and non-linear cases, normalized with respect to the linear case
+
+image:mqsheat/all.png[geometry,50%]
+
+We can see that the curves stem:[I(t)] and stem:[B(t)] correspond perfectly in the non-linear case when they are normalized to the values of the linear case.
 
 
 
