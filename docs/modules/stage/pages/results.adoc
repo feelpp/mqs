@@ -245,6 +245,3 @@ A time step not small enough, which will degrade the approximation at each time 
 A space step not small enough. Indeed, reducing the space step h will greatly improve the accuracy, but in return the computation time will be much longer.
 Values of constants, such as sigma, which are approximations, will increase the error at each time step.
 Finally the order chosen for the finite elements, which can impact the result as well.
-
-
-Translated with www.DeepL.com/Translator (free version)
