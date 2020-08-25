@@ -25,6 +25,10 @@ Christophe PRUD'HOMME & Christophe TROPHIME
 [.text-center]
 2019-2020
 
+= Presentation pdf
+
+link:{attachmentsdir}/preStage.pdf[Download presentation pdf]
+
 = Contents
 
 . Introduction/Context
