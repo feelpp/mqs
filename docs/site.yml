@@ -1,11 +1,11 @@
 site:
-  title: Project // Docs
+  title: MQS Project // Docs
   url: /
   start_page: mqs:ROOT:index.adoc
 content:
   sources:
   - url: ..
-    branches: master
+    branches: [master, biotsavart-bcs]
     start_path: docs
   - url: https://github.com/feelpp/toolbox
     branches: master

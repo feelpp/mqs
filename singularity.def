@@ -1,0 +1,62 @@
+Bootstrap: docker
+From: feelpp/hifimagnet:mqsth-biotsavart-v0.108-beta.1-ubuntu-20.04
+
+%runscript
+exec echo "The runscript is the containers default runtime command!"
+
+%setup
+    echo "Looking in directory '$SINGULARITY_ROOTFS' for /bin/sh"
+    if [ ! -x "$SINGULARITY_ROOTFS/bin/sh" ]; then
+        echo "Hrmm, this container does not have /bin/sh installed..."
+        exit 1
+    fi
+
+exit 0
+
+
+%environment
+# CASROOT=/usr
+# LD_LIBRARY_PATH=/usr/lib/paraview:$LD_LIBRARY_PATH
+# PATH=/opt/SALOME-8.3.0-MPI-DB9.2:$PATH
+# export CASROOT
+# export LD_LIBRARY_PATH
+# export PATH
+
+FEELPP_REPOSITORY=/feel
+export FEELPP_REPOSITORY
+
+# # Add support for openmp
+# export OMP_NUM_THREADS=1
+# export OPENBLAS_NUM_THREADS=1
+
+export LANG=C
+
+
+%labels
+AUTHOR christophe.trophime@lncmi.cnrs.fr
+
+%post
+
+
+# create custom motd
+# Install figlet!
+apt update
+apt install -y figlet
+
+cat > /.singularity.d/env/99-motd.sh <<EOF   
+case \$0 in
+    /.singularity.d/actions/shell)
+        figlet mqs+th
+        echo
+        echo "Branch: biotsavart-bcs"
+	echo "Feelp-toolboxes: feature-biotsavart v0108.0-beta.1"
+        echo
+        echo "Hello \$USER from shell" ;;
+    /.singularity.d/actions/exec)
+        echo "Hello \$USER from exec" ;;
+    /.singularity.d/actions/run)
+        echo "Hello \$USER from run" ;;
+    /.singularity.d/actions/test)
+        echo "Hello \$USER from test" ;;
+esac
+EOF

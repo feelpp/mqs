@@ -50,6 +50,13 @@ if [ ! -d ${SRCDIR} ]; then
    exit 1
 fi
 
+# install npm and antora
+sudo apt-get update
+sudo apt-get -y npm
+sudo npm i -g @antora/cli @antora/site-generator-default
+sudo npm i -g asciidoctor.js asciidoctor-plantuml
+sudo npm i -g live-server
+
 # do it in docs
 cd ${SRCDIR}/docs
 antora --stacktrace generate --cache-dir cache --redirect-facility disabled --clean site.yml > ../Antora.log 2>&1
@@ -75,8 +82,9 @@ nohup live-server --wait=1000 ./public > output.log &
 WEBPID=$(ps -ef|grep /usr/local/bin/live-server | head -1 |  tr -s ' ' | cut -d' ' -f 2)
    
 echo "To view the docs; run Firefox in private mode and load localhost:8080/mqs/${VERSION}"
-echo "If you make change to the docs, do not forget to run:"
+echo "If you make change to the docs, do not forget to rerun:"
 echo "antora --stacktrace generate --cache-dir cache --redirect-facility disabled --clean site.yml > ../Antora.log 2>&1"
+echo "Check ../Antora.log for ERRORS and WARNINGS"
 echo "To stop the server: kill $WEBPID"
 echo "************************************************************"
 

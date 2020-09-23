@@ -25,7 +25,7 @@ Christophe PRUD'HOMME & Christophe TROPHIME
 [.text-center]
 2019-2020
 
-= Contents
+== Contents
 
 . Introduction/Context
 .. Introduction
