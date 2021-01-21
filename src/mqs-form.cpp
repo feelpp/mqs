@@ -250,7 +250,7 @@ int main(int argc, char**argv )
     std::cout << "fichier creer "<< std::endl;
   }
   else{
-    std:cout << "fichier non créer"<<std::endl;
+    std::cout << "fichier non créer"<<std::endl;
   }
 
   for (t = dt; t < tmax; t += dt)
