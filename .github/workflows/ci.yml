@@ -4,7 +4,7 @@ on: [push]
 
 jobs:
   build_docs:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
     - uses: buildkite/trigger-pipeline-action@v1.2.0
       env:
