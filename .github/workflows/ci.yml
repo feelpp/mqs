@@ -19,9 +19,13 @@ jobs:
     - uses: actions/checkout@v2
       with:
         lfs: true
-    - name: Build MQS
+    - name: Prepare Env
       run: |
-        clang++ --version || echo "Error: failed to run clang++ (" $(which clang++) ")"
+        lsb_release -cs
+        dpkg -l | grep clang
+        clang++ --version
+    - name: Build MQS
+      run: |        
         mkdir build && cd build
         cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=/usr/bin/clang++ -DCMAKE_INSTALL_PREFIX=./install ..
         make -j3
