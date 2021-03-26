@@ -52,7 +52,7 @@ fi
 
 # install npm and antora
 sudo apt-get update
-sudo apt-get -y npm
+sudo apt-get -y install npm
 sudo npm i -g @antora/cli @antora/site-generator-default
 sudo npm i -g asciidoctor.js asciidoctor-plantuml
 sudo npm i -g live-server
@@ -79,7 +79,7 @@ fi
 nohup live-server --wait=1000 ./public > output.log &
    
 # get PID
-WEBPID=$(ps -ef|grep /usr/local/bin/live-server | head -1 |  tr -s ' ' | cut -d' ' -f 2)
+WEBPID=$(pgrep /usr/local/bin/live-server)
    
 echo "To view the docs; run Firefox in private mode and load localhost:8080/mqs/${VERSION}"
 echo "If you make change to the docs, do not forget to rerun:"
