@@ -21,9 +21,9 @@ jobs:
         lfs: true
     - name: Build MQS
       run: |
-        which clang++-9
+        clang++ --version || echo "Error: failed to run clang++ (" $(which clang++) ")"
         mkdir build && cd build
-        cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=/usr/bin/clang++-9 -DCMAKE_INSTALL_PREFIX=./install ..
+        cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=/usr/bin/clang++ -DCMAKE_INSTALL_PREFIX=./install ..
         make -j3
         make install
     - name: Check build
