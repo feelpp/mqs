@@ -32,7 +32,15 @@ RUN apt update && \
     wget -qO - https://bintray.com/user/downloadSubjectPublicKey?username=bintray | apt-key add - && \
     apt update && \
     apt-cache search feelpp && \
-    apt install -y libfeelpp-toolboxes-dev feelpp-tools && \
+    echo "FEELPP_CHANNEL=${FEELPP_CHANNEL}" && \
+    if [ "$FEELPP_CHANNEL" = "stable" ]; then \
+       apt install -y libfeelpp-toolboxes-dev feelpp-tools; \
+    elif [ "$FEELPP_CHANNEL" = "latest" ]; then \
+       apt install -y libfeelpp-toolboxes1-core-dev feelpp-tools; \
+     else { \
+       echo "FEELPP_CHANNEL unknown: ${FEELPP_CHANNEL}"; \
+       exit 1; \
+    } fi && \
     apt install -y clang-9 g++ git cmake
 
 RUN apt install -y emacs-nox vim-nox
