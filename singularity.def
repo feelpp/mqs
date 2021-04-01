@@ -1,0 +1,63 @@
+Bootstrap: docker
+From: trophime/mqs:heat
+
+%startscript
+echo "Start script exec"
+
+# # ???? What to do with MongoDB if any ????
+# if [ -d /feel/crbdb ]; then
+#    echo "Starting MongoDB"
+#    service mongodb start
+#    if [ -d /feel/crbdb/mongodb ]; then
+#       /usr/lib/juju/mongo3.2/bin/mongorestore /feel/crbdb/mongodb
+#    fi
+# fi
+                                            
+%setup
+    echo "Looking in directory '$SINGULARITY_ROOTFS' for /bin/sh"
+    if [ ! -x "$SINGULARITY_ROOTFS/bin/sh" ]; then
+        echo "Hrmm, this container does not have /bin/sh installed..."
+        exit 1
+    fi
+exit 0
+
+
+%environment
+
+FEELPP_REPOSITORY=/feel
+export FEELPP_REPOSITORY
+
+# Add support for openmp
+export OMP_NUM_THREADS=1
+export OPENBLAS_NUM_THREADS=1
+
+export LANG=C
+
+%labels
+AUTHOR christophe.trophime@lncmi.cnrs.fr
+Maintainer: Christophe Trophime
+Maintainer_email: christophe.trophime@lncmi.cnrs.fr
+Version 1.0
+        
+%post
+
+apt update
+
+# create custom motd
+# Install figlet!
+apt install -y figlet
+
+# Get Feelpp version and branch
+VERSION=$( feelpp_mesh_partitioner --version | tail -1 | cut -d " " -f4)
+
+cat > /.singularity.d/env/99-motd.sh <<EOF   
+case \$0 in
+    /.singularity.d/actions/shell)
+        figlet Feelpp MQS
+        echo
+        echo "Feelp: ${VERSION}, MQS: heat"
+        echo
+        echo "Hello \$USER from shell" ;;
+esac
+EOF
+
