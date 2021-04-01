@@ -28,9 +28,11 @@ jobs:
         GITHUB_OAUTH: ${{ secrets.DOCS_GITHUB_KEY }}
     # Runs a single command using the runners shell
     - name: Build
-      run: node_modules/.bin/antora --fetch docs/site.yml --stacktrace      
+      run: |
+        node_modules/.bin/antora --fetch docs/site.yml --stacktrace
+        ls -lrth docs/
     - name: Deploy
-      uses: JamesIves/github-pages-deploy-action@3.5.9
+      uses: JamesIves/github-pages-deploy-action@3.7.1
       with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           BRANCH: gh-pages # The branch the action should deploy to.
