@@ -64,6 +64,7 @@ ENV HOME /home/feelpp
 WORKDIR $HOME
 
 RUN cd $HOME; pwd; git clone https://github.com/feelpp/mqs.git; \
+    git branch -a; \git checkout heat; \
     mkdir build && cd build; \
     cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=clang++-9 ../mqs; \
     make -j3;\
