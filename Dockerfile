@@ -7,6 +7,7 @@ USER root
 
 # select feelpp version: stable or latest
 ARG FEELPP_CHANNEL=stable
+ARG BRANCH=heat
 
 # Avoid warnings by switching to noninteractive
 ENV DEBIAN_FRONTEND=noninteractive
@@ -56,15 +57,15 @@ RUN useradd -m -s /bin/bash -G sudo,video feelpp && \
      echo "feelpp ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers.d/feelpp
 
 # get feelpp version
-RUN version=$(feelpp_toolbox_thermoelectric --version | grep version | cut -d " " -f4) && \
+RUN version=$(feelpp_mesh_partitioner --version | grep version | cut -d " " -f4) && \
     echo "Feelpp: $version"
 
 USER feelpp
 ENV HOME /home/feelpp
 WORKDIR $HOME
 
-RUN cd $HOME; pwd; git clone https://github.com/feelpp/mqs.git; \
-    git branch -a; \git checkout heat; \
+RUN cd $HOME; pwd; \
+    git clone --depth 1 --branch $BRANCH https://github.com/feelpp/mqs.git; \
     mkdir build && cd build; \
     cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=clang++-9 ../mqs; \
     make -j3;\
