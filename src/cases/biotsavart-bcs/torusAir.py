@@ -23,7 +23,7 @@ import os
 import GEOM
 from salome.geom import geomBuilder
 import math
-import SALOMEDS
+# import SALOMEDS
 
 
 geompy = geomBuilder.New()
@@ -40,7 +40,17 @@ geompy.addToStudy( OZ, 'OZ' )
 
 
 def Screen(r1, r2, h, z0):
-  # Create a rectangular cross section torus
+  """
+  Create a rectangular cross section torus 
+
+  r1: inner radius
+  r2: outer radius
+  h: total height
+  z0: altitude of the mid-plane
+
+  The torus section is: [r1,r2] x [z0-h/2.,z0+h/2.]
+  """
+
   Cylinder_1 = geompy.MakeCylinderRH(r2, h)
   Cylinder_2 = geompy.MakeCylinderRH(r1, 1.2*h)
   geompy.TranslateDXDYDZ(Cylinder_2, 0, 0, -0.1*h)
@@ -50,6 +60,19 @@ def Screen(r1, r2, h, z0):
   return Cut_1
 
 def Coil(r1, r2, h, eps, z0):
+  """
+  Create a coil of rectangular cross section
+  with a slit 
+  
+  r1: inner radius
+  r2: outer radius
+  h: total height
+  eps: thickness of the slit
+  z0: altitude of the mid-plane
+
+  The torus section is: [r1,r2] x [z0-h/2.,z0+h/2.]
+  """
+
   # Create a rectangular cross section torus
   Cylinder_1 = geompy.MakeCylinderRH(r2, h)
   Cylinder_2 = geompy.MakeCylinderRH(r1, 1.2*h)
@@ -70,94 +93,65 @@ def Coil(r1, r2, h, eps, z0):
 
   return Coil
 
-def usage(args):
-  """Usage"""
-    
-  # dmsg ="[-m timeit]"
-  tmsg = "--turns=n"
-  smsg = "--screens=n"
-  
-  msg = "usage : PATH_TO_APPLI/salome %s  args:"
-  print (msg % args[0] + tmsg + "," + smsg)
-
 # TODO:
-# add turns_data list of [r1, r2, h, z0] per turn
-# add sreen_data list of [r1, r2, h, z0] per screen
 # put data into a json?
 # create Mesh
 def main():
   """main"""
-  try:
-    opts, args = getopt.getopt(sys.argv[1:], "h", ["help",
-                                                   "turns=",
-                                                   "screens=",
-                                                   "output="])
-  except getopt.GetoptError as err:
-    # print help information and exit:
-    print (str(err)) # will print something like "option -a not recognized"
-    usage(sys.argv)
-    raise Exception("Failed to run")
 
-  ncoils=2
-  nscreens=1
-  output="torusAir"
-  rinf=0
+  print("sys.argv=", sys.argv)
   
-  for o, a in opts:
-    if o in ("-h", "--help"):
-      usage(sys.argv)
-      sys.exit()
-    elif o == "--turns":
-      ncoils = int(a)
-    elif o == "--screens":
-      nscreens = int(a)
-    elif o == "--output":
-      output = a
-    elif o == "--rinf":
-      rinf = float(a)
+  import argparse
+  parser = argparse.ArgumentParser()
 
-  # Loop over Coil
-  r1=75
-  r2=100.
-  h=50
-  eps=4
+  parser.add_argument("--turn", metavar=('r1', 'r2', 'h', 'z0', 'eps'), nargs=5, action='append', help="define the coils")
+  parser.add_argument("--screen", metavar=('r1', 'r2', 'h', 'z0'), nargs=4, action='append', help="define the screens")
+  parser.add_argument("--output", type=str, help="specify output name", default='torusAir')
+  parser.add_argument("--rinf", type=float, help="specify rinf")
+  args = parser.parse_args()
 
-  cut = 1
-  z0 = -((ncoils+1)*h+ncoils*cut)/2.
-  dz = 2*math.fabs(z0)
+  print("args=", args)
+  coils_data = args.turn
+  screens_data = args.screen
+  output = args.output
 
-  if rinf == 0 :
-    rinf=2*max(r2,math.fabs(z0))
-
+  # extract coils data
+  # coil: [r1, r2, h, z0, eps]
   print ("Create coils")
-  Coils=[]
-  HPts=[]
-  BPts=[]
-  for n in range(ncoils):
-    print ("ncoil=%d" % n, "z0=%g" % z0)
-    turn=Coil(r1, r2, h, eps, z0)
-    Coils.append(turn)
+  n_coils = len(coils_data)
+  Coils = []
+  HPts = []
+  BPts = []
+  for coil in coils_data:
+    print("coil=", coil)
+    r1 = coil[0]
+    r2 = coil[1]
+    h = coil[2]
+    z0 = coil[3]
+    eps = coil[4]
+    Coils.append(Coil(r1,r2,h,eps,z0))
     HPts.append( geompy.MakeVertex(0., (r1+r2)/2., z0-h/2.) );
     BPts.append( geompy.MakeVertex(0., (r1+r2)/2., z0+h/2.) );
   
-    # geompy.MakeVertex((r1+r2)/2., 0, z0+h/2., "M%d"%n)
-    # print("coil%d:"%n, (r1+r2)/2., 0, z0)
-    z0+=dz
-
-  print ("Create screens")
-  r1_s=1.1*r2
-  r2_s=r1_s+10
-  h_s=0.6*math.fabs(z0)
-
-  Screens=[]
+  # extract screens data
+  # screen: [r1, r2, h, z0]
+  print("Create screens")
+  n_screens = len(screens_data)
+  Screens = []
   S_HPts=[]
   S_BPts=[]
-  for n in range(nscreens):
-    Screens.append( Screen(r1_s, r2_s, h_s, 0) )
-    S_HPts.append( geompy.MakeVertex(0., (r1_s+r2_s)/2., -h_s/2.) );
-    S_BPts.append( geompy.MakeVertex(0., (r1_s+r2_s)/2., +h_s/2.) );
+  for screen in screens_data:
+    print("screen=", screen)
+    r1 = screen[0]
+    r2 = screen[1]
+    h = screen[2]
+    z0 = screen[3]
+    Screens.append(Screen(r1, r2, h, z0))
+    S_HPts.append( geompy.MakeVertex(0., (r1+r2)/2., z0-h/2.) );
+    S_BPts.append( geompy.MakeVertex(0., (r1+r2)/2., z0+h/2.) );  
 
   # create outer box
+  rinf=args.rinf
   print ("Create Sphere")
   Sphere_1 = geompy.MakeSphereR(rinf)
   #geompy.addToStudy( Sphere_1, 'Sphere_1' )
@@ -167,8 +161,6 @@ def main():
   Partition_1 = geompy.MakePartition(Coils+Screens+ [Sphere_1], [], [], [], geompy.ShapeType["SOLID"], 0, [], 0)
   geompy.addToStudy( Partition_1, 'Partition_1' )
 
-  ncoil=0
-  nscreen=0
   Solids = geompy.ExtractShapes(Partition_1, geompy.ShapeType["SOLID"], True)
   
   lGroups=[]
