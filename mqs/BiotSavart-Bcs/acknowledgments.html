@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>Modeling the transient behavior of high field magnets :: Feel++ Maxwell Quasi Static Docs</title>
+    <title>Acknowledgments :: Feel++ Maxwell Quasi Static Docs</title>
     <meta name="generator" content="Antora 2.3.4">
     <link rel="stylesheet" href="../../_/css/site.css">
 <link rel="icon" href="../../_/img/favicon.ico" type="image/x-icon">    
@@ -93,7 +93,7 @@ MathJax.Hub.Config({
 
 
   </head>
-  <body class="article text-center">
+  <body class="article">
 <header class="header">
   <nav class="navbar  navbar-expand-sm bg-dark navbar-dark">
     <div class="navbar-brand">
@@ -160,7 +160,7 @@ MathJax.Hub.Config({
   </nav>
 </header>
 <div class="body">
-<div class="nav-container" data-component="mqs" data-version="0.1.0">
+<div class="nav-container" data-component="mqs" data-version="BiotSavart-Bcs">
   <aside class="nav">
     <div class="panels">
 <div class="nav-panel-menu is-active" data-panel="menu">
@@ -175,7 +175,7 @@ MathJax.Hub.Config({
     <button class="nav-item-toggle"></button>
     <span class="nav-text">Outline of the project</span>
 <ul class="nav-list">
-  <li class="nav-item is-current-page" data-depth="2">
+  <li class="nav-item" data-depth="2">
     <a class="nav-link" href="front.html">Modeling the transient behavior of high field magnets</a>
   </li>
   <li class="nav-item" data-depth="2">
@@ -196,7 +196,7 @@ MathJax.Hub.Config({
   <li class="nav-item" data-depth="2">
     <a class="nav-link" href="conclusion.html">Conclusion</a>
   </li>
-  <li class="nav-item" data-depth="2">
+  <li class="nav-item is-current-page" data-depth="2">
     <a class="nav-link" href="acknowledgments.html">Acknowledgments</a>
   </li>
   <li class="nav-item" data-depth="2">
@@ -236,7 +236,7 @@ MathJax.Hub.Config({
 <div class="nav-panel-explore" data-panel="explore">
   <div class="context">
     <span class="title">Feel++ Maxwell Quasi Static</span>
-    <span class="version">0.1.0</span>
+    <span class="version">BiotSavart-Bcs</span>
   </div>
   <ul class="components">
     <li class="component is-current">
@@ -245,11 +245,11 @@ MathJax.Hub.Config({
         <li class="version is-latest">
           <a href="../latest/index.html">latest</a>
         </li>
+        <li class="version is-current">
+          <a href="index.html">BiotSavart-Bcs</a>
+        </li>
         <li class="version">
           <a href="../BDF/index.html">BDF</a>
-        </li>
-        <li class="version is-current">
-          <a href="index.html">0.1.0</a>
         </li>
       </ul>
     </li>
@@ -283,131 +283,30 @@ MathJax.Hub.Config({
     <li><a href="index.html">Feel++ MQS</a></li>
     <li>MQS</li>
     <li>Outline of the project</li>
-    <li><a href="front.html">Modeling the transient behavior of high field magnets</a></li>
+    <li><a href="acknowledgments.html">Acknowledgments</a></li>
   </ul>
 </nav>
 <div class="page-versions">
-  <button class="version-menu-toggle" title="Show other versions of page">0.1.0</button>
+  <button class="version-menu-toggle" title="Show other versions of page">BiotSavart-Bcs</button>
   <div class="version-menu">
-    <a class="version" href="../latest/front.html">latest</a>
-    <a class="version" href="../BDF/front.html">BDF</a>
-    <a class="version is-current" href="front.html">0.1.0</a>
+    <a class="version" href="../latest/acknowledgments.html">latest</a>
+    <a class="version is-current" href="acknowledgments.html">BiotSavart-Bcs</a>
+    <a class="version" href="../BDF/acknowledgments.html">BDF</a>
   </div>
 </div>
-  <div class="edit-this-page"><a href="https://github.com/feelpp/mqs/edit/biotsavart-bcs/docs/modules/ROOT/pages/front.adoc">Edit this Page</a></div>
+  <div class="edit-this-page"><a href="https://github.com/feelpp/mqs/edit/biotsavart-bcs/docs/modules/ROOT/pages/acknowledgments.adoc">Edit this Page</a></div>
   </div>
   <div class="content">
 <article class="doc">
-<h1 class="page">Modeling the transient behavior of high field magnets</h1>
-<div id="preamble">
-<div class="sectionbody">
-<div class="paragraph text-center">
-<p>Master 1 CSMI</p>
-</div>
-<div class="paragraph text-center">
-<p>UFR de Mathématique et d&#8217;Informatique</p>
-</div>
-<div class="paragraph text-center">
-<p>Université de Strasbourg</p>
-</div>
-<div class="paragraph text-center">
-<p>ANKI Lucas</p>
-</div>
-<div class="paragraph text-center">
-<p>supervised by</p>
-</div>
-<div class="paragraph text-center">
-<p>Christophe PRUD&#8217;HOMME &amp; Christophe TROPHIME</p>
-</div>
-<div class="paragraph text-center">
-<p>2019-2020</p>
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="_contents"><a class="anchor" href="#_contents"></a>1. Contents</h2>
-<div class="sectionbody">
-<div class="olist arabic">
-<ol class="arabic">
-<li>
-<p>Introduction/Context</p>
-<div class="olist loweralpha">
-<ol class="loweralpha" type="a">
-<li>
-<p>Introduction</p>
-</li>
-<li>
-<p>Context</p>
-</li>
-</ol>
-</div>
-</li>
-<li>
-<p>Formulation</p>
-<div class="olist loweralpha">
-<ol class="loweralpha" type="a">
-<li>
-<p>Differential form of Maxwell&#8217;s equations</p>
-</li>
-<li>
-<p>The magnetic vector and electric scalar potentials Formulation</p>
-</li>
-<li>
-<p>Weak formulation</p>
-</li>
-</ol>
-</div>
-</li>
-<li>
-<p>Discretization</p>
-</li>
-<li>
-<p>Implementation</p>
-<div class="olist loweralpha">
-<ol class="loweralpha" type="a">
-<li>
-<p>First equation</p>
-</li>
-<li>
-<p>Second equation</p>
-</li>
-<li>
-<p>Coupled system</p>
-</li>
-</ol>
-</div>
-</li>
-<li>
-<p>Validations</p>
-<div class="olist loweralpha">
-<ol class="loweralpha" type="a">
-<li>
-<p>Introduction</p>
-</li>
-<li>
-<p>A solenoidal magnet</p>
-</li>
-<li>
-<p>2 solenoidal magnets</p>
-</li>
-</ol>
-</div>
-</li>
-<li>
-<p>Conclusion</p>
-</li>
-<li>
-<p>Acknowledgments</p>
-</li>
-<li>
-<p>Code</p>
-</li>
-<li>
-<p>Bibliography</p>
-</li>
-</ol>
-</div>
-</div>
+<h1 class="page">Acknowledgments</h1>
+<div class="paragraph">
+<p>Above all, I would like to thank Christophe Trophime for having proposed this project,
+for having supervised me during this one, for having been able to answer my questions
+and for having been able to help me to understand the subject as well as the theoretical
+bases necessary to the comprehension of this one. I would also like to thank Christophe Prud&#8217;homme,
+for assigning me to this project, for supervising me throughout it, and for helping me learn the basics
+of feelpp development. Finally, I also want to thank Romain Hild, for answering many of my questions about
+feelpp development when I was in trouble.</p>
 </div>
 </article>
 <aside class="toc sidebar" data-title="Contents" data-levels="2">

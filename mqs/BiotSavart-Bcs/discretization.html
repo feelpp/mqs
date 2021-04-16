@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>Appendix :: Feel++ Maxwell Quasi Static Docs</title>
+    <title>Discretization :: Feel++ Maxwell Quasi Static Docs</title>
     <meta name="generator" content="Antora 2.3.4">
     <link rel="stylesheet" href="../../_/css/site.css">
 <link rel="icon" href="../../_/img/favicon.ico" type="image/x-icon">    
@@ -160,7 +160,7 @@ MathJax.Hub.Config({
   </nav>
 </header>
 <div class="body">
-<div class="nav-container" data-component="mqs" data-version="0.1.0">
+<div class="nav-container" data-component="mqs" data-version="BiotSavart-Bcs">
   <aside class="nav">
     <div class="panels">
 <div class="nav-panel-menu is-active" data-panel="menu">
@@ -184,7 +184,7 @@ MathJax.Hub.Config({
   <li class="nav-item" data-depth="2">
     <a class="nav-link" href="formulation.html">Formulation</a>
   </li>
-  <li class="nav-item" data-depth="2">
+  <li class="nav-item is-current-page" data-depth="2">
     <a class="nav-link" href="discretization.html">Discretization</a>
   </li>
   <li class="nav-item" data-depth="2">
@@ -205,7 +205,7 @@ MathJax.Hub.Config({
   <li class="nav-item" data-depth="2">
     <a class="nav-link" href="bibliography.html">Bibliography</a>
   </li>
-  <li class="nav-item is-current-page" data-depth="2">
+  <li class="nav-item" data-depth="2">
     <a class="nav-link" href="appendix.html">Appendix</a>
   </li>
 </ul>
@@ -236,7 +236,7 @@ MathJax.Hub.Config({
 <div class="nav-panel-explore" data-panel="explore">
   <div class="context">
     <span class="title">Feel++ Maxwell Quasi Static</span>
-    <span class="version">0.1.0</span>
+    <span class="version">BiotSavart-Bcs</span>
   </div>
   <ul class="components">
     <li class="component is-current">
@@ -245,11 +245,11 @@ MathJax.Hub.Config({
         <li class="version is-latest">
           <a href="../latest/index.html">latest</a>
         </li>
+        <li class="version is-current">
+          <a href="index.html">BiotSavart-Bcs</a>
+        </li>
         <li class="version">
           <a href="../BDF/index.html">BDF</a>
-        </li>
-        <li class="version is-current">
-          <a href="index.html">0.1.0</a>
         </li>
       </ul>
     </li>
@@ -283,116 +283,99 @@ MathJax.Hub.Config({
     <li><a href="index.html">Feel++ MQS</a></li>
     <li>MQS</li>
     <li>Outline of the project</li>
-    <li><a href="appendix.html">Appendix</a></li>
+    <li><a href="discretization.html">Discretization</a></li>
   </ul>
 </nav>
 <div class="page-versions">
-  <button class="version-menu-toggle" title="Show other versions of page">0.1.0</button>
+  <button class="version-menu-toggle" title="Show other versions of page">BiotSavart-Bcs</button>
   <div class="version-menu">
-    <a class="version" href="../latest/appendix.html">latest</a>
-    <a class="version" href="../BDF/appendix.html">BDF</a>
-    <a class="version is-current" href="appendix.html">0.1.0</a>
+    <a class="version" href="../latest/discretization.html">latest</a>
+    <a class="version is-current" href="discretization.html">BiotSavart-Bcs</a>
+    <a class="version" href="../BDF/discretization.html">BDF</a>
   </div>
 </div>
-  <div class="edit-this-page"><a href="https://github.com/feelpp/mqs/edit/biotsavart-bcs/docs/modules/ROOT/pages/appendix.adoc">Edit this Page</a></div>
+  <div class="edit-this-page"><a href="https://github.com/feelpp/mqs/edit/biotsavart-bcs/docs/modules/ROOT/pages/discretization.adoc">Edit this Page</a></div>
   </div>
   <div class="content">
 <article class="doc">
-<h1 class="page">Appendix</h1>
-<div class="sect1">
-<h2 id="_getdp_axisymetric_models"><a class="anchor" href="#_getdp_axisymetric_models"></a>1. Getdp Axisymetric models</h2>
-<div class="sectionbody">
+<h1 class="page">Discretization</h1>
 <div class="paragraph">
-<p>Modeling with getdp relies on:</p>
-</div>
-<div class="ulist">
-<ul>
-<li>
-<p>a formal description of the variational formulation to be solved: <a href="_attachments/aximodel/getdp/MagDyn-av_Axi.pro">MagDyn-av_Axi.pro</a></p>
-</li>
-<li>
-<p>a file for describing numerical integration methods to be used: <a href="_attachments/aximodel/getdp/Integration_Lib.pro">Integration_Lib.pro</a></p>
-</li>
-<li>
-<p>a file for describing transformation to be done: <a href="_attachments/aximodel/getdp/Jacobian_Lib.pro">Jacobian_Lib.pro</a></p>
-</li>
-</ul>
+<p>To solve these two differential equations, we can first discretize the time derivative by finite differences.
+If u is a functions. Let us note \(u^n\) the quantity designating \(u\) at time \(n\).</p>
 </div>
 <div class="paragraph">
-<p>To actually run a simulation, you would also need:</p>
+<p>Let&#8217;s go back to our equations  :</p>
 </div>
-<div class="ulist">
-<ul>
-<li>
-<p>a geometry mesh file: <a href="_attachments/aximodel/helix/helix.geo">helix.geo</a>,</p>
-</li>
-<li>
-<p>a file describing the properties of the materials, the boundary conditions and postprocessing: <a href="_attachments/aximodel/helix/helix.pro">helix.pro</a></p>
-</li>
-</ul>
+<div class="stemblock">
+<div class="content">
+\[\begin{equation}
+\int_{\Omega} \frac{1}{\mu} \, (\nabla \times \phi) \cdot (\nabla \times A) = - \int_{\Omega_C} \sigma \phi \cdot (\nabla V + \frac{\partial A}{\partial t})
+\end{equation}\]
 </div>
-<div class="sect2">
-<h3 id="_running_the_simulation"><a class="anchor" href="#_running_the_simulation"></a>1.1. Running the simulation</h3>
+</div>
 <div class="paragraph">
-<p>Install <code>gmsh</code> and <code>getdp</code>. Download the files needed to run the simulation. Then run the following command:</p>
+<p>(or the following one if the edges are curved :)</p>
 </div>
-<div class="listingblock">
+<div class="stemblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">gmsh -2 -bin helix.geo
-getdp -m helix.msh helix.pro -solve MagDyn_t_av_Axi -pos Map_a U_av</code></pre>
+\[\begin{equation}
+\int_{\Omega} \frac{1}{\mu} \, (\nabla \times \phi) \cdot (\nabla \times A) - \int_{\Gamma_D} \frac{1}{\mu} A_D \cdot (\nabla \times A) = - \int_{\Omega_C} \sigma \phi \cdot (\nabla V + \frac{\partial A}{\partial t})
+\end{equation}\]
 </div>
 </div>
-<div class="admonitionblock note">
-<table>
-<tr>
-<td class="icon">
-<i class="fa icon-note" title="Note"></i>
-</td>
-<td class="content">
-Depending on your installation, you may need to add an extra option to <code>gmsh</code>
-when generating the mesh that will be used by <code>getdp</code>. If you have an error message when running <code>getdp</code> please specify the format of the mesh with <code>-format msh3</code>.
-</td>
-</tr>
-</table>
+<div class="paragraph">
+<p>and :</p>
 </div>
-</div>
-<div class="sect2">
-<h3 id="_postprocessing"><a class="anchor" href="#_postprocessing"></a>1.2. Postprocessing</h3>
-<div class="listingblock">
+<div class="stemblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">gnuplot&gt; load "I_vs_t.cmd"</code></pre>
+\[\begin{equation}
+ - \int_{\Omega_C} \sigma ( -\nabla V -\frac{\partial A}{\partial t}) \cdot \nabla \psi = 0
+\end{equation}\]
 </div>
 </div>
-<div class="admonitionblock note">
-<table>
-<tr>
-<td class="icon">
-<i class="fa icon-note" title="Note"></i>
-</td>
-<td class="content">
-The command file for `gnuplot`may be found <a href="_attachments/aximodel/helix/I-vs_t.cmd">here</a>.
-</td>
-</tr>
-</table>
+<div class="paragraph">
+<p>Let us note \(\Delta t &gt; 0\) the step time, such that \(t_n = n\Delta t\).
+Let us note \(A^n(x) := A(t_n,x)\).
+We have, using an implicit euler&#8217;s schema : \(\frac{\partial A}{\partial t} = \frac{A^n-A^{n-1}}{\Delta t}\).</p>
 </div>
-<div class="listingblock">
+<div class="paragraph">
+<p>So, in the case where the edges are not curved, we have :</p>
+</div>
+<div class="stemblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">gmsh testMagDyn_a.pos</code></pre>
+\[\begin{equation}
+\int_{\Omega} \frac{1}{\mu} \, (\nabla \times \phi) \cdot (\nabla \times A^n) = - \int_{\Omega_C} \sigma \phi \cdot (\nabla V + \frac{A^n-A^{n-1}}{\Delta t})
+\end{equation}\]
 </div>
 </div>
+<div class="paragraph">
+<p>In other words :</p>
+</div>
+<div class="stemblock">
+<div class="content">
+\[\begin{equation}
+\int_{\Omega} \frac{\Delta t}{\mu} \, (\nabla \times \phi) \cdot (\nabla \times A^n) + \int_{\Omega_C} \sigma \phi \cdot (A^n + \Delta t\nabla V) = \int_{\Omega_C} \sigma \phi \cdot A^{n-1}
+\end{equation}\]
 </div>
 </div>
+<div class="paragraph">
+<p>and the second equations :</p>
 </div>
-<div class="sect1">
-<h2 id="_computing_self_and_mutual_inductances"><a class="anchor" href="#_computing_self_and_mutual_inductances"></a>2. Computing Self and Mutual Inductances</h2>
-<div class="sectionbody">
-
+<div class="stemblock">
+<div class="content">
+\[\begin{equation}
+ \int_{\Omega_C} \sigma (A^n + \Delta t\nabla V) \cdot \nabla \psi =  \int_{\Omega_C} \sigma A^{n-1} \cdot \nabla \psi
+\end{equation}\]
 </div>
 </div>
-<div class="sect1">
-<h2 id="_solving_electric_circuit_model"><a class="anchor" href="#_solving_electric_circuit_model"></a>3. Solving Electric circuit model</h2>
-<div class="sectionbody">
-
+<div class="paragraph">
+<p>If the edges are curved, our first equation becomes :</p>
+</div>
+<div class="stemblock">
+<div class="content">
+\[\begin{equation}
+\int_{\Omega} \frac{\Delta t}{\mu} \, (\nabla \times \phi) \cdot (\nabla \times A^n) - \int_{\Gamma_D} \frac{1}{\mu} A_D \cdot (\nabla \times A^n) + \int_{\Omega_C} \sigma \phi \cdot (A^n + \Delta t \nabla V) =  \int_{\Omega_C} \sigma \phi \cdot A^{n-1}
+\end{equation}\]
 </div>
 </div>
 </article>

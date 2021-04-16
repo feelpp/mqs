@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>Roadmap :: Feel++ Maxwell Quasi Static Docs</title>
+    <title>Modeling the transient behavior of high field magnets :: Feel++ Maxwell Quasi Static Docs</title>
     <meta name="generator" content="Antora 2.3.4">
     <link rel="stylesheet" href="../../_/css/site.css">
 <link rel="icon" href="../../_/img/favicon.ico" type="image/x-icon">    
@@ -93,7 +93,7 @@ MathJax.Hub.Config({
 
 
   </head>
-  <body class="article">
+  <body class="article text-center">
 <header class="header">
   <nav class="navbar  navbar-expand-sm bg-dark navbar-dark">
     <div class="navbar-brand">
@@ -160,7 +160,7 @@ MathJax.Hub.Config({
   </nav>
 </header>
 <div class="body">
-<div class="nav-container" data-component="mqs" data-version="0.1.0">
+<div class="nav-container" data-component="mqs" data-version="BiotSavart-Bcs">
   <aside class="nav">
     <div class="panels">
 <div class="nav-panel-menu is-active" data-panel="menu">
@@ -175,7 +175,7 @@ MathJax.Hub.Config({
     <button class="nav-item-toggle"></button>
     <span class="nav-text">Outline of the project</span>
 <ul class="nav-list">
-  <li class="nav-item" data-depth="2">
+  <li class="nav-item is-current-page" data-depth="2">
     <a class="nav-link" href="front.html">Modeling the transient behavior of high field magnets</a>
   </li>
   <li class="nav-item" data-depth="2">
@@ -214,7 +214,7 @@ MathJax.Hub.Config({
     <button class="nav-item-toggle"></button>
     <span class="nav-text">Roadmap</span>
 <ul class="nav-list">
-  <li class="nav-item is-current-page" data-depth="2">
+  <li class="nav-item" data-depth="2">
     <a class="nav-link" href="roadmap.html">Roadmap</a>
   </li>
 </ul>
@@ -236,7 +236,7 @@ MathJax.Hub.Config({
 <div class="nav-panel-explore" data-panel="explore">
   <div class="context">
     <span class="title">Feel++ Maxwell Quasi Static</span>
-    <span class="version">0.1.0</span>
+    <span class="version">BiotSavart-Bcs</span>
   </div>
   <ul class="components">
     <li class="component is-current">
@@ -245,11 +245,11 @@ MathJax.Hub.Config({
         <li class="version is-latest">
           <a href="../latest/index.html">latest</a>
         </li>
+        <li class="version is-current">
+          <a href="index.html">BiotSavart-Bcs</a>
+        </li>
         <li class="version">
           <a href="../BDF/index.html">BDF</a>
-        </li>
-        <li class="version is-current">
-          <a href="index.html">0.1.0</a>
         </li>
       </ul>
     </li>
@@ -282,95 +282,130 @@ MathJax.Hub.Config({
   <ul>
     <li><a href="index.html">Feel++ MQS</a></li>
     <li>MQS</li>
-    <li>Roadmap</li>
-    <li><a href="roadmap.html">Roadmap</a></li>
+    <li>Outline of the project</li>
+    <li><a href="front.html">Modeling the transient behavior of high field magnets</a></li>
   </ul>
 </nav>
 <div class="page-versions">
-  <button class="version-menu-toggle" title="Show other versions of page">0.1.0</button>
+  <button class="version-menu-toggle" title="Show other versions of page">BiotSavart-Bcs</button>
   <div class="version-menu">
-    <a class="version" href="../latest/roadmap.html">latest</a>
-    <a class="version" href="../BDF/roadmap.html">BDF</a>
-    <a class="version is-current" href="roadmap.html">0.1.0</a>
+    <a class="version" href="../latest/front.html">latest</a>
+    <a class="version is-current" href="front.html">BiotSavart-Bcs</a>
+    <a class="version" href="../BDF/front.html">BDF</a>
   </div>
 </div>
-  <div class="edit-this-page"><a href="https://github.com/feelpp/mqs/edit/biotsavart-bcs/docs/modules/ROOT/pages/roadmap.adoc">Edit this Page</a></div>
+  <div class="edit-this-page"><a href="https://github.com/feelpp/mqs/edit/biotsavart-bcs/docs/modules/ROOT/pages/front.adoc">Edit this Page</a></div>
   </div>
   <div class="content">
 <article class="doc">
-<h1 class="page">Roadmap</h1>
-<div class="sect1">
-<h2 id="_end_of_march"><a class="anchor" href="#_end_of_march"></a>1. End of March</h2>
+<h1 class="page">Modeling the transient behavior of high field magnets</h1>
+<div id="preamble">
 <div class="sectionbody">
-<div class="ulist">
-<ul>
-<li>
-<p>Beginning of the project, contact with Christophe Trophime and Christophe Prudhomm to talk about the topic (2h)</p>
-</li>
-<li>
-<p>Installation and configuration of ressources needed for the project (2h)</p>
-</li>
-</ul>
+<div class="paragraph text-center">
+<p>Master 1 CSMI</p>
 </div>
+<div class="paragraph text-center">
+<p>UFR de Mathématique et d&#8217;Informatique</p>
 </div>
+<div class="paragraph text-center">
+<p>Université de Strasbourg</p>
 </div>
-<div class="sect1">
-<h2 id="_april"><a class="anchor" href="#_april"></a>2. April</h2>
-<div class="sectionbody">
-<div class="ulist">
-<ul>
-<li>
-<p>01/04 : Writing the introduction and context of the project (4h)</p>
-</li>
-<li>
-<p>Reading of bibliographical sources about the Maxwell&#8217;s equations (3h)</p>
-</li>
-<li>
-<p>07/04 : Writing the Maxwell quasi-static modeling (2h30)</p>
-</li>
-<li>
-<p>Writing the roadmap, expected time for each steps, and bibliography (2h)</p>
-</li>
-<li>
-<p>14/04 : Report V0</p>
-</li>
-<li>
-<p>17/04 : Writing the variational formulation of the MQS model (3h)</p>
-</li>
-<li>
-<p>End of April : Discretisation selection, solver selection (4h)</p>
-</li>
-</ul>
+<div class="paragraph text-center">
+<p>ANKI Lucas</p>
+</div>
+<div class="paragraph text-center">
+<p>supervised by</p>
+</div>
+<div class="paragraph text-center">
+<p>Christophe PRUD&#8217;HOMME &amp; Christophe TROPHIME</p>
+</div>
+<div class="paragraph text-center">
+<p>2019-2020</p>
 </div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_may"><a class="anchor" href="#_may"></a>3. May</h2>
+<h2 id="_contents"><a class="anchor" href="#_contents"></a>1. Contents</h2>
 <div class="sectionbody">
-<div class="ulist">
-<ul>
+<div class="olist arabic">
+<ol class="arabic">
 <li>
-<p>Beginning of May : Learning and appropriation of coding under feel++ (8h)</p>
+<p>Introduction/Context</p>
+<div class="olist loweralpha">
+<ol class="loweralpha" type="a">
+<li>
+<p>Introduction</p>
 </li>
 <li>
-<p>Implementation of the model under feel++, unit test development (22h)</p>
+<p>Context</p>
+</li>
+</ol>
+</div>
 </li>
 <li>
-<p>Code verification on test cases and possibles corrections (10h)</p>
+<p>Formulation</p>
+<div class="olist loweralpha">
+<ol class="loweralpha" type="a">
+<li>
+<p>Differential form of Maxwell&#8217;s equations</p>
 </li>
 <li>
-<p>19/05 : Report V1 (8h)</p>
+<p>The magnetic vector and electric scalar potentials Formulation</p>
 </li>
 <li>
-<p>Last verification and validation (6h)</p>
+<p>Weak formulation</p>
+</li>
+</ol>
+</div>
 </li>
 <li>
-<p>29/05 : Report final version (6h)</p>
+<p>Discretization</p>
 </li>
 <li>
-<p>Writing the presentation (6h)</p>
+<p>Implementation</p>
+<div class="olist loweralpha">
+<ol class="loweralpha" type="a">
+<li>
+<p>First equation</p>
 </li>
-</ul>
+<li>
+<p>Second equation</p>
+</li>
+<li>
+<p>Coupled system</p>
+</li>
+</ol>
+</div>
+</li>
+<li>
+<p>Validations</p>
+<div class="olist loweralpha">
+<ol class="loweralpha" type="a">
+<li>
+<p>Introduction</p>
+</li>
+<li>
+<p>A solenoidal magnet</p>
+</li>
+<li>
+<p>2 solenoidal magnets</p>
+</li>
+</ol>
+</div>
+</li>
+<li>
+<p>Conclusion</p>
+</li>
+<li>
+<p>Acknowledgments</p>
+</li>
+<li>
+<p>Code</p>
+</li>
+<li>
+<p>Bibliography</p>
+</li>
+</ol>
 </div>
 </div>
 </div>

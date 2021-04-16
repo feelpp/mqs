@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>Discretization :: Feel++ Maxwell Quasi Static Docs</title>
+    <title>Modeling the transient behavior of high field magnets :: Feel++ Maxwell Quasi Static Docs</title>
     <meta name="generator" content="Antora 2.3.4">
     <link rel="stylesheet" href="../../_/css/site.css">
 <link rel="icon" href="../../_/img/favicon.ico" type="image/x-icon">    
@@ -160,7 +160,7 @@ MathJax.Hub.Config({
   </nav>
 </header>
 <div class="body">
-<div class="nav-container" data-component="mqs" data-version="0.1.0">
+<div class="nav-container" data-component="mqs" data-version="BiotSavart-Bcs">
   <aside class="nav">
     <div class="panels">
 <div class="nav-panel-menu is-active" data-panel="menu">
@@ -178,13 +178,13 @@ MathJax.Hub.Config({
   <li class="nav-item" data-depth="2">
     <a class="nav-link" href="front.html">Modeling the transient behavior of high field magnets</a>
   </li>
-  <li class="nav-item" data-depth="2">
+  <li class="nav-item is-current-page" data-depth="2">
     <a class="nav-link" href="index.html">Introduction</a>
   </li>
   <li class="nav-item" data-depth="2">
     <a class="nav-link" href="formulation.html">Formulation</a>
   </li>
-  <li class="nav-item is-current-page" data-depth="2">
+  <li class="nav-item" data-depth="2">
     <a class="nav-link" href="discretization.html">Discretization</a>
   </li>
   <li class="nav-item" data-depth="2">
@@ -236,7 +236,7 @@ MathJax.Hub.Config({
 <div class="nav-panel-explore" data-panel="explore">
   <div class="context">
     <span class="title">Feel++ Maxwell Quasi Static</span>
-    <span class="version">0.1.0</span>
+    <span class="version">BiotSavart-Bcs</span>
   </div>
   <ul class="components">
     <li class="component is-current">
@@ -245,11 +245,11 @@ MathJax.Hub.Config({
         <li class="version is-latest">
           <a href="../latest/index.html">latest</a>
         </li>
+        <li class="version is-current">
+          <a href="index.html">BiotSavart-Bcs</a>
+        </li>
         <li class="version">
           <a href="../BDF/index.html">BDF</a>
-        </li>
-        <li class="version is-current">
-          <a href="index.html">0.1.0</a>
         </li>
       </ul>
     </li>
@@ -283,99 +283,50 @@ MathJax.Hub.Config({
     <li><a href="index.html">Feel++ MQS</a></li>
     <li>MQS</li>
     <li>Outline of the project</li>
-    <li><a href="discretization.html">Discretization</a></li>
+    <li><a href="index.html">Introduction</a></li>
   </ul>
 </nav>
 <div class="page-versions">
-  <button class="version-menu-toggle" title="Show other versions of page">0.1.0</button>
+  <button class="version-menu-toggle" title="Show other versions of page">BiotSavart-Bcs</button>
   <div class="version-menu">
-    <a class="version" href="../latest/discretization.html">latest</a>
-    <a class="version" href="../BDF/discretization.html">BDF</a>
-    <a class="version is-current" href="discretization.html">0.1.0</a>
+    <a class="version" href="../latest/index.html">latest</a>
+    <a class="version is-current" href="index.html">BiotSavart-Bcs</a>
+    <a class="version" href="../BDF/index.html">BDF</a>
   </div>
 </div>
-  <div class="edit-this-page"><a href="https://github.com/feelpp/mqs/edit/biotsavart-bcs/docs/modules/ROOT/pages/discretization.adoc">Edit this Page</a></div>
+  <div class="edit-this-page"><a href="https://github.com/feelpp/mqs/edit/biotsavart-bcs/docs/modules/ROOT/pages/index.adoc">Edit this Page</a></div>
   </div>
   <div class="content">
 <article class="doc">
-<h1 class="page">Discretization</h1>
+<h1 class="page">Modeling the transient behavior of high field magnets</h1>
+<div class="sect1">
+<h2 id="_introduction"><a class="anchor" href="#_introduction"></a>1. Introduction</h2>
+<div class="sectionbody">
 <div class="paragraph">
-<p>To solve these two differential equations, we can first discretize the time derivative by finite differences.
-If u is a functions. Let us note \(u^n\) the quantity designating \(u\) at time \(n\).</p>
+<p>High field magnets are a tool in many research fields such as superconductivity or BioChemistry. Only a few laboratories,
+including the National Laboratory for Intense Magnetic Fields (LNCMI) in France, supply such magnets, which are made
+available to the scientific community via calls for projects. LNCMI is a research infrastructure run by the CNRS, located on
+two sites: Grenoble, where continuous fields up to 37 teslas can be reached during several hours, and Toulouse where pulsed fields
+up to 100 tesla are achieved within a few hundreds of milliseconds. Their development and maintenance represent a significant cost.
+This is why it is fundamental to understand and model these magnets beforehand.</p>
 </div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_context"><a class="anchor" href="#_context"></a>2. Context</h2>
+<div class="sectionbody">
 <div class="paragraph">
-<p>Let&#8217;s go back to our equations  :</p>
-</div>
-<div class="stemblock">
-<div class="content">
-\[\begin{equation}
-\int_{\Omega} \frac{1}{\mu} \, (\nabla \times \phi) \cdot (\nabla \times A) = - \int_{\Omega_C} \sigma \phi \cdot (\nabla V + \frac{\partial A}{\partial t})
-\end{equation}\]
-</div>
-</div>
-<div class="paragraph">
-<p>(or the following one if the edges are curved :)</p>
-</div>
-<div class="stemblock">
-<div class="content">
-\[\begin{equation}
-\int_{\Omega} \frac{1}{\mu} \, (\nabla \times \phi) \cdot (\nabla \times A) - \int_{\Gamma_D} \frac{1}{\mu} A_D \cdot (\nabla \times A) = - \int_{\Omega_C} \sigma \phi \cdot (\nabla V + \frac{\partial A}{\partial t})
-\end{equation}\]
-</div>
-</div>
-<div class="paragraph">
-<p>and :</p>
-</div>
-<div class="stemblock">
-<div class="content">
-\[\begin{equation}
- - \int_{\Omega_C} \sigma ( -\nabla V -\frac{\partial A}{\partial t}) \cdot \nabla \psi = 0
-\end{equation}\]
-</div>
+<p>Such High Field Magnets are made of copper alloy since superconductor can only generate up to 25 tesla with the present technology.
+To obtain an intense magnetic field, it is necessary to pass a sufficiently important current,
+of the order of 30000 Ampere, in coils. Therefore they have to be cooled down by a forced water flow to dissipate Heat generated by Joule losses.
+The cooling is usually modelled by heat exchange coefficients, which are introduced as the boundary conditions for the thermal problem.
+Moreover, the magnets shall withstand the electromagnetic efforts. This calls for multi-physics modelling.</p>
 </div>
 <div class="paragraph">
-<p>Let us note \(\Delta t &gt; 0\) the step time, such that \(t_n = n\Delta t\).
-Let us note \(A^n(x) := A(t_n,x)\).
-We have, using an implicit euler&#8217;s schema : \(\frac{\partial A}{\partial t} = \frac{A^n-A^{n-1}}{\Delta t}\).</p>
+<p>Models for the transient regime have developed in the frame of a collaboration between the LNCMI and IRMA. The models heavily relie on the
+feelpp toolboxes. In this study, we will target the starting and stopping the magnets. We will focus on the electromagnetic model - namely
+a formulation of Maxwell&#8217;s equations, in the quasi-static case, i.e. the formulation in magnetic and electric potential.</p>
 </div>
-<div class="paragraph">
-<p>So, in the case where the edges are not curved, we have :</p>
-</div>
-<div class="stemblock">
-<div class="content">
-\[\begin{equation}
-\int_{\Omega} \frac{1}{\mu} \, (\nabla \times \phi) \cdot (\nabla \times A^n) = - \int_{\Omega_C} \sigma \phi \cdot (\nabla V + \frac{A^n-A^{n-1}}{\Delta t})
-\end{equation}\]
-</div>
-</div>
-<div class="paragraph">
-<p>In other words :</p>
-</div>
-<div class="stemblock">
-<div class="content">
-\[\begin{equation}
-\int_{\Omega} \frac{\Delta t}{\mu} \, (\nabla \times \phi) \cdot (\nabla \times A^n) + \int_{\Omega_C} \sigma \phi \cdot (A^n + \Delta t\nabla V) = \int_{\Omega_C} \sigma \phi \cdot A^{n-1}
-\end{equation}\]
-</div>
-</div>
-<div class="paragraph">
-<p>and the second equations :</p>
-</div>
-<div class="stemblock">
-<div class="content">
-\[\begin{equation}
- \int_{\Omega_C} \sigma (A^n + \Delta t\nabla V) \cdot \nabla \psi =  \int_{\Omega_C} \sigma A^{n-1} \cdot \nabla \psi
-\end{equation}\]
-</div>
-</div>
-<div class="paragraph">
-<p>If the edges are curved, our first equation becomes :</p>
-</div>
-<div class="stemblock">
-<div class="content">
-\[\begin{equation}
-\int_{\Omega} \frac{\Delta t}{\mu} \, (\nabla \times \phi) \cdot (\nabla \times A^n) - \int_{\Gamma_D} \frac{1}{\mu} A_D \cdot (\nabla \times A^n) + \int_{\Omega_C} \sigma \phi \cdot (A^n + \Delta t \nabla V) =  \int_{\Omega_C} \sigma \phi \cdot A^{n-1}
-\end{equation}\]
 </div>
 </div>
 </article>
