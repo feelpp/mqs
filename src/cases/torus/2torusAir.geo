@@ -121,7 +121,7 @@ If ( IsAir != 0 )
 
   Infty=newl; Surface Loop(Infty) = {quart1[2], quart2[2], quart3[2], quart4[2],
                                      quart1[3], quart2[3], quart3[3], quart4[3]};
-  Air = newv; Volume(Air) = {Infty, -Bord};
+  Air = newv; Volume(Air) = {Infty, -Bord[]};
   Physical Volume("air") = {Air};
   Physical Surface("Infty") = {quart1[2], quart2[2], quart3[2], quart4[2],
                                quart1[3], quart2[3], quart3[3], quart4[3]};
